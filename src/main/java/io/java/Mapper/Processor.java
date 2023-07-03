@@ -70,7 +70,10 @@ public class Processor<S> implements IProcessor<S> {
 		try {
 			return clazz.getConstructor().newInstance();
 		} catch (Exception e) {
-			Printer.err("Error creating the destination type", "Error details: " + e.getMessage(), e);
+			Printer.err(
+					"Error creating the destination type '" + clazz.getName()
+							+ "', try to use .addTransform(...) or .forMember(...) to intercept the value",
+					"Error details: " + e.getMessage(), e);
 		}
 
 		return null;
@@ -84,6 +87,9 @@ public class Processor<S> implements IProcessor<S> {
 
 		final Map<String, Field> fieldsDestination = FieldHelper.getMappedFieldsFor(clsDestination);
 		final Map<String, MapperConfig> configurations = this.shared.configurations;
+
+		if (destination == null)
+			return null;
 
 		final boolean hasDiffTypes = (source.getClass() != destination.getClass());
 

@@ -4,6 +4,8 @@ public class Product {
 
     private String name;
     private Product parent;
+    private String categories = "Liquid;Refrig";
+
 
     public Product() {
         name = "Afonso Matumona";
@@ -23,5 +25,13 @@ public class Product {
 
     public void setParent(Product parent) {
         this.parent = parent;
+    }
+
+    public String getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String categories) {
+        this.categories = categories;
     }
 }

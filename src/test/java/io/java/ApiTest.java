@@ -2,6 +2,7 @@ package io.java;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -71,6 +72,30 @@ public class ApiTest
         Product model2 = converter.map(model).build();
         
         assertEquals(model2.getClass(), model.getClass());
+    }
+
+    @Test
+    public void shouldTransformeValue()
+    {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Transformacao de tipo no momento de converçao
+        converter.addTransform(String.class, String[].class, (source) -> {
+
+            String[] arrayOfStringValue = source.split(";");
+
+            return arrayOfStringValue;
+        });
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+        
+        assertNotNull(dto.getCategories());
+        assertEquals(2, dto.getCategories().length);
     }
 
 }

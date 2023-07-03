@@ -3,6 +3,7 @@ package io.java.Models;
 public class ProductDto {
     private String name;
     private ProductDto parent;
+    private String[] categories;
 
     public String getName() {
         return name;
@@ -18,5 +19,13 @@ public class ProductDto {
 
     public void setParent(ProductDto parent) {
         this.parent = parent;
+    }
+
+    public String[] getCategories() {
+        return categories;
+    }
+
+    public void setCategories(String[] categories) {
+        this.categories = categories;
     }
 }
