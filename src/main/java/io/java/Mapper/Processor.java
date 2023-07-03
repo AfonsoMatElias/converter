@@ -46,7 +46,7 @@ public class Processor<Source> implements IProcessor<Source> {
 	 * Stores all the times that an object was mapped for to avoid Self Reference
 	 * Cycle Mapping
 	 */
-	private Map<Object, Integer> objectCycleMappingCounter = new HashMap<Object, Integer>();
+	private Map<String, Integer> objectCycleMappingCounter = new HashMap<>();
 
 	/** Action Controller for this Processor */
 	protected MappingActions<Object, Object> actionOptions;
