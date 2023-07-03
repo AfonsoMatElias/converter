@@ -30,15 +30,15 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
 ```java
 @Component
 public class ConverterConfig extends Converter {
-	public ConverterConfig() {
-		setLimitCycleMapping(1);
+  public ConverterConfig() {
+  setLimitCycleMapping(1);
 
-		createMappingConfig();
-	}
+  createMappingConfig();
+  }
 
-	public void createMappingConfig() {
-		createMap(Product.class, ProductDto.class);
-	}
+  public void createMappingConfig() {
+  createMap(Product.class, ProductDto.class);
+  }
 }
 
 ```
@@ -49,35 +49,33 @@ Injecting in the controller
 
 @Component
 public class ProductController {
-	
   IConverter converter;
   
   @Autowired
   ProductService service;
-	
-	@Autowired
-	public TestController(Converter converter) {
-		this.converter = converter;
-	}
+
+  @Autowired
+  public TestController(Converter converter) {
+    this.converter = converter;
+  }
 
   public ProductDto getOne(Long id) {
-	 	
+    
     Product product = service.findById(id);
-		
-		ProductDto productDto = converter.map(product).to(ProductDto.class);
 
-		return productDto;
-	}
+    ProductDto productDto = converter.map(product).to(ProductDto.class);
 
-	public List<ProductDto> getAll() {
+    return productDto;
+  }
 
-		List<Product> products = service.findAll();
-		
-		List<ProductDto> productDtos = converter.map(products).to(ProductDto.class);
+  public List<ProductDto> getAll() {
 
-		return productDtos;
-	}
+    List<Product> products = service.findAll();
+    
+    List<ProductDto> productDtos = converter.map(products).to(ProductDto.class);
 
+    return productDtos;
+  }
 }
 
 ```
