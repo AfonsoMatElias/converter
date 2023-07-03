@@ -20,7 +20,6 @@ Product model = new Product();
 // Mapping
 ProductDto dto = converter.map(model).to(ProductDto.class);
 
-
 ```
 
 
