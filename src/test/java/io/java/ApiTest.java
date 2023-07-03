@@ -56,9 +56,7 @@ public class ApiTest
         assertTrue( dtos != null );
         assertEquals(dtos.size(), models.size());
     }
-    /**
-     * Rigorous Test :-)
-     */
+
     @Test
     public void shouldCopyAndPasteModel()
     {
