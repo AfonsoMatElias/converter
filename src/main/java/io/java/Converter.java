@@ -30,40 +30,40 @@ public class Converter implements IConverter {
 	private ConverterShared shared;
 
 	/**
-	 * Creates Mapping Processor for the {@link Source} Object
+	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <Source> the {@link Source} Type
-	 * @param source   the {@link Source} Object to be mapped
+	 * @param <S> the {@link S} Type
+	 * @param source   the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	public <Source> IObjectProcessor<Source> map(Source source) {
-		return new ObjectProcessor<Source>(shared, source);
+	public <S> IObjectProcessor<S> map(S source) {
+		return new ObjectProcessor<S>(shared, source);
 	}
 
 	/**
-	 * Creates Mapping Processor for the {@link Source} Object
+	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <Source> the {@link Source} Type
-	 * @param source   the {@link Source} Object to be mapped
+	 * @param <S> the {@link S} Type
+	 * @param source   the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	public <Source> IListProcessor<Source> map(List<Source> source) {
-		return new ListProcessor<Source>(shared, source);
+	public <S> IListProcessor<S> map(List<S> source) {
+		return new ListProcessor<S>(shared, source);
 	}
 
 	/**
 	 * Creates a Mapping configuration for the Source ans Destination Object type
 	 * 
-	 * @param <Source>      the {@link Source} Type
-	 * @param <Destination> the {@link Destination} Type
-	 * @param source        the {@link Source} Class
-	 * @param destination   the {@link Destination} Class
+	 * @param <S>      the {@link S} Type
+	 * @param <D> the {@link D} Type
+	 * @param source        the {@link S} Class
+	 * @param destination   the {@link D} Class
 	 */
-	public <Source, Destination> IMappingExpression<Source, Destination> createMap(
-			Class<Source> source,
-			Class<Destination> destination) {
+	public <S, D> IMappingExpression<S, D> createMap(
+			Class<S> source,
+			Class<D> destination) {
 		shared.configurations.put(source.getName(), new MapperConfig(source, destination));
 		return new MappingExpression<>(source, destination, shared);
 	}
@@ -71,15 +71,15 @@ public class Converter implements IConverter {
 	/**
 	 * Creates a Mapping configuration for the Source ans Destination Object type
 	 * 
-	 * @param <Source>      the {@link Source} Type
-	 * @param <Destination> the {@link Destination} Type
-	 * @param source        the {@link Source} Class
-	 * @param destination   the {@link Destination} Class
+	 * @param <S>      the {@link S} Type
+	 * @param <D> the {@link D} Type
+	 * @param source        the {@link S} Class
+	 * @param destination   the {@link D} Class
 	 */
-	public <Source, Destination> IMappingExpression<Source, Destination> createMap(
-			Class<Source> source,
-			Class<Destination> destination,
-			IV1Callback<IMappingActions<Source, Destination>> modifier) {
+	public <S, D> IMappingExpression<S, D> createMap(
+			Class<S> source,
+			Class<D> destination,
+			IV1Callback<IMappingActions<S, D>> modifier) {
 		this.createMap(source, destination);
 
 		if (modifier != null) {
@@ -94,7 +94,7 @@ public class Converter implements IConverter {
 			// Assing to object to be able to trick the compiler
 			Object modifierAsObject = actionOptions;
 
-			modifier.call((MappingActions<Source, Destination>) modifierAsObject);
+			modifier.call((MappingActions<S, D>) modifierAsObject);
 		}
 
 		return new MappingExpression<>(source, destination, shared);

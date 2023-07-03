@@ -11,18 +11,18 @@ import io.java.Helpers.Printer;
 import io.java.Options.Interfaces.IMappingExpression;
 
 @SuppressWarnings("unchecked")
-public class MappingExpression<Source, Destination> implements IMappingExpression<Source, Destination> {
+public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	public MappingExpression(
-			Class<Source> sourceClass,
-			Class<Destination> destinationClass,
+			Class<S> sourceClass,
+			Class<D> destinationClass,
 			ConverterShared converterShared) {
 		this.sourceClass = sourceClass;
 		this.destinationClass = destinationClass;
 		this.shared = converterShared;
 	}
 
-	Class<Source> sourceClass;
-	Class<Destination> destinationClass;
+	Class<S> sourceClass;
+	Class<D> destinationClass;
 	ConverterShared shared;
 
 	/**
@@ -31,8 +31,8 @@ public class MappingExpression<Source, Destination> implements IMappingExpressio
 	 * @param destinationMember the member that will be transformed
 	 * @param transform          the interception bahavior
 	 */
-	public MappingExpression<Source, Destination> forMember(String destinationMember,
-			I1Callback<Source, Object> transform) {
+	public MappingExpression<S, D> forMember(String destinationMember,
+			I1Callback<S, Object> transform) {
 		Field field = FieldHelper.getMappedFieldsFor(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
@@ -48,7 +48,7 @@ public class MappingExpression<Source, Destination> implements IMappingExpressio
 	}
 
 	/**
-	 * Gets the mapper actions for the {@link Source} and {@link Destination} Types
+	 * Gets the mapper actions for the {@link S} and {@link D} Types
 	 */
 	private MappingActions<Object, Object> getMapperActions() {
 		final Map<String, MappingActions<Object, Object>> globalActionOptions = shared.globalActionOptions;
@@ -65,25 +65,25 @@ public class MappingExpression<Source, Destination> implements IMappingExpressio
 	}
 
 	/**
-	 * Subscribes a before map action for this {@link Source} and
-	 * {@link Destination} Types
+	 * Subscribes a before map action for this {@link S} and
+	 * {@link D} Types
 	 * 
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link MappingExpression} for chaining
 	 */
-	public MappingExpression<Source, Destination> beforeMap(IV2Callback<Source, Destination> mappingAction) {
+	public MappingExpression<S, D> beforeMap(IV2Callback<S, D> mappingAction) {
 		this.getMapperActions().beforeMap((IV2Callback<Object, Object>) mappingAction);
 		return this;
 	}
 
 	/**
-	 * Subscribes a after map action for this {@link Source} and {@link Destination}
+	 * Subscribes a after map action for this {@link S} and {@link D}
 	 * Types
 	 * 
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link MappingExpression} for chaining
 	 */
-	public MappingExpression<Source, Destination> afterMap(IV2Callback<Source, Destination> mappingAction) {
+	public MappingExpression<S, D> afterMap(IV2Callback<S, D> mappingAction) {
 		this.getMapperActions().afterMap((IV2Callback<Object, Object>) mappingAction);
 		return this;
 	}

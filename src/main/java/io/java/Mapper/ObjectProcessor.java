@@ -6,13 +6,13 @@ import io.java.Mapper.Interfaces.IObjectProcessor;
 import io.java.Options.MappingActions;
 
 @SuppressWarnings("unchecked")
-public class ObjectProcessor<Source> extends Processor<Source> implements IObjectProcessor<Source> {
+public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor<S> {
 	public ObjectProcessor(ConverterShared shared, Object source) {
-		super(shared, (Source) source);
+		super(shared, (S) source);
 	}
 
 	/**
-	 * Converts the {@link Source} object to the destination class provided
+	 * Converts the {@link S} object to the destination class provided
 	 * 
 	 * @param <Destination> the {@link Destination} object type
 	 * @param clazz         the {@link Destination} class type
@@ -27,24 +27,24 @@ public class ObjectProcessor<Source> extends Processor<Source> implements IObjec
 	}
 
 	/**
-	 * Converts the {@link Source} object to the destination class provided with a
+	 * Converts the {@link S} object to the destination class provided with a
 	 * mapper modifier
 	 * 
-	 * @param <Destination> the {@link Destination} object type
-	 * @param clazz         the {@link Destination} class type
+	 * @param <D> the {@link D} object type
+	 * @param clazz         the {@link D} class type
 	 * @param modifier      mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <Destination> Destination to(Class<Destination> clazz,
-			IV1Callback<MappingActions<Source, Destination>> modifier) {
+	public <D> D to(Class<D> clazz,
+			IV1Callback<MappingActions<S, D>> modifier) {
 		try {
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler
 				Object modifierAsObject = actionOptions;
 
-				modifier.call((MappingActions<Source, Destination>) modifierAsObject);
+				modifier.call((MappingActions<S, D>) modifierAsObject);
 			}
-			return (Destination) this.toDestination(clazz);
+			return (D) this.toDestination(clazz);
 		} catch (Exception e) {
 			return null;
 		}

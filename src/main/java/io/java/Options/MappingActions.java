@@ -11,12 +11,12 @@ import io.java.Callback.ICallbacks.IV2Callback;
 import io.java.Enums.MappingActionsEnum;
 import io.java.Options.Interfaces.IMappingActions;
 
-public class MappingActions<Source, Destination> implements IMappingActions<Source, Destination> {
+public class MappingActions<S, D> implements IMappingActions<S, D> {
 
 	public MappingActions() {
 	}
 
-	public MappingActions(MappingActions<Source, Destination> outActionOptions) {
+	public MappingActions(MappingActions<S, D> outActionOptions) {
 
 		// Merging the configurations
 		for (Entry<MappingActionsEnum, List<IV2Callback<Object, Object>>> entry : outActionOptions.actions.entrySet()) {
@@ -34,7 +34,7 @@ public class MappingActions<Source, Destination> implements IMappingActions<Sour
 	 * @param action
 	 */
 	@SuppressWarnings("unchecked")
-	public void on(MappingActionsEnum targetAction, IV2Callback<Source, Destination> action) {
+	public void on(MappingActionsEnum targetAction, IV2Callback<S, D> action) {
 		// Defining the default List of Actions
 		List<IV2Callback<Object, Object>> mActions = new ArrayList<>();
 
@@ -55,7 +55,7 @@ public class MappingActions<Source, Destination> implements IMappingActions<Sour
 	 * @param src          the source object
 	 * @param dst          the destination object
 	 */
-	public void call(MappingActionsEnum targetAction, Source src, Destination dst) {
+	public void call(MappingActionsEnum targetAction, S src, D dst) {
 		// Defining the default List of Actions
 		List<IV2Callback<Object, Object>> mActions = actions.getOrDefault(targetAction, Arrays.asList());
 
@@ -74,7 +74,7 @@ public class MappingActions<Source, Destination> implements IMappingActions<Sour
 	 * @implNote The destination argument will be null
 	 * @param modifier the delegate having the modification
 	 */
-	public void beforeMap(IV2Callback<Source, Destination> modifier) {
+	public void beforeMap(IV2Callback<S, D> modifier) {
 		this.on(MappingActionsEnum.BEFORE_MAP, modifier);
 	}
 
@@ -83,7 +83,7 @@ public class MappingActions<Source, Destination> implements IMappingActions<Sour
 	 * 
 	 * @param modifier the delegate having the modification
 	 */
-	public void afterMap(IV2Callback<Source, Destination> modifier) {
+	public void afterMap(IV2Callback<S, D> modifier) {
 		this.on(MappingActionsEnum.AFTER_MAP, modifier);
 	}
 }

@@ -21,21 +21,21 @@ import io.java.Mapper.Interfaces.IProcessor;
 import io.java.Options.MappingActions;
 
 @SuppressWarnings("unchecked")
-public class Processor<Source> implements IProcessor<Source> {
+public class Processor<S> implements IProcessor<S> {
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
-	 * @param source the {@link Source} object
+	 * @param source the {@link S} object
 	 */
-	public Processor(ConverterShared shared, Source source) {
+	public Processor(ConverterShared shared, S source) {
 		this.shared = shared;
 		this.source = source;
 		this.actionOptions = new MappingActions<>();
 	}
 
-	/** Stores the {@link Source} object */
-	private Source source;
+	/** Stores the {@link S} object */
+	private S source;
 
 	/**
 	 * Stores all the shared public properties of the main {@link Converter} Class
@@ -80,7 +80,7 @@ public class Processor<Source> implements IProcessor<Source> {
 	/**
 	 * Maps properties from the Source Object, to Destination Object
 	 */
-	private <Destination> Object mapper(Object source, Class<?> clsDestination, Object destination)
+	private <D> Object mapper(Object source, Class<?> clsDestination, Object destination)
 			throws IllegalArgumentException, IllegalAccessException {
 
 		final Map<String, Field> fieldsDestination = FieldHelper.getMappedFieldsFor(clsDestination);
@@ -185,7 +185,10 @@ public class Processor<Source> implements IProcessor<Source> {
 				return tReturn;
 
 			// Looping them
-			for (Object item : (List<Object>) valueSource) {
+			/**
+			 * NOTE: this cast to Iterable<T> can throw an exception 
+			 */
+			for (Object item : (Iterable<Object>) valueSource) {
 				try {
 					Object result = this.mapper(item, fieldType, create(fieldType));
 					if (result == null)
@@ -287,13 +290,13 @@ public class Processor<Source> implements IProcessor<Source> {
 	/**
 	 * The main point of mapping
 	 * 
-	 * @param <Destination> the {@link Destination} Type
+	 * @param <D> the {@link D} Type
 	 * @param clazz         the {@link Class} of the destination object
 	 * @param modifier      a modifier for the mapping process
-	 * @return the {@link Destination} instance mapped from the {@link Source}
+	 * @return the {@link D} instance mapped from the {@link S}
 	 *         instance
 	 */
-	protected <Destination> Object toDestination(Class<?> clazz) {
+	protected <D> Object toDestination(Class<?> clazz) {
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
@@ -319,9 +322,9 @@ public class Processor<Source> implements IProcessor<Source> {
 	 * @param <Destination> the {@link Destination} Type
 	 * @return new object instance
 	 */
-	public Source build() {
+	public S build() {
 		try {
-			return (Source) this.toDestination(source.getClass());
+			return (S) this.toDestination(source.getClass());
 		} catch (Exception e) {
 			return null;
 		}

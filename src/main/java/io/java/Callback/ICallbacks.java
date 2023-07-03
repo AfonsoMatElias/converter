@@ -2,28 +2,28 @@ package io.java.Callback;
 
 public interface ICallbacks {
 
-	// With return
-	public interface I0Callback<Return> {
-		Return call();
+	// With Return
+	public interface I0Callback<R> {
+		R call();
 	}
 
-	public interface I1Callback<T1, Return> {
-		Return call(T1 t1);
+	public interface I1Callback<T1, R> {
+		R call(T1 t1);
 	}
 
-	public interface I2Callback<T1, T2, Return> {
-		Return call(T1 t1, T2 t2);
+	public interface I2Callback<T1, T2, R> {
+		R call(T1 t1, T2 t2);
 	}
 
-	public interface I3Callback<T1, T2, T3, Return> {
-		Return call(T1 t1, T2 t2, T3 t3);
+	public interface I3Callback<T1, T2, T3, R> {
+		R call(T1 t1, T2 t2, T3 t3);
 	}
 
-	public interface I4Callback<T1, T2, T3, T4, Return> {
-		Return call(T1 t1, T2 t2, T3 t3, T4 t4);
+	public interface I4Callback<T1, T2, T3, T4, R> {
+		R call(T1 t1, T2 t2, T3 t3, T4 t4);
 	}
 
-	// With no return
+	// With no Return
 	public interface IV0Callback {
 		void call();
 	}

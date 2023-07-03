@@ -12,52 +12,53 @@ import io.java.Options.Interfaces.IMappingExpression;
 
 public interface IConverter {
 	/**
-	 * Creates Mapping Processor for the {@link Source} Object
+	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <Source> the {@link Source} Type
-	 * @param source   the {@link Source} Object to be mapped
+	 * @param <S>    the {@link S} Type
+	 * @param source the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	<Source> IObjectProcessor<Source> map(Source source);
+	<S> IObjectProcessor<S> map(S source);
 
 	/**
-	 * Creates Mapping Processor for the {@link Source} Object
+	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <Source> the {@link Source} Type
-	 * @param source   the {@link Source} Object to be mapped
+	 * @param <S>    the {@link S} Type
+	 * @param source the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	<Source> IListProcessor<Source> map(List<Source> source);
+	<S> IListProcessor<S> map(List<S> source);
 
 	/**
 	 * Creates a Mapping configuration for the Source ans Destination Object type
 	 * 
-	 * @param <Source>      the {@link Source} Type
-	 * @param <Destination> the {@link Destination} Type
-	 * @param source        the {@link Source} Class
-	 * @param destination   the {@link Destination} Class
+	 * @param <S>      the {@link S} Type
+	 * @param <D> the {@link D} Type
+	 * @param source        the {@link S} Class
+	 * @param destination   the {@link D} Class
 	 */
-	<Source, Destination> IMappingExpression<Source, Destination> createMap(
-			Class<Source> source,
-			Class<Destination> destination);
+	<S, D> IMappingExpression<S, D> createMap(
+			Class<S> source,
+			Class<D> destination);
 
 	/**
 	 * Creates a Mapping configuration for the Source ans Destination Object type
 	 * 
-	 * @param <Source>      the {@link Source} Type
-	 * @param <Destination> the {@link Destination} Type
-	 * @param source        the {@link Source} Class
-	 * @param destination   the {@link Destination} Class
+	 * @param <S>         the {@link S} Type
+	 * @param <D>         the {@link D} Type
+	 * @param source      the {@link S} Class
+	 * @param destination the {@link D} Class
 	 */
-	<Source, Destination> IMappingExpression<Source, Destination> createMap(
-			Class<Source> source,
-			Class<Destination> destination,
-			IV1Callback<IMappingActions<Source, Destination>> modifier);
+	<S, D> IMappingExpression<S, D> createMap(
+			Class<S> source,
+			Class<D> destination,
+			IV1Callback<IMappingActions<S, D>> modifier);
 
 	/**
-	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To} Type
+	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To}
+	 * Type
 	 * 
 	 * @param <From>   the Type that needs to intercepted
 	 * @param <To>     the Type to be converted to
