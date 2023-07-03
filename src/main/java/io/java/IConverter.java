@@ -57,7 +57,7 @@ public interface IConverter {
 			IV1Callback<IMappingActions<Source, Destination>> modifier);
 
 	/**
-	 * Mutates mapping behavior for {@link From} Type to {@link To} Type
+	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To} Type
 	 * 
 	 * @param <From>   the Type that needs to intercepted
 	 * @param <To>     the Type to be converted to
@@ -65,7 +65,7 @@ public interface IConverter {
 	 * @param to       the {@link From} Class
 	 * @param behavior the interception bahavior
 	 */
-	<From, To> void mutateMapping(Class<From> from, Class<To> to, I1Callback<From, To> behavior);
+	<From, To> void addTransform(Class<From> from, Class<To> to, I1Callback<From, To> behavior);
 
 	/**
 	 * Gets all the configurations of the converter and return a Map of it

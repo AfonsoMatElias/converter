@@ -95,6 +95,23 @@ public class Processor<Source> implements IProcessor<Source> {
 			return null;
 		}
 
+		// Checks if an object is reached the limit o cycle
+		final I1Callback<Object, Boolean> isObjInLimitCycle = (obj) -> {
+			final String memoryAddress = Integer.toHexString(obj.hashCode());
+
+			// Getting the number of times that this object was mapped
+			final int numberOfMapping = objectCycleMappingCounter.getOrDefault(memoryAddress, 0) + 1;
+
+			// Adding the number of mapping of an object
+			objectCycleMappingCounter.put(memoryAddress, numberOfMapping);
+
+			// If it is above the LIMIT defined, do not map
+			if (numberOfMapping > shared.LIMIT_CYCLE_MAPPING)
+				return true;
+
+			return false;
+		};
+
 		// Helper Function that gets the type Argument of a List
 		final I1Callback<Field, Class<?>> getListType = (
 				field) -> (Class<?>) ((ParameterizedType) field.getGenericType())
@@ -104,19 +121,12 @@ public class Processor<Source> implements IProcessor<Source> {
 		final I3Callback<Object, Class<?>, Class<?>, Object> objMapper = (valueSource, fieldTypeSource,
 				fieldTypeDestination) -> {
 
-			// Getting the number of times that this object was mapped
-			final int numberOfMapping = objectCycleMappingCounter.getOrDefault(valueSource, 0) + 1;
-
-			// Adding the number of mapping of an object
-			objectCycleMappingCounter.put(source, numberOfMapping);
-
-			// If it is above the LIMIT defined, do not map
-			if (numberOfMapping > shared.LIMIT_CYCLE_MAPPING)
-				return null;
-
 			Object tReturn = null;
 			Class<?> configClsSource = null;
 			Class<?> configClsDestination = null;
+
+			if (isObjInLimitCycle.call(valueSource))
+				return tReturn;
 
 			if (shared.USE_MAPPING_CONFIG) {
 				// Checking the configuration for this source
@@ -149,31 +159,33 @@ public class Processor<Source> implements IProcessor<Source> {
 			return tReturn;
 		};
 
-		// Main Function to map object using the mutation
-		final I3Callback<Object, Class<?>, Class<?>, Object> mutationMapper = (valueSource, fieldTypeSource,
+		// Main Function to map object using the tranformation
+		final I3Callback<Object, Class<?>, Class<?>, Object> transformMapper = (valueSource, fieldTypeSource,
 				fieldTypeDestination) -> {
-			// Building the MutationName
-			final String mutationName = fieldTypeSource.getName() + ":"
-					+ fieldTypeDestination.getName();
+			// Building the transformationName
+			final String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
 
-			// Getting the mutation for this mapping
-			final I1Callback<Object, Object> mutation = shared.mutations
-					.getOrDefault(mutationName, null);
+			// Getting the transformation callback for this mapping
+			final I1Callback<Object, Object> transform = shared.tranformations
+					.getOrDefault(name, null);
 
-			// Checking if there is a mutation for these two properties
-			if (mutation == null)
+			// Checking if there is a transformation for these two properties
+			if (transform == null)
 				return null;
 
-			return mutation.call(valueSource);
+			return transform.call(valueSource);
 		};
 
 		// Function to map a List Of Object
-		final I2Callback<Object, Class<?>, Object> listMapper = (value, fieldType) -> {
+		final I2Callback<Object, Class<?>, Object> listMapper = (valueSource, fieldType) -> {
 			// Creating a new instance of a generic list
 			ArrayList<Object> tReturn = (ArrayList<Object>) create(new ArrayList<Object>().getClass());
 
+			if (isObjInLimitCycle.call(valueSource))
+				return tReturn;
+
 			// Looping them
-			for (Object item : (List<Object>) value) {
+			for (Object item : (List<Object>) valueSource) {
 				try {
 					Object result = this.mapper(item, fieldType, create(fieldType));
 					if (result == null)
@@ -198,11 +210,10 @@ public class Processor<Source> implements IProcessor<Source> {
 		};
 
 		{ // Generic Scope
-
-			// Testing Mutation Mapping
-			Object mutationResult = mutationMapper.call(source, source.getClass(), clsDestination);
-			if (mutationResult != null)
-				return mutationResult;
+			// Testing Transformation Mapping
+			Object transformResult = transformMapper.call(source, source.getClass(), clsDestination);
+			if (transformResult != null)
+				return transformResult;
 		}
 
 		if (isArray(source)) {
@@ -245,12 +256,12 @@ public class Processor<Source> implements IProcessor<Source> {
 
 			final Class<?> fieldTypeDestination = fieldDestination.getType();
 
-			Object mutationResult = mutationMapper.call(fieldValueSource, fieldTypeSource, fieldTypeDestination);
-			// Checking if there is a mutation for these two properties and assign it to the
+			Object transformationResult = transformMapper.call(fieldValueSource, fieldTypeSource, fieldTypeDestination);
+			// Checking if there is a transformation for these two properties and assign it to the
 			// Value To Set
-			if (mutationResult != null) {
+			if (transformationResult != null) {
 				// Just some randon empty block as the setting is happening in the if expression
-				valueToSet = mutationResult;
+				valueToSet = transformationResult;
 			} else
 			// Checking object types
 			if (fieldTypeDestination != fieldTypeSource) {

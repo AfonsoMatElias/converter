@@ -16,7 +16,7 @@ import io.java.Models.ProductDto;
 /**
  * Unit test for simple App.
  */
-public class AppTest 
+public class ApiTest 
 {
 
     @Test
@@ -70,9 +70,9 @@ public class AppTest
         model.setParent(model);
 
         // Mapping
-        Product dto = converter.map(model).build();
+        Product model2 = converter.map(model).build();
         
-        assertEquals(dto.getClass(), model.getClass());
+        assertEquals(model2.getClass(), model.getClass());
     }
 
 }

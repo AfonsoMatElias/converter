@@ -29,10 +29,10 @@ public class MappingExpression<Source, Destination> implements IMappingExpressio
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param mutation          the interception bahavior/mutation
+	 * @param transform          the interception bahavior
 	 */
 	public MappingExpression<Source, Destination> forMember(String destinationMember,
-			I1Callback<Source, Object> mutation) {
+			I1Callback<Source, Object> transform) {
 		Field field = FieldHelper.getMappedFieldsFor(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
@@ -41,8 +41,8 @@ public class MappingExpression<Source, Destination> implements IMappingExpressio
 		}
 
 		// Compiler trick
-		final Object mutationAsObject = mutation;
-		shared.forMemberMapping.put(field, (I1Callback<Object, Object>) mutationAsObject);
+		final Object transformAsObject = transform;
+		shared.forMemberMapping.put(field, (I1Callback<Object, Object>) transformAsObject);
 
 		return this;
 	}

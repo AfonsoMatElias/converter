@@ -8,10 +8,10 @@ public interface IMappingExpression<Source, Destination> {
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param mutation          the interception bahavior/mutation
+	 * @param transform          the interception bahavior
 	 */
 	IMappingExpression<Source, Destination> forMember(String destinationMember,
-			I1Callback<Source, Object> mutation);
+			I1Callback<Source, Object> transform);
 
 	/**
 	 * Subscribes a before map action for this {@link Source} and

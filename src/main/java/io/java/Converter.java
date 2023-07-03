@@ -101,7 +101,7 @@ public class Converter implements IConverter {
 	}
 
 	/**
-	 * Mutates mapping behavior for {@link From} Type to {@link To} Type
+	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To} Type
 	 * 
 	 * @param <From>   the Type that needs to intercepted
 	 * @param <To>     the Type to be converted to
@@ -109,9 +109,9 @@ public class Converter implements IConverter {
 	 * @param to       the {@link From} Class
 	 * @param behavior the interception bahavior
 	 */
-	public <From, To> void mutateMapping(Class<From> from, Class<To> to, I1Callback<From, To> behavior) {
-		String mutationName = from.getName() + ":" + to.getName();
-		shared.mutations.put(mutationName, (I1Callback<Object, Object>) behavior);
+	public <From, To> void addTransform(Class<From> from, Class<To> to, I1Callback<From, To> behavior) {
+		String name = from.getName() + ":" + to.getName();
+		shared.tranformations.put(name, (I1Callback<Object, Object>) behavior);
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class Converter implements IConverter {
 				put("LIMIT_CYCLE_MAPPING", shared.LIMIT_CYCLE_MAPPING);
 				put("GLOBAL_ACTIONOPTIONS", shared.globalActionOptions);
 				put("CONFIGURATIONS", shared.configurations);
-				put("MUTATIONS", shared.mutations);
+				put("TRANFORMATIONS", shared.tranformations);
 			}
 		};
 	}
