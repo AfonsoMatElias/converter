@@ -31,13 +31,12 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
 @Component
 public class ConverterConfig extends Converter {
   public ConverterConfig() {
-  setLimitCycleMapping(1);
-
-  createMappingConfig();
+    setLimitCycleMapping(1);
+    createMappingConfig();
   }
 
   public void createMappingConfig() {
-  createMap(Product.class, ProductDto.class);
+    createMap(Product.class, ProductDto.class);
   }
 }
 
