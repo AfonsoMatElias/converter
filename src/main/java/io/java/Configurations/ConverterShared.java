@@ -10,8 +10,8 @@ import io.java.Options.MappingActions;
 public class ConverterShared {
 	public int LIMIT_CYCLE_MAPPING = 3;
 	public boolean USE_MAPPING_CONFIG = false;
-	public Map<String, MapperConfig> configurations = new HashMap<>();
-	public Map<String, I1Callback<Object, Object>> tranformations = new HashMap<>();
-	public Map<Field, I1Callback<Object, Object>> forMemberMapping = new HashMap<>();
-	public Map<String, MappingActions<Object, Object>> globalActionOptions = new HashMap<>();
+	public final Map<String, MapperConfig> configurations = new HashMap<>();
+	public final Map<String, I1Callback<Object, Object>> tranformations = new HashMap<>();
+	public final Map<Field, I1Callback<Object, Object>> forMemberMapping = new HashMap<>();
+	public final Map<String, MappingActions<Object, Object>> globalActionOptions = new HashMap<>();
 }

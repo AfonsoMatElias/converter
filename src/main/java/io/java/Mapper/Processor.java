@@ -31,7 +31,6 @@ public class Processor<S> implements IProcessor<S> {
 	public Processor(ConverterShared shared, S source) {
 		this.shared = shared;
 		this.source = source;
-		this.actionOptions = new MappingActions<>();
 	}
 
 	/** Stores the {@link S} object */
@@ -46,10 +45,10 @@ public class Processor<S> implements IProcessor<S> {
 	 * Stores all the times that an object was mapped for to avoid Self Reference
 	 * Cycle Mapping
 	 */
-	private Map<String, Integer> objectCycleMappingCounter = new HashMap<>();
+	private final Map<String, Integer> objectCycleMappingCounter = new HashMap<>();
 
 	/** Action Controller for this Processor */
-	protected MappingActions<Object, Object> actionOptions;
+	protected final MappingActions<Object, Object> actionOptions = new MappingActions<>();
 
 	/**
 	 * Helper Function to check if an object is an Array
@@ -179,18 +178,18 @@ public class Processor<S> implements IProcessor<S> {
 		// Function to map a List Of Object
 		final I2Callback<Object, Class<?>, Object> listMapper = (valueSource, fieldType) -> {
 			// Creating a new instance of a generic list
-			ArrayList<Object> tReturn = (ArrayList<Object>) create(new ArrayList<Object>().getClass());
+			final ArrayList<Object> tReturn = new ArrayList<Object>();
 
 			if (isObjInLimitCycle.call(valueSource))
 				return tReturn;
 
 			// Looping them
 			/**
-			 * NOTE: this cast to Iterable<T> can throw an exception 
+			 * NOTE: this cast to Iterable<T> can throw an exception
 			 */
 			for (Object item : (Iterable<Object>) valueSource) {
 				try {
-					Object result = this.mapper(item, fieldType, create(fieldType));
+					final Object result = this.mapper(item, fieldType, create(fieldType));
 					if (result == null)
 						break;
 					tReturn.add(result);
@@ -214,7 +213,7 @@ public class Processor<S> implements IProcessor<S> {
 
 		{ // Generic Scope
 			// Testing Transformation Mapping
-			Object transformResult = transformMapper.call(source, source.getClass(), clsDestination);
+			final Object transformResult = transformMapper.call(source, source.getClass(), clsDestination);
 			if (transformResult != null)
 				return transformResult;
 		}
@@ -223,10 +222,10 @@ public class Processor<S> implements IProcessor<S> {
 			return listMapper.call(source, clsDestination);
 		}
 
-		String createdMapActionOptionName = source.getClass().getName() + ":" + clsDestination.getName();
+		final String createdMapActionOptionName = source.getClass().getName() + ":" + clsDestination.getName();
 
 		// Retrieving the action for this field
-		MappingActions<Object, Object> createdMapActionOption = shared.globalActionOptions
+		final MappingActions<Object, Object> createdMapActionOption = shared.globalActionOptions
 				.getOrDefault(createdMapActionOptionName, null);
 
 		if (createdMapActionOption != null)
@@ -259,8 +258,10 @@ public class Processor<S> implements IProcessor<S> {
 
 			final Class<?> fieldTypeDestination = fieldDestination.getType();
 
-			Object transformationResult = transformMapper.call(fieldValueSource, fieldTypeSource, fieldTypeDestination);
-			// Checking if there is a transformation for these two properties and assign it to the
+			final Object transformationResult = transformMapper.call(fieldValueSource, fieldTypeSource,
+					fieldTypeDestination);
+			// Checking if there is a transformation for these two properties and assign it
+			// to the
 			// Value To Set
 			if (transformationResult != null) {
 				// Just some randon empty block as the setting is happening in the if expression
@@ -290,9 +291,9 @@ public class Processor<S> implements IProcessor<S> {
 	/**
 	 * The main point of mapping
 	 * 
-	 * @param <D> the {@link D} Type
-	 * @param clazz         the {@link Class} of the destination object
-	 * @param modifier      a modifier for the mapping process
+	 * @param <D>      the {@link D} Type
+	 * @param clazz    the {@link Class} of the destination object
+	 * @param modifier a modifier for the mapping process
 	 * @return the {@link D} instance mapped from the {@link S}
 	 *         instance
 	 */
@@ -301,7 +302,7 @@ public class Processor<S> implements IProcessor<S> {
 			// Performs the BEFORE_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
 
-			Object result = this.mapper(this.source, clazz, this.create(clazz));
+			final Object result = this.mapper(this.source, clazz, this.create(clazz));
 
 			// Performs the AFTER_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, result);
