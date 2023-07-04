@@ -5,26 +5,43 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
-public class Printer {
-    private static String appName = "Printer";
-    private static String source = null;
+class Log {
+    private String appName;
 
-    static String accentReplacer(String str) {
+    public Log(String app) {
+        this.appName = app;
+    }
+
+    public String accentReplacer(String str) {
         String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD);
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         return pattern.matcher(nfdNormalizedString).replaceAll("");
     }
 
-    static String build() {
+    public String prefix() {
         String date = LocalDateTime.now().toString().replace("T", " ");
         String sep = " - ";
-        return "[" + appName + sep + date + "]: ";
+        return new StringBuilder()
+            .append("[")
+            .append(appName)
+            .append(sep)
+            .append(date)
+            .append("]: ")
+            .toString();
     }
 
-    static String build(String source) {
+    public String prefix(String source) {
         String date = LocalDateTime.now().toString().replace("T", " ");
         String sep = " - ";
-        return "[" + appName + sep + source + sep + date + "]: ";
+        return new StringBuilder()
+            .append("[")
+            .append(appName)
+            .append(sep)
+            .append(source)
+            .append(sep)
+            .append(date)
+            .append("]: ")
+            .toString();
     }
 
     /**
@@ -33,7 +50,7 @@ public class Printer {
      * @param method   the method that needs to be invoked
      * @param contents the content to be printed
      */
-    static void printMultipleMessages(
+    public void printMultipleMessages(
             final PrintStream methodSource,
             final String source,
             final Object[] contents) {
@@ -50,7 +67,7 @@ public class Printer {
             final Boolean isExceptionObject = (content instanceof Exception);
 
             if (isObject && !isExceptionObject) {
-                methodSource.print(build());
+                methodSource.print(prefix());
                 methodSource.print(content);
                 methodSource.print("\n");
                 continue;
@@ -69,16 +86,27 @@ public class Printer {
 
             // If the source wasn't provided, build the without it
             if (source == null)
-                methodSource.println(build() + message);
+                methodSource.println(prefix() + message);
             else
                 // Otherwise, apply the source
-                methodSource.println(build(source) + message);
+                methodSource.println(prefix(source) + message);
 
             // Print the StackTrace if it's an Exception
             if (isExceptionObject)
                 ((Exception) content).printStackTrace();
         }
     }
+
+    public void out(Object... contents) {
+        printMultipleMessages(System.out, appName, contents);
+    }
+    
+    public void err(Object... contents) {
+        printMultipleMessages(System.err, appName, contents);
+    }    
+}
+
+public class Printer {
 
     /**
      * Prints out as info the content(s) provided
@@ -87,7 +115,7 @@ public class Printer {
      * @return the printer instance
      */
     public static void out(Object... contents) {
-        printMultipleMessages(System.out, source, contents);
+        new Log("Printer").out(contents);
     }
 
     /**
@@ -97,7 +125,7 @@ public class Printer {
      * @return the printer instance
      */
     public static void err(Object... contents) {
-        printMultipleMessages(System.err, source, contents);
+        new Log("Printer").out(contents);
     }
 
     /**
@@ -105,14 +133,7 @@ public class Printer {
      * 
      * @param source the source/header that need to be presented in the print
      */
-    public static void of(String source) {
-        Printer.source = source;
-    }
-
-    /**
-     * Dispose all using fields
-     */
-    public static void dispose() {
-        Printer.source = null;
+    public static Log of(String source) {
+        return new Log(source);
     }
 }
