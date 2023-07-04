@@ -6,6 +6,7 @@ import java.util.Map;
 import io.java.Callback.ICallbacks.I1Callback;
 import io.java.Callback.ICallbacks.IV2Callback;
 import io.java.Configurations.ConverterShared;
+import io.java.Configurations.MapperConfig;
 import io.java.Helpers.FieldHelper;
 import io.java.Helpers.Printer;
 import io.java.Options.Interfaces.IMappingExpression;
@@ -29,11 +30,11 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param transform          the interception bahavior
+	 * @param transform         the interception bahavior
 	 */
 	public MappingExpression<S, D> forMember(String destinationMember,
 			I1Callback<S, Object> transform) {
-		Field field = FieldHelper.getMappedFieldsFor(destinationClass).getOrDefault(destinationMember, null);
+		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
 			Printer.err("Field '" + destinationMember + "' does not exists");
@@ -46,6 +47,24 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 
 		return this;
 	}
+	
+	/**
+	 * skips or set null to the destination member provided
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 */
+	public MappingExpression<S, D> skipMember(String destinationMember) {
+		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+
+		if (field == null) {
+			Printer.err("Field '" + destinationMember + "' does not exists");
+			return this;
+		}
+
+		shared.forMemberMapping.put(field, (obj) -> null);
+
+		return this;
+	}
 
 	/**
 	 * Gets the mapper actions for the {@link S} and {@link D} Types
@@ -54,7 +73,11 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		final Map<String, MappingActions<Object, Object>> globalActionOptions = shared.globalActionOptions;
 
 		// Building the unique name of the action
-		final String fieldActionOptionName = sourceClass.getName() + ":" + destinationClass.getName();
+		final String fieldActionOptionName = new StringBuilder()
+				.append(sourceClass.getName())
+				.append(":")
+				.append(destinationClass.getName())
+				.toString();
 
 		MappingActions<Object, Object> mappingActions = globalActionOptions.getOrDefault(fieldActionOptionName, null);
 
@@ -88,4 +111,13 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		return this;
 	}
 
+	/**
+	 * Used to recreate the same mapping but in reverse order
+	 * 
+	 * @return {@link MappingExpression} for chaining
+	 */
+	public MappingExpression<D, S> reverseMap() {
+		shared.configurations.put(destinationClass.getName(), new MapperConfig(destinationClass, sourceClass));
+		return new MappingExpression<>(destinationClass, sourceClass, shared);
+	}
 }

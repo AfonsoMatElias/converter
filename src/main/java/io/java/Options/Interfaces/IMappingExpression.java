@@ -2,16 +2,23 @@ package io.java.Options.Interfaces;
 
 import io.java.Callback.ICallbacks.I1Callback;
 import io.java.Callback.ICallbacks.IV2Callback;
+import io.java.Options.MappingExpression;
 
 public interface IMappingExpression<S, D> {
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param transform          the interception bahavior
+	 * @param transform         the interception bahavior
 	 */
-	IMappingExpression<S, D> forMember(String destinationMember,
-			I1Callback<S, Object> transform);
+	IMappingExpression<S, D> forMember(String destinationMember, I1Callback<S, Object> transform);
+	
+	/**
+	 * skips or set null to the destination member provided
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 */
+	IMappingExpression<S, D> skipMember(String destinationMember);
 
 	/**
 	 * Subscribes a before map action for this {@link S} and
@@ -31,4 +38,10 @@ public interface IMappingExpression<S, D> {
 	 */
 	IMappingExpression<S, D> afterMap(IV2Callback<S, D> mappingAction);
 
+	/**
+	 * Used to recreate the same mapping but in reverse order
+	 * 
+	 * @return {@link MappingExpression} for chaining
+	 */
+	IMappingExpression<D, S> reverseMap();
 }
