@@ -84,7 +84,7 @@ public class Converter implements IConverter {
 
 		if (modifier != null) {
 			// Building the unique name of the action
-			String fieldActionOptionName = new StringBuilder().append(source.getName()).append("+")
+			String fieldActionOptionName = new StringBuilder().append(source.getName()).append(":")
 					.append(destination.getName()).toString();
 
 			// Registering the action
@@ -112,7 +112,7 @@ public class Converter implements IConverter {
 	 */
 	public <TypeSource, TypeDestination> void addTransform(Class<TypeSource> from, Class<TypeDestination> to,
 			I1Callback<TypeSource, TypeDestination> behavior) {
-		String name = new StringBuilder().append(from.getName()).append("+").append(to.getName()).toString();
+		String name = new StringBuilder().append(from.getName()).append(":").append(to.getName()).toString();
 		shared.tranformations.put(name, (I1Callback<Object, Object>) behavior);
 	}
 

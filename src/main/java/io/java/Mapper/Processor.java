@@ -162,7 +162,8 @@ public class Processor<S> implements IProcessor<S> {
 		final I3Callback<Object, Class<?>, Class<?>, Object> transformMapper = (valueSource, fieldTypeSource,
 				fieldTypeDestination) -> {
 			// Building the transformationName
-			final String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
+			final String name = new StringBuilder().append(fieldTypeSource.getName()).append(":")
+					.append(fieldTypeDestination.getName()).toString();
 
 			// Getting the transformation callback for this mapping
 			final I1Callback<Object, Object> transform = shared.tranformations
