@@ -16,9 +16,9 @@ public class FieldHelper {
 
     public interface IFieldkeyValue<TKey, TValue> {
         void run(TKey key, TValue value, Class<?> type);
-    }    
+    }
 
-    public static Field[] getAllDeclaredFields(Class<?> clazz) {
+    public static Field[] toFields(Class<?> clazz) {
         if (clazz == null)
             return new Field[0];
 
@@ -26,67 +26,76 @@ public class FieldHelper {
         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
 
         final Class<?> superClass = clazz.getSuperclass();
-        final Field[] arrayOfFields = new Field[fields.size()];
 
         if (superClass == null || superClass.getName().equals("java.lang.Object"))
-            return fields.toArray(arrayOfFields);
+            return fields.toArray(new Field[fields.size()]);
 
-        final Field[] superClassFields = getAllDeclaredFields(superClass);
+        final Field[] superClassFields = toFields(superClass);
         fields.addAll(Arrays.asList(superClassFields));
 
-        return fields.toArray(arrayOfFields);
+        return fields.toArray(new Field[fields.size()]);
     }
 
-    public static Map<String, Field> getMappedFieldsFor(Class<?> clazz) {
+    public static Map<String, Field> toMappedFields(Class<?> clazz) {
+        return toMappedFields(clazz, null);
+    }
+
+    public static Map<String, Field> toMappedFields(Class<?> clazz, IFieldkeyValue<String, Field> forEachField) {
         return new HashMap<String, Field>() {
             {
-                final Field[] fields = getAllDeclaredFields(clazz);
+                final Field[] fields = toFields(clazz);
                 for (final Field field : fields) {
                     field.setAccessible(true);
                     put(field.getName(), field);
+
+                    if (forEachField != null)
+                        forEachField.run(field.getName(), field, field.getType());
                 }
             }
         };
 
     }
 
-    public static <T> void fields(T obj, List<String> fields, IFieldkeyValue<String, Object> action) {
-        Map<String, Field> objFields = getMappedFieldsFor(obj.getClass());
+    public static <T> Map<String, Field> fields(T obj, List<String> fieldNames, IFieldkeyValue<String, Object> action) {
+        Map<String, Field> fieldsToReturn = new HashMap<>();
+        Map<String, Field> fields = toMappedFields(obj.getClass());
 
-        // Looping all the methods
-        for (String field : fields) {
+        // Looping all the fields
+        for (int i = 0; i < fieldNames.size(); i++) {
+            String fieldName = fieldNames.get(i);
             try {
-                final String mField = (field.charAt(0) + "").toUpperCase() + field.substring(1, field.length());
-                final Field fieldObj = objFields.getOrDefault(mField, null);
+                final String mFieldName = (fieldName.charAt(0) + "").toUpperCase() + fieldName.substring(1, fieldName.length());
+                final Field field = fields.getOrDefault(mFieldName, null);
 
-                if (fieldObj == null)
+                if (field == null)
                     continue;
 
-                fieldObj.setAccessible(true);
+                field.setAccessible(true);
+
+                fieldsToReturn.put(fieldName, field);
 
                 // Running the action
-                action.run(field, fieldObj.get(obj), fieldObj.getType());
+                action.run(fieldName, field.get(obj), field.getType());
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 Printer.err(e);
             }
         }
+
+        return fieldsToReturn;
     }
 
-    public static <T> void fields(T obj, IFieldkeyValue<String, Object> action) {
-        Map<String, Field> objFields = getMappedFieldsFor(obj.getClass());
-        for (Field field : objFields.values()) {
+    public static <T> Map<String, Field> fields(T obj, IFieldkeyValue<String, Object> forEachField) {
+        return toMappedFields(obj.getClass(), (name, field, type) -> {
             try {
-                field.setAccessible(true);
-                action.run(field.getName(), field.get(obj), field.getType());
+                forEachField.run(name, field.get(obj), type);
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 Printer.err(e);
-                break;
             }
-        }
+        });
     }
 
     public static <T> Object field(T obj, String field) {
-        Map<String, Field> objFields = getMappedFieldsFor(obj.getClass());
+        Map<String, Field> objFields = toMappedFields(obj.getClass());
         Field fieldObj = objFields.getOrDefault(field, null);
 
         if (fieldObj == null)
@@ -103,7 +112,7 @@ public class FieldHelper {
         if (value == null)
             return;
 
-        Map<String, Field> objFields = getMappedFieldsFor(obj.getClass());
+        Map<String, Field> objFields = toMappedFields(obj.getClass());
         Field fieldObj = objFields.getOrDefault(field, null);
 
         if (fieldObj == null)
@@ -117,7 +126,7 @@ public class FieldHelper {
     }
 
     public static <T> Boolean hasField(T obj, String field) {
-        return getMappedFieldsFor(obj.getClass()).containsKey(field);
+        return toMappedFields(obj.getClass()).containsKey(field);
     }
 
     public static <T> Object getValue(T obj, String field) {
