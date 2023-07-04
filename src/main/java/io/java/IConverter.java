@@ -73,7 +73,7 @@ public interface IConverter {
 	 * 
 	 * @return map of the configurations
 	 */
-	Map<String, Object> getConfig();
+	Map<String, Object> getConfigs();
 
 	/**
 	 * Sets the configuration value that allow to use mapping configuration on map
@@ -82,7 +82,7 @@ public interface IConverter {
 	 * @param useMapConfig a boolean value to indicates if the mapping configuration
 	 *                     needs to be used
 	 */
-	void setMapWithConfig(boolean useMapConfig);
+	void setUseMapConfiguration(boolean useMapConfig);
 
 	/**
 	 * Sets the limit while mapping self references objects

@@ -32,8 +32,8 @@ public class Converter implements IConverter {
 	/**
 	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <S> the {@link S} Type
-	 * @param source   the {@link S} Object to be mapped
+	 * @param <S>    the {@link S} Type
+	 * @param source the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
@@ -44,8 +44,8 @@ public class Converter implements IConverter {
 	/**
 	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <S> the {@link S} Type
-	 * @param source   the {@link S} Object to be mapped
+	 * @param <S>    the {@link S} Type
+	 * @param source the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
@@ -56,10 +56,10 @@ public class Converter implements IConverter {
 	/**
 	 * Creates a Mapping configuration for the Source ans Destination Object type
 	 * 
-	 * @param <S>      the {@link S} Type
-	 * @param <D> the {@link D} Type
-	 * @param source        the {@link S} Class
-	 * @param destination   the {@link D} Class
+	 * @param <S>         the {@link S} Type
+	 * @param <D>         the {@link D} Type
+	 * @param source      the {@link S} Class
+	 * @param destination the {@link D} Class
 	 */
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
@@ -71,10 +71,10 @@ public class Converter implements IConverter {
 	/**
 	 * Creates a Mapping configuration for the Source ans Destination Object type
 	 * 
-	 * @param <S>      the {@link S} Type
-	 * @param <D> the {@link D} Type
-	 * @param source        the {@link S} Class
-	 * @param destination   the {@link D} Class
+	 * @param <S>         the {@link S} Type
+	 * @param <D>         the {@link D} Type
+	 * @param source      the {@link S} Class
+	 * @param destination the {@link D} Class
 	 */
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
@@ -83,9 +83,9 @@ public class Converter implements IConverter {
 		this.createMap(source, destination);
 
 		if (modifier != null) {
-
 			// Building the unique name of the action
-			String fieldActionOptionName = source.getName() + ":" + destination.getName();
+			String fieldActionOptionName = new StringBuilder().append(source.getName()).append("+")
+					.append(destination.getName()).toString();
 
 			// Registering the action
 			MappingActions<Object, Object> actionOptions = new MappingActions<>();
@@ -101,16 +101,18 @@ public class Converter implements IConverter {
 	}
 
 	/**
-	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To} Type
+	 * Add tranformation to a mapping behavior for {@link TypeSource} Type to
+	 * {@link TypeDestination} Type
 	 * 
-	 * @param <From>   the Type that needs to intercepted
-	 * @param <To>     the Type to be converted to
-	 * @param from     the {@link From} Class
-	 * @param to       the {@link From} Class
-	 * @param behavior the interception bahavior
+	 * @param <TypeSource>      the Type that needs to intercepted
+	 * @param <TypeDestination> the Type to be converted to
+	 * @param from              the {@link TypeSource} Class
+	 * @param to                the {@link TypeSource} Class
+	 * @param behavior          the interception bahavior
 	 */
-	public <From, To> void addTransform(Class<From> from, Class<To> to, I1Callback<From, To> behavior) {
-		String name = from.getName() + ":" + to.getName();
+	public <TypeSource, TypeDestination> void addTransform(Class<TypeSource> from, Class<TypeDestination> to,
+			I1Callback<TypeSource, TypeDestination> behavior) {
+		String name = new StringBuilder().append(from.getName()).append("+").append(to.getName()).toString();
 		shared.tranformations.put(name, (I1Callback<Object, Object>) behavior);
 	}
 
@@ -119,7 +121,7 @@ public class Converter implements IConverter {
 	 * 
 	 * @return map of the configurations
 	 */
-	public Map<String, Object> getConfig() {
+	public Map<String, Object> getConfigs() {
 		return new HashMap<String, Object>() {
 			{
 				put("USE_MAPPING_CONFIG", shared.USE_MAPPING_CONFIG);
@@ -138,7 +140,7 @@ public class Converter implements IConverter {
 	 * @param useMapConfig a boolean value to indicates if the mapping configuration
 	 *                     needs to be used
 	 */
-	public void setMapWithConfig(boolean useMapConfig) {
+	public void setUseMapConfiguration(boolean useMapConfig) {
 		shared.USE_MAPPING_CONFIG = useMapConfig;
 	}
 

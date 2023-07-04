@@ -3,6 +3,7 @@ package io.java;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -15,7 +16,7 @@ import io.java.Models.ProductDto;
 
 
 /**
- * Unit test for simple App.
+ * Unit test for simple Api.
  */
 public class ApiTest 
 {
@@ -65,13 +66,13 @@ public class ApiTest
         IConverter converter = new Converter();
 
         // Entities
-        Product model = new Product();
-        model.setParent(model);
+        Product model1 = new Product();
+        model1.setParent(model1);
 
         // Mapping
-        Product model2 = converter.map(model).build();
+        Product model2 = converter.map(model1).to();
         
-        assertEquals(model2.getClass(), model.getClass());
+        assertEquals(model2.getClass(), model1.getClass());
     }
 
     @Test
@@ -96,6 +97,25 @@ public class ApiTest
         
         assertNotNull(dto.getCategories());
         assertEquals(2, dto.getCategories().length);
+    }
+
+    @Test
+    public void shouldSkiptMemberMapping()
+    {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Transformacao de tipo no momento de converçao
+        converter.createMap(Product.class, ProductDto.class)
+            .skipMember("name");
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+        
+        assertNull(dto.getName());
     }
 
 }

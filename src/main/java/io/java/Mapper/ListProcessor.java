@@ -8,7 +8,7 @@ import io.java.Mapper.Interfaces.IListProcessor;
 import io.java.Options.MappingActions;
 
 @SuppressWarnings("unchecked")
-public class ListProcessor<S> extends Processor<S>  implements IListProcessor<S> {
+public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> {
 
 	public ListProcessor(ConverterShared shared, Object source) {
 		super(shared, (S) source);
@@ -18,8 +18,8 @@ public class ListProcessor<S> extends Processor<S>  implements IListProcessor<S>
 	 * Converts the list of {@link S} objects to the list of destination class
 	 * provided
 	 * 
-	 * @param <D> the {@link D} object type
-	 * @param clazz         the {@link D} class type
+	 * @param <D>   the {@link D} object type
+	 * @param clazz the {@link D} class type
 	 * @return the object Converted
 	 */
 	public <D> List<D> to(Class<D> clazz) {
@@ -34,13 +34,12 @@ public class ListProcessor<S> extends Processor<S>  implements IListProcessor<S>
 	 * Converts the list of {@link S} objects to the list of destination class
 	 * provided with a mapper modifier
 	 * 
-	 * @param <D> the {@link D} object type
-	 * @param clazz         the {@link D} class type
-	 * @param modifier      mapping options that will be applied on map
+	 * @param <D>      the {@link D} object type
+	 * @param clazz    the {@link D} class type
+	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> List<D> to(Class<D> clazz,
-			IV1Callback<MappingActions<List<S>, List<D>>> modifier) {
+	public <D> List<D> to(Class<D> clazz, IV1Callback<MappingActions<List<S>, List<D>>> modifier) {
 		try {
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler

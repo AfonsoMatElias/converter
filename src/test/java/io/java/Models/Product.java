@@ -8,7 +8,7 @@ public class Product {
 
 
     public Product() {
-        name = "Afonso Matumona";
+        name = "Coca Cola";
     }
 
     public String getName() {

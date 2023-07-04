@@ -15,7 +15,8 @@ import io.java.Callback.ICallbacks.IV2Callback;
 import io.java.Configurations.ConverterShared;
 import io.java.Configurations.MapperConfig;
 import io.java.Enums.MappingActionsEnum;
-import io.java.Helpers.FieldHelper;
+import static io.java.Helpers.FieldHelper.toMappedFields;
+import static io.java.Helpers.FieldHelper.fields;
 import io.java.Helpers.Printer;
 import io.java.Mapper.Interfaces.IProcessor;
 import io.java.Options.MappingActions;
@@ -51,16 +52,6 @@ public class Processor<S> implements IProcessor<S> {
 	protected final MappingActions<Object, Object> actionOptions = new MappingActions<>();
 
 	/**
-	 * Helper Function to check if an object is an Array
-	 * 
-	 * @param in the input object
-	 * @return boolean value true/false
-	 */
-	private boolean isArray(Object in) {
-		return (in.getClass().isArray() || (in instanceof List<?>));
-	}
-
-	/**
 	 * Creates a new instance of the provided class
 	 * 
 	 * @param clazz the class to create instace of
@@ -72,8 +63,8 @@ public class Processor<S> implements IProcessor<S> {
 		} catch (Exception e) {
 			Printer.err(
 					"Error creating the destination type '" + clazz.getName()
-							+ "', try to use .addTransform(...) or .forMember(...) to intercept the value",
-					"Error details: " + e.getMessage(), e);
+							+ "', try to use .addTransform(...) or .forMember(...) to intercept the member mapping",
+					"Error details: " + e.getMessage());
 		}
 
 		return null;
@@ -85,7 +76,7 @@ public class Processor<S> implements IProcessor<S> {
 	private <D> Object mapper(Object source, Class<?> clsDestination, Object destination)
 			throws IllegalArgumentException, IllegalAccessException {
 
-		final Map<String, Field> fieldsDestination = FieldHelper.getMappedFieldsFor(clsDestination);
+		final Map<String, Field> fieldsDestination = toMappedFields(clsDestination);
 		final Map<String, MapperConfig> configurations = this.shared.configurations;
 
 		if (destination == null)
@@ -99,6 +90,9 @@ public class Processor<S> implements IProcessor<S> {
 					+ destination.getClass().getName());
 			return null;
 		}
+
+		// Helper Function to check if an object is an Array
+		final I1Callback<Object, Boolean> isArray = (in) -> (in.getClass().isArray() || (in instanceof List<?>));
 
 		// Checks if an object is reached the limit o cycle
 		final I1Callback<Object, Boolean> isObjInLimitCycle = (obj) -> {
@@ -224,7 +218,7 @@ public class Processor<S> implements IProcessor<S> {
 				return transformResult;
 		}
 
-		if (isArray(source)) {
+		if (isArray.call(source)) {
 			return listMapper.call(source, clsDestination);
 		}
 
@@ -239,7 +233,7 @@ public class Processor<S> implements IProcessor<S> {
 			createdMapActionOption.call(MappingActionsEnum.BEFORE_MAP, source, null);
 
 		// Looping all the source fields
-		FieldHelper.fields(source, (fieldNameSource, fieldValueSource, fieldTypeSource) -> {
+		fields(source, (fieldNameSource, fieldValueSource, fieldTypeSource) -> {
 			Object valueToSet = fieldValueSource;
 
 			// If there is no value set in the property just ignore
@@ -266,9 +260,9 @@ public class Processor<S> implements IProcessor<S> {
 
 			final Object transformationResult = transformMapper.call(fieldValueSource, fieldTypeSource,
 					fieldTypeDestination);
+
 			// Checking if there is a transformation for these two properties and assign it
-			// to the
-			// Value To Set
+			// to the Value To Set
 			if (transformationResult != null) {
 				// Just some randon empty block as the setting is happening in the if expression
 				valueToSet = transformationResult;
@@ -279,7 +273,7 @@ public class Processor<S> implements IProcessor<S> {
 				valueToSet = objMapper.call(fieldValueSource, fieldTypeSource, fieldTypeDestination);
 			} else
 			// Checking if the value is an array
-			if (isArray(valueToSet)) {
+			if (isArray.call(valueToSet)) {
 				// Mapping the list and assigning the value
 				valueToSet = listMapper.call(fieldValueSource, getListType.call(fieldDestination));
 			}
@@ -326,10 +320,9 @@ public class Processor<S> implements IProcessor<S> {
 	 * Creates a new instance of object provided, just like copy and paste with
 	 * different memory address
 	 * 
-	 * @param <Destination> the {@link Destination} Type
 	 * @return new object instance
 	 */
-	public S build() {
+	public S to() {
 		try {
 			return (S) this.toDestination(source.getClass());
 		} catch (Exception e) {
