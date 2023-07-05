@@ -160,11 +160,12 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
     ProductService service;
 
     @Autowired
-    public TestController(Converter converter) {
+    public ProductController(Converter converter) {
       this.converter = converter;
     }
 
-    public ProductDto getOne(Long id) {
+    @GetMapping(produces = "application/json", value = "/{id}")
+    public ProductDto getOne(@PathVariable("id") Long id) {
       
       Product product = service.findById(id);
 
@@ -173,6 +174,7 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
       return productDto;
     }
 
+    @GetMapping(produces = "application/json")
     public List<ProductDto> getAll() {
 
       List<Product> products = service.findAll();
