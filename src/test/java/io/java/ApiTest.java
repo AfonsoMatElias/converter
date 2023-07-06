@@ -7,7 +7,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -20,6 +22,7 @@ import io.java.Models.ProductDto;
  */
 public class ApiTest 
 {
+    Map<String, Integer> funCallTracker = new HashMap<>();
 
     @Test
     public void shouldConvertFromModelToDto()
@@ -73,6 +76,7 @@ public class ApiTest
         Product model2 = converter.map(model1).to();
         
         assertEquals(model2.getClass(), model1.getClass());
+        assertNotEquals(model2.toString(), model1.toString());
     }
 
     @Test
@@ -116,6 +120,93 @@ public class ApiTest
         ProductDto dto = converter.map(model).to(ProductDto.class);
         
         assertNull(dto.getName());
+    }
+    
+    @Test
+    public void shouldCallBeforeMapActionWithSourceValueAndNullDestination()
+    {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+
+        funCallTracker.put("function_calling_counter", 0);
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+
+            options.beforeMap((src, dst) -> {
+                assertNotNull(src);
+                assertNull(dst);
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter")+1);
+            });
+
+        });
+        
+        assertNotNull(dto);
+        assertTrue(funCallTracker.get("function_calling_counter") == 1);
+    }
+    
+    @Test
+    public void shouldCallAfterMapActionWithSourceValueAndDestination()
+    {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+
+        funCallTracker.put("function_calling_counter", 0);
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+
+            options.afterMap((src, dst) -> {
+                assertNotNull(src);
+                assertNotNull(dst);
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter")+1);
+            });
+
+        });
+        
+        assertNotNull(dto);
+        assertTrue(funCallTracker.get("function_calling_counter") == 1);
+    }
+    
+    @Test
+    public void shouldCallGlobalBeforeMapAndAfterMapActions()
+    {
+        // Converter Instance
+        IConverter converter = new Converter();
+        funCallTracker.put("beforeMap_function_calling_counter", 0);
+        funCallTracker.put("afterMap_function_calling_counter", 0);
+
+        converter.createMap(Product.class, ProductDto.class, (options) -> {
+
+            options.beforeMap((src, dst) -> {
+                assertNotNull(src);
+                assertNull(dst);
+                funCallTracker.put("beforeMap_function_calling_counter", funCallTracker.get("beforeMap_function_calling_counter")+1);
+            });
+
+            options.afterMap((src, dst) -> {
+                assertNotNull(src);
+                assertNotNull(dst);
+                funCallTracker.put("afterMap_function_calling_counter", funCallTracker.get("afterMap_function_calling_counter")+1);
+            });
+
+        });
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+        
+        assertNotNull(dto);
+        assertTrue(funCallTracker.get("beforeMap_function_calling_counter") == 1);
+        assertTrue(funCallTracker.get("afterMap_function_calling_counter") == 1);
     }
 
 }
