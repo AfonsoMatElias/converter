@@ -3,8 +3,8 @@ package io.java.Options;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import io.java.Callback.ICallbacks.I1Callback;
-import io.java.Callback.ICallbacks.IV2Callback;
+import io.java.Callback.ICallbacks.CallbackP1;
+import io.java.Callback.ICallbacks.CallbackV2;
 import io.java.Configurations.ConverterShared;
 import io.java.Configurations.MapperConfig;
 import io.java.Helpers.FieldHelper;
@@ -33,7 +33,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param transform         the interception bahavior
 	 */
 	public MappingExpression<S, D> forMember(String destinationMember,
-			I1Callback<S, Object> transform) {
+			CallbackP1<S, Object> transform) {
 		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
@@ -43,7 +43,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 
 		// Compiler trick
 		final Object transformAsObject = transform;
-		shared.forMemberMapping.put(field, (I1Callback<Object, Object>) transformAsObject);
+		shared.forMemberMapping.put(field, (CallbackP1<Object, Object>) transformAsObject);
 
 		return this;
 	}
@@ -94,8 +94,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link MappingExpression} for chaining
 	 */
-	public MappingExpression<S, D> beforeMap(IV2Callback<S, D> mappingAction) {
-		this.getMapperActions().beforeMap((IV2Callback<Object, Object>) mappingAction);
+	public MappingExpression<S, D> beforeMap(CallbackV2<S, D> mappingAction) {
+		this.getMapperActions().beforeMap((CallbackV2<Object, Object>) mappingAction);
 		return this;
 	}
 
@@ -106,8 +106,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link MappingExpression} for chaining
 	 */
-	public MappingExpression<S, D> afterMap(IV2Callback<S, D> mappingAction) {
-		this.getMapperActions().afterMap((IV2Callback<Object, Object>) mappingAction);
+	public MappingExpression<S, D> afterMap(CallbackV2<S, D> mappingAction) {
+		this.getMapperActions().afterMap((CallbackV2<Object, Object>) mappingAction);
 		return this;
 	}
 

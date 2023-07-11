@@ -1,6 +1,6 @@
 package io.java.Options.Interfaces;
 
-import io.java.Callback.ICallbacks.IV2Callback;
+import io.java.Callback.ICallbacks.CallbackV2;
 import io.java.Enums.MappingActionsEnum;
 
 public interface IMappingActions<S, D> {
@@ -9,7 +9,7 @@ public interface IMappingActions<S, D> {
 	 * @param targetAction
 	 * @param action
 	 */
-	void on(MappingActionsEnum targetAction, IV2Callback<S, D> action);
+	void on(MappingActionsEnum targetAction, CallbackV2<S, D> action);
 
 	/**
 	 * Action caller
@@ -24,11 +24,11 @@ public interface IMappingActions<S, D> {
      * @implNote The destination argument will be null
      * @param modifier the delegate having the modification
      */
-    void beforeMap(IV2Callback<S, D> modifier);
+    void beforeMap(CallbackV2<S, D> modifier);
     
     /**
      * Subscribes {@link MappingActionsEnum.AFTER_MAP} action
      * @param modifier the delegate having the modification
      */
-    void afterMap(IV2Callback<S, D> modifier);
+    void afterMap(CallbackV2<S, D> modifier);
 }

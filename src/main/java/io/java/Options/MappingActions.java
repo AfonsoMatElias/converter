@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import io.java.Callback.ICallbacks.IV2Callback;
+import io.java.Callback.ICallbacks.CallbackV2;
 import io.java.Enums.MappingActionsEnum;
 import io.java.Options.Interfaces.IMappingActions;
 
@@ -19,13 +19,13 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	public MappingActions(MappingActions<S, D> outActionOptions) {
 
 		// Merging the configurations
-		for (Entry<MappingActionsEnum, List<IV2Callback<Object, Object>>> entry : outActionOptions.actions.entrySet()) {
+		for (Entry<MappingActionsEnum, List<CallbackV2<Object, Object>>> entry : outActionOptions.actions.entrySet()) {
 			this.actions.put(entry.getKey(), entry.getValue());
 		}
 	}
 
 	// Stores all the actions according to the type
-	private Map<MappingActionsEnum, List<IV2Callback<Object, Object>>> actions = new HashMap<>();
+	private Map<MappingActionsEnum, List<CallbackV2<Object, Object>>> actions = new HashMap<>();
 
 	/**
 	 * Subscribes {@link MappingActionsEnum} actions
@@ -34,9 +34,9 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	 * @param action
 	 */
 	@SuppressWarnings("unchecked")
-	public void on(MappingActionsEnum targetAction, IV2Callback<S, D> action) {
+	public void on(MappingActionsEnum targetAction, CallbackV2<S, D> action) {
 		// Defining the default List of Actions
-		List<IV2Callback<Object, Object>> mActions = new ArrayList<>();
+		List<CallbackV2<Object, Object>> mActions = new ArrayList<>();
 
 		if (!actions.containsKey(targetAction))
 			actions.put(targetAction, mActions);
@@ -45,7 +45,7 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 		mActions = actions.get(targetAction);
 
 		// Adding the new action
-		mActions.add((IV2Callback<Object, Object>) action);
+		mActions.add((CallbackV2<Object, Object>) action);
 	}
 
 	/**
@@ -57,11 +57,11 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	 */
 	public void call(MappingActionsEnum targetAction, S src, D dst) {
 		// Defining the default List of Actions
-		List<IV2Callback<Object, Object>> mActions = actions.getOrDefault(targetAction, Arrays.asList());
+		List<CallbackV2<Object, Object>> mActions = actions.getOrDefault(targetAction, Arrays.asList());
 
 		// Setting the actual list of action
 		for (int i = 0; i < mActions.size(); i++) {
-			IV2Callback<Object, Object> action = mActions.get(i);
+			CallbackV2<Object, Object> action = mActions.get(i);
 
 			// Calling the action
 			action.call(src, dst);
@@ -74,7 +74,7 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	 * @implNote The destination argument will be null
 	 * @param modifier the delegate having the modification
 	 */
-	public void beforeMap(IV2Callback<S, D> modifier) {
+	public void beforeMap(CallbackV2<S, D> modifier) {
 		this.on(MappingActionsEnum.BEFORE_MAP, modifier);
 	}
 
@@ -83,7 +83,7 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	 * 
 	 * @param modifier the delegate having the modification
 	 */
-	public void afterMap(IV2Callback<S, D> modifier) {
+	public void afterMap(CallbackV2<S, D> modifier) {
 		this.on(MappingActionsEnum.AFTER_MAP, modifier);
 	}
 }

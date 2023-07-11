@@ -1,6 +1,6 @@
 package io.java.Mapper;
 
-import io.java.Callback.ICallbacks.IV1Callback;
+import io.java.Callback.ICallbacks.CallbackV1;
 import io.java.Configurations.ConverterShared;
 import io.java.Mapper.Interfaces.IObjectProcessor;
 import io.java.Options.MappingActions;
@@ -35,7 +35,7 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> D to(Class<D> clazz, IV1Callback<MappingActions<S, D>> modifier) {
+	public <D> D to(Class<D> clazz, CallbackV1<MappingActions<S, D>> modifier) {
 		try {
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler

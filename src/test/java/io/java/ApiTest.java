@@ -16,17 +16,14 @@ import org.junit.Test;
 import io.java.Models.Product;
 import io.java.Models.ProductDto;
 
-
 /**
  * Unit test for simple Api.
  */
-public class ApiTest 
-{
+public class ApiTest {
     Map<String, Integer> funCallTracker = new HashMap<>();
 
     @Test
-    public void shouldConvertFromModelToDto()
-    {
+    public void shouldConvertFromModelToDto() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -37,16 +34,15 @@ public class ApiTest
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
-        assertTrue( dto != null );
+        assertTrue(dto != null);
         assertTrue(dto.getParent() != null);
         assertEquals(dto.getName(), model.getName());
-        
+
         assertNotEquals(dto.getClass(), model.getClass());
     }
 
     @Test
-    public void shouldConvertFromListModelToListDto()
-    {
+    public void shouldConvertFromListModelToListDto() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -58,13 +54,12 @@ public class ApiTest
         // Mapping
         List<ProductDto> dtos = converter.map(models).to(ProductDto.class);
 
-        assertTrue( dtos != null );
+        assertTrue(dtos != null);
         assertEquals(dtos.size(), models.size());
     }
 
     @Test
-    public void shouldCopyAndPasteModel()
-    {
+    public void shouldCopyAndPasteModel() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -74,14 +69,13 @@ public class ApiTest
 
         // Mapping
         Product model2 = converter.map(model1).to();
-        
+
         assertEquals(model2.getClass(), model1.getClass());
         assertNotEquals(model2.toString(), model1.toString());
     }
 
     @Test
-    public void shouldTransformeValue()
-    {
+    public void shouldTransformeValue() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -98,33 +92,31 @@ public class ApiTest
 
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
-        
+
         assertNotNull(dto.getCategories());
         assertEquals(2, dto.getCategories().length);
     }
 
     @Test
-    public void shouldSkiptMemberMapping()
-    {
+    public void shouldSkiptMemberMapping() {
         // Converter Instance
         IConverter converter = new Converter();
 
         // Transformacao de tipo no momento de converçao
         converter.createMap(Product.class, ProductDto.class)
-            .skipMember("name");
+                .skipMember("name");
 
         // Entities
         Product model = new Product();
 
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
-        
+
         assertNull(dto.getName());
     }
-    
+
     @Test
-    public void shouldCallBeforeMapActionWithSourceValueAndNullDestination()
-    {
+    public void shouldCallBeforeMapActionWithSourceValueAndNullDestination() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -139,18 +131,17 @@ public class ApiTest
             options.beforeMap((src, dst) -> {
                 assertNotNull(src);
                 assertNull(dst);
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter")+1);
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
             });
 
         });
-        
+
         assertNotNull(dto);
         assertTrue(funCallTracker.get("function_calling_counter") == 1);
     }
-    
+
     @Test
-    public void shouldCallAfterMapActionWithSourceValueAndDestination()
-    {
+    public void shouldCallAfterMapActionWithSourceValueAndDestination() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -165,18 +156,17 @@ public class ApiTest
             options.afterMap((src, dst) -> {
                 assertNotNull(src);
                 assertNotNull(dst);
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter")+1);
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
             });
 
         });
-        
+
         assertNotNull(dto);
         assertTrue(funCallTracker.get("function_calling_counter") == 1);
     }
-    
+
     @Test
-    public void shouldCallGlobalBeforeMapAndAfterMapActions()
-    {
+    public void shouldCallGlobalBeforeMapAndAfterMapActions() {
         // Converter Instance
         IConverter converter = new Converter();
         funCallTracker.put("beforeMap_function_calling_counter", 0);
@@ -187,13 +177,15 @@ public class ApiTest
             options.beforeMap((src, dst) -> {
                 assertNotNull(src);
                 assertNull(dst);
-                funCallTracker.put("beforeMap_function_calling_counter", funCallTracker.get("beforeMap_function_calling_counter")+1);
+                funCallTracker.put("beforeMap_function_calling_counter",
+                        funCallTracker.get("beforeMap_function_calling_counter") + 1);
             });
 
             options.afterMap((src, dst) -> {
                 assertNotNull(src);
                 assertNotNull(dst);
-                funCallTracker.put("afterMap_function_calling_counter", funCallTracker.get("afterMap_function_calling_counter")+1);
+                funCallTracker.put("afterMap_function_calling_counter",
+                        funCallTracker.get("afterMap_function_calling_counter") + 1);
             });
 
         });
@@ -203,10 +195,61 @@ public class ApiTest
 
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
-        
+
         assertNotNull(dto);
         assertTrue(funCallTracker.get("beforeMap_function_calling_counter") == 1);
         assertTrue(funCallTracker.get("afterMap_function_calling_counter") == 1);
     }
 
+    @Test
+    public void shouldLimitSelfReferenceLayerToValueAssigned() {
+        
+        // Converter Instance
+        IConverter converter = new Converter();
+        converter.setLimitCycleMapping(1);
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertTrue(dto.getParent() != null);
+        assertTrue(dto.getParent().getParent() == null);
+    }
+
+    @Test
+    public void shouldIgnoreAllSelfReferenceLayer() {
+        
+        // Converter Instance
+        IConverter converter = new Converter();
+        converter.setLimitCycleMapping(0);
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertTrue(dto.getParent() == null);
+    }
+
+    @Test
+    public void shouldNotMapIfSetToUseConfigAlways() {
+        
+        // Converter Instance
+        IConverter converter = new Converter();
+        converter.setUseMapConfiguration(true);
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertTrue(dto == null);
+    }
 }

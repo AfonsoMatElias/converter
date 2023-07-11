@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.java.Callback.ICallbacks.I1Callback;
-import io.java.Callback.ICallbacks.IV1Callback;
+import io.java.Callback.ICallbacks.CallbackP1;
+import io.java.Callback.ICallbacks.CallbackV1;
 import io.java.Configurations.ConverterShared;
 import io.java.Configurations.MapperConfig;
 import io.java.Mapper.ListProcessor;
@@ -79,7 +79,7 @@ public class Converter implements IConverter {
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
 			Class<D> destination,
-			IV1Callback<IMappingActions<S, D>> modifier) {
+			CallbackV1<IMappingActions<S, D>> modifier) {
 		this.createMap(source, destination);
 
 		if (modifier != null) {
@@ -111,9 +111,9 @@ public class Converter implements IConverter {
 	 * @param behavior          the interception bahavior
 	 */
 	public <TypeSource, TypeDestination> void addTransform(Class<TypeSource> from, Class<TypeDestination> to,
-			I1Callback<TypeSource, TypeDestination> behavior) {
+			CallbackP1<TypeSource, TypeDestination> behavior) {
 		String name = new StringBuilder().append(from.getName()).append(":").append(to.getName()).toString();
-		shared.tranformations.put(name, (I1Callback<Object, Object>) behavior);
+		shared.tranformations.put(name, (CallbackP1<Object, Object>) behavior);
 	}
 
 	/**

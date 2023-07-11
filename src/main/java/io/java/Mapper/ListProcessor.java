@@ -2,7 +2,7 @@ package io.java.Mapper;
 
 import java.util.List;
 
-import io.java.Callback.ICallbacks.IV1Callback;
+import io.java.Callback.ICallbacks.CallbackV1;
 import io.java.Configurations.ConverterShared;
 import io.java.Mapper.Interfaces.IListProcessor;
 import io.java.Options.MappingActions;
@@ -39,7 +39,7 @@ public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> 
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> List<D> to(Class<D> clazz, IV1Callback<MappingActions<List<S>, List<D>>> modifier) {
+	public <D> List<D> to(Class<D> clazz, CallbackV1<MappingActions<List<S>, List<D>>> modifier) {
 		try {
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler

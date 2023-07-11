@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import io.java.Converter;
-import io.java.Callback.ICallbacks.I1Callback;
-import io.java.Callback.ICallbacks.I2Callback;
-import io.java.Callback.ICallbacks.I3Callback;
-import io.java.Callback.ICallbacks.IV2Callback;
+import io.java.Callback.ICallbacks.CallbackP1;
+import io.java.Callback.ICallbacks.CallbackP2;
+import io.java.Callback.ICallbacks.CallbackP3;
+import io.java.Callback.ICallbacks.CallbackV2;
 import io.java.Configurations.ConverterShared;
 import io.java.Configurations.MapperConfig;
 import io.java.Enums.MappingActionsEnum;
@@ -92,10 +92,10 @@ public class Processor<S> implements IProcessor<S> {
 		}
 
 		// Helper Function to check if an object is an Array
-		final I1Callback<Object, Boolean> isArray = (in) -> (in.getClass().isArray() || (in instanceof List<?>));
+		final CallbackP1<Object, Boolean> isArray = (in) -> (in.getClass().isArray() || (in instanceof List<?>));
 
 		// Checks if an object is reached the limit o cycle
-		final I1Callback<Object, Boolean> isObjInLimitCycle = (obj) -> {
+		final CallbackP1<Object, Boolean> isObjInLimitCycle = (obj) -> {
 			final String memoryAddress = Integer.toHexString(obj.hashCode());
 
 			// Getting the number of times that this object was mapped
@@ -112,12 +112,12 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Helper Function that gets the type Argument of a List
-		final I1Callback<Field, Class<?>> getListType = (
+		final CallbackP1<Field, Class<?>> getListType = (
 				field) -> (Class<?>) ((ParameterizedType) field.getGenericType())
 						.getActualTypeArguments()[0];
 
 		// Main Function to map an Object
-		final I3Callback<Object, Class<?>, Class<?>, Object> objMapper = (valueSource, fieldTypeSource,
+		final CallbackP3<Object, Class<?>, Class<?>, Object> objMapper = (valueSource, fieldTypeSource,
 				fieldTypeDestination) -> {
 
 			Object tReturn = null;
@@ -159,14 +159,14 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Main Function to map object using the tranformation
-		final I3Callback<Object, Class<?>, Class<?>, Object> transformMapper = (valueSource, fieldTypeSource,
+		final CallbackP3<Object, Class<?>, Class<?>, Object> transformMapper = (valueSource, fieldTypeSource,
 				fieldTypeDestination) -> {
 			// Building the transformationName
 			final String name = new StringBuilder().append(fieldTypeSource.getName()).append(":")
 					.append(fieldTypeDestination.getName()).toString();
 
 			// Getting the transformation callback for this mapping
-			final I1Callback<Object, Object> transform = shared.tranformations
+			final CallbackP1<Object, Object> transform = shared.tranformations
 					.getOrDefault(name, null);
 
 			// Checking if there is a transformation for these two properties
@@ -177,7 +177,7 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Function to map a List Of Object
-		final I2Callback<Object, Class<?>, Object> listMapper = (valueSource, fieldType) -> {
+		final CallbackP2<Object, Class<?>, Object> listMapper = (valueSource, fieldType) -> {
 			// Creating a new instance of a generic list
 			final ArrayList<Object> tReturn = new ArrayList<Object>();
 
@@ -204,7 +204,7 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Sets a value to a field
-		final IV2Callback<Field, Object> fieldSetter = (field, value) -> {
+		final CallbackV2<Field, Object> fieldSetter = (field, value) -> {
 			try {
 				field.set(destination, value);
 			} catch (Exception e) {
@@ -249,7 +249,7 @@ public class Processor<S> implements IProcessor<S> {
 				return;
 
 			// Try to get for member mapping for this field
-			final I1Callback<Object, Object> forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination,
+			final CallbackP1<Object, Object> forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination,
 					null);
 
 			if (forMemberMapping != null) {

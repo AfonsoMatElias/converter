@@ -3,8 +3,8 @@ package io.java;
 import java.util.List;
 import java.util.Map;
 
-import io.java.Callback.ICallbacks.I1Callback;
-import io.java.Callback.ICallbacks.IV1Callback;
+import io.java.Callback.ICallbacks.CallbackP1;
+import io.java.Callback.ICallbacks.CallbackV1;
 import io.java.Mapper.Interfaces.IListProcessor;
 import io.java.Mapper.Interfaces.IObjectProcessor;
 import io.java.Options.Interfaces.IMappingActions;
@@ -54,7 +54,7 @@ public interface IConverter {
 	<S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
 			Class<D> destination,
-			IV1Callback<IMappingActions<S, D>> modifier);
+			CallbackV1<IMappingActions<S, D>> modifier);
 
 	/**
 	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To}
@@ -66,7 +66,7 @@ public interface IConverter {
 	 * @param to       the {@link From} Class
 	 * @param behavior the interception bahavior
 	 */
-	<From, To> void addTransform(Class<From> from, Class<To> to, I1Callback<From, To> behavior);
+	<From, To> void addTransform(Class<From> from, Class<To> to, CallbackP1<From, To> behavior);
 
 	/**
 	 * Gets all the configurations of the converter and return a Map of it

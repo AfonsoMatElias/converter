@@ -2,7 +2,7 @@ package io.java.Mapper.Interfaces;
 
 import java.util.List;
 
-import io.java.Callback.ICallbacks.IV1Callback;
+import io.java.Callback.ICallbacks.CallbackV1;
 import io.java.Options.MappingActions;
 
 public interface IListProcessor<S> extends IProcessor<S> {
@@ -25,5 +25,5 @@ public interface IListProcessor<S> extends IProcessor<S> {
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> List<D> to(Class<D> clazz, IV1Callback<MappingActions<List<S>, List<D>>> modifier);
+	public <D> List<D> to(Class<D> clazz, CallbackV1<MappingActions<List<S>, List<D>>> modifier);
 }
