@@ -5,7 +5,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.java</groupId>
+  <groupId>io.github.afonsomatelias</groupId>
   <artifactId>converter</artifactId>
   <version>1.0</version>
 
@@ -27,21 +27,12 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <scm>
-    <connection>scm:git:git://github.com/AfonsoMatElias/converter.git</connection>
-    <developerConnection>scm:git:ssh://github.com:AfonsoMatElias/conv.git</developerConnection>
-    <url>http://github.com/AfonsoMatElias/converter/tree/master</url>
-  </scm>
-
+  
   <distributionManagement>
-    <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
     <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <id>github</id>
+      <name>Github Packages</name>
+      <url>https://maven.pkg.github.com/AfonsoMatElias/converter</url>
     </repository>
   </distributionManagement>
 
