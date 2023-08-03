@@ -1,0 +1,14 @@
+<settings>
+	<profiles>
+	  <profile>
+		<id>ossrh</id>
+		<activation>
+		  <activeByDefault>true</activeByDefault>
+		</activation>
+		<properties>
+		  <gpg.executable>gpg2</gpg.executable>
+		  <gpg.passphrase>Elias.2468</gpg.passphrase>
+		</properties>
+	  </profile>
+	</profiles>
+  </settings>
