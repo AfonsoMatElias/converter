@@ -7,7 +7,7 @@
 
   <groupId>io.github.afonsomatelias</groupId>
   <artifactId>converter</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
 
   <name>converter</name>
   <description>A Library to convert or map from source object to destination object</description>
