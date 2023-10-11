@@ -146,6 +146,11 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
       createMap(Product.class, ProductDto.class);
 
     }
+
+    @Bean @Primary
+    public Converter autowire() throws InstantiationException, IllegalAccessException {
+      return this;
+    }
   }
 ```
 
@@ -154,15 +159,11 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
 ```java
   @Component
   public class ProductController {
+    @Autowired
     IConverter converter;
     
     @Autowired
     ProductService service;
-
-    @Autowired
-    public ProductController(Converter converter) {
-      this.converter = converter;
-    }
 
     @GetMapping(produces = "application/json", value = "/{id}")
     public ProductDto getOne(@PathVariable("id") Long id) {
