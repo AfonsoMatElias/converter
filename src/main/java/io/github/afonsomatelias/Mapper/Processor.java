@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
@@ -50,6 +51,15 @@ public class Processor<S> implements IProcessor<S> {
 
 	/** Action Controller for this Processor */
 	protected final MappingActions<Object, Object> actionOptions = new MappingActions<>();
+
+	<T> Boolean allMatch(List<T> source, CallbackP1<T, Boolean> callback) {
+		List<Boolean> allMatching = new ArrayList<>();
+
+		for (T t : source)
+			allMatching.add(callback.call(t));
+
+		return allMatching.isEmpty() ? false : allMatching.stream().allMatch(x -> x);
+	};
 
 	/**
 	 * Creates a new instance of the provided class
@@ -285,6 +295,16 @@ public class Processor<S> implements IProcessor<S> {
 		if (createdMapActionOption != null)
 			// Performing AFTER_MAP action
 			createdMapActionOption.call(MappingActionsEnum.AFTER_MAP, source, destination);
+
+		// If all the fields are null, nullify the destination object
+		if (allMatch(fieldsDestination.values().stream().collect(Collectors.toList()), (x) -> {
+			try {
+				return x.get(destination) == null;
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				return false;
+			}
+		}) == true)
+			return null;
 
 		return destination;
 	}
