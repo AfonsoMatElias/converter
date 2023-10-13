@@ -301,7 +301,7 @@ public class Processor<S> implements IProcessor<S> {
 			try {
 				return x.get(destination) == null;
 			} catch (IllegalArgumentException | IllegalAccessException e) {
-				return false;
+				return true;
 			}
 		}) == true)
 			return null;
