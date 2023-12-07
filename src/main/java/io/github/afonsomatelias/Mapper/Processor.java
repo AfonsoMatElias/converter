@@ -1,5 +1,8 @@
 package io.github.afonsomatelias.Mapper;
 
+import static io.github.afonsomatelias.Helpers.FieldHelper.fields;
+import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -16,8 +19,6 @@ import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MapperConfig;
 import io.github.afonsomatelias.Enums.MappingActionsEnum;
-import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
-import static io.github.afonsomatelias.Helpers.FieldHelper.fields;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Mapper.Interfaces.IProcessor;
 import io.github.afonsomatelias.Options.MappingActions;
@@ -229,19 +230,22 @@ public class Processor<S> implements IProcessor<S> {
 				return transformResult;
 		}
 
-		if (isArray.call(source)) {
-			return listMapper.call(source, clsDestination);
-		}
-
 		final String createdMapActionOptionName = source.getClass().getName() + ":" + clsDestination.getName();
 
 		// Retrieving the action for this field
 		final MappingActions<Object, Object> createdMapActionOption = shared.globalActionOptions
 				.getOrDefault(createdMapActionOptionName, null);
 
-		if (createdMapActionOption != null)
+		if (createdMapActionOption != null) {
 			// Performing BEFORE_MAP action
 			createdMapActionOption.call(MappingActionsEnum.BEFORE_MAP, source, null);
+			// Performing BEFORE_EACH_MAP action
+			createdMapActionOption.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
+		}
+				
+		if (isArray.call(source)) {
+			return listMapper.call(source, clsDestination);
+		}
 
 		// Looping all the source fields
 		fields(source, (fieldNameSource, fieldValueSource, fieldTypeSource) -> {
@@ -292,9 +296,11 @@ public class Processor<S> implements IProcessor<S> {
 			fieldSetter.call(fieldDestination, valueToSet);
 		});
 
-		if (createdMapActionOption != null)
+		if (createdMapActionOption != null) {
 			// Performing AFTER_MAP action
 			createdMapActionOption.call(MappingActionsEnum.AFTER_MAP, source, destination);
+			createdMapActionOption.call(MappingActionsEnum.AFTER_EACH_MAP, source, destination);
+		}
 
 		// If all the fields are null, nullify the destination object
 		if (allMatch(fieldsDestination.values().stream().collect(Collectors.toList()), (x) -> {
@@ -322,11 +328,13 @@ public class Processor<S> implements IProcessor<S> {
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
+			actionOptions.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
 
 			final Object result = this.mapper(this.source, clazz, this.create(clazz));
 
 			// Performs the AFTER_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, result);
+			actionOptions.call(MappingActionsEnum.AFTER_EACH_MAP, source, result);
 
 			return result;
 		} catch (Exception e) {

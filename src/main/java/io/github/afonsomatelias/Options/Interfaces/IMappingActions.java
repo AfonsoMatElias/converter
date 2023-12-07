@@ -9,15 +9,7 @@ public interface IMappingActions<S, D> {
 	 * @param targetAction
 	 * @param action
 	 */
-	void on(MappingActionsEnum targetAction, CallbackV2<S, D> action);
-
-	/**
-	 * Action caller
-	 * @param targetAction the target action to be called
-	 * @param src the source object
-	 * @param dst the destination object
-	 */
-	void call(MappingActionsEnum targetAction, S src, D dst);
+	void on(MappingActionsEnum targetAction, CallbackV2<Object, Object> action);
 
 	/**
      * Subscribes {@link MappingActionsEnum.BEFORE_MAP} action
