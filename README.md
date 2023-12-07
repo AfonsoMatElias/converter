@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.0
+# Converter v1.1
 
 ## Introduction
 
@@ -129,6 +129,45 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
 
     options.afterMap((src, dst) -> {
       // TODO: something nice 🤩 after the object is mapped
+    });
+  });
+```
+
+* Converting and modifying a list
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product model1 = new Product();
+  Product model2 = new Product();
+
+  List<Product> models = Arrays.asList(model1, model2);
+
+  // Mapping
+  List<ProductDto> dto = converter.map(models).to(ProductDto.class, (options) -> {
+    options.beforeMap((src, dst) -> {
+      // TODO: something nice 🤩 before the object is mapped
+      // src -> List<Product>
+      // dst -> List<ProductDto> null
+    });
+
+    options.afterMap((src, dst) -> {
+      // TODO: something nice 🤩 after the object is mapped
+      // src -> List<Product>
+      // dst -> List<ProductDto>
+    });
+    
+    options.beforeEachMap((src, dst) -> {
+      // TODO: something nice 🤩 before the object is mapped
+      // src -> item: List<Product>
+      // dst -> item: List<ProductDto> null
+    });
+
+    options.afterEachMap((src, dst) -> {
+      // TODO: something nice 🤩 after the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto
     });
   });
 ```
