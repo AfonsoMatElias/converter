@@ -136,6 +136,51 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
   });
 ```
 
+* Mapping or Extracting values from another object
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product dbModel = new Product();
+  dbModel.setName("Coca Cola");
+  dbModel.setPrice(0.5f);
+
+  // Mapping
+  ProductDto dtoModel = new ProductDto();
+  dtoModel.setName("Sprite");
+  dtoModel.setPrice(1f);
+
+  Product dbModelMapped = converter.map(dbModel).from(dtoModel);
+
+  // Has the same memory address
+  Boolean isEquals = dbModel == dbModelMapped;  
+```
+
+* Members can be skipped while extracting values from another object using mapping actions
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product dbModel = new Product();
+  dbModel.setName("Coca Cola");
+  dbModel.setPrice(0.5f);
+
+  // Mapping
+  ProductDto dtoModel = new ProductDto();
+  dtoModel.setName("Sprite");
+  dtoModel.setPrice(1f);
+
+  Product dbModelMapped = converter.map(dbModel).from(dtoModel, (options) -> {
+    options.skipMembers("price");
+
+    // Note: We advice to use this one
+    // The other one target every property having the same name even in their child
+    // options.skipMembers(Product.class.getDeclaredField("price"));
+  });
+```
+
 * Converting and modifying a list
 ```java
   // Converter Instance
