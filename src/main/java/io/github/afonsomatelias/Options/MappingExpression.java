@@ -10,6 +10,7 @@ import io.github.afonsomatelias.Configurations.MapperConfig;
 import io.github.afonsomatelias.Helpers.FieldHelper;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Options.Interfaces.IMappingExpression;
+import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
 
 @SuppressWarnings("unchecked")
 public class MappingExpression<S, D> implements IMappingExpression<S, D> {
@@ -47,7 +48,27 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 
 		return this;
 	}
-	
+
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param setterPropertyMember the member that will be transformed
+	 * @param transform            the interception bahavior
+	 */
+	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
+			CallbackP1<S, Object> transform) {
+
+		this.getMapperActions().afterMap((src, dst) -> {
+			S source = (S)src;
+			D destination = (D)dst;
+			U result = (U) transform.call(source);
+
+			setterPropertyMember.accept(destination, result);
+		});
+
+		return this;
+	}
+
 	/**
 	 * skips or set null to the destination member provided
 	 * 
