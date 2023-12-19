@@ -1,11 +1,14 @@
 package io.github.afonsomatelias.Options;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
@@ -26,6 +29,9 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 
 	// Stores all the actions according to the type
 	protected Map<MappingActionsEnum, List<CallbackV2<Object, Object>>> actions = new HashMap<>();
+
+	// Stores all the actions according to the type
+	protected Map<String, Field> inlineSkippingMembers = new HashMap<>();
 
 	/**
 	 * Subscribes {@link MappingActionsEnum} actions
@@ -79,7 +85,8 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 
 					// If the source is not array, show a message and ignore the mapping
 					if (!isArray.call(src)) {
-						Printer.out("The Source Object is not an array to be applied the '" + targetAction.name() + "' action.");
+						Printer.out("The Source Object is not an array to be applied the '" + targetAction.name()
+								+ "' action.");
 						continue;
 					}
 
@@ -135,5 +142,43 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	 */
 	public void afterMap(CallbackV2<S, D> modifier) {
 		this.on(MappingActionsEnum.AFTER_MAP, (CallbackV2<Object, Object>) modifier);
+	}
+
+	/**
+	 * Subscribes all the members that need to be skipped in current mapping
+	 * 
+	 * @param members the members that needs to be skipped
+	 */
+	public void skipMembers(String... members) {
+		for (String member : members)
+			inlineSkippingMembers.put(member, null);
+	}
+
+	/**
+	 * Subscribes all the members that need to be skipped in current mapping
+	 * 
+	 * @param members the members that needs to be skipped
+	 */
+	public void skipMembers(Field... members) {
+		for (Field member : members)
+			inlineSkippingMembers.put(member.getName(), member);
+	}
+
+	/**
+	 * Checks if the member provided is registed as member to be skipped 
+	 * @param member the member to be checked
+	 * @return true / false
+	 */
+	public boolean isSkipMember(String member) {
+		return inlineSkippingMembers.containsKey(member);
+	}
+
+	/**
+	 * Checks if the member provided is registed as member to be skipped 
+	 * @param member the member to be checked
+	 * @return true / false
+	 */
+	public boolean isSkipMember(Field member) {
+		return inlineSkippingMembers.containsValue(member);
 	}
 }

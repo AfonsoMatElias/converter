@@ -242,14 +242,17 @@ public class Processor<S> implements IProcessor<S> {
 			// Performing BEFORE_EACH_MAP action
 			createdMapActionOption.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
 		}
-				
+
 		if (isArray.call(source)) {
 			return listMapper.call(source, clsDestination);
 		}
 
 		// Looping all the source fields
-		fields(source, (fieldNameSource, fieldValueSource, fieldTypeSource) -> {
+		fields(source, (fieldNameSource, fieldValueSource, field, fieldTypeSource) -> {
 			Object valueToSet = fieldValueSource;
+
+			if (actionOptions.isSkipMember(field) || actionOptions.isSkipMember(fieldNameSource))
+				return;
 
 			// If there is no value set in the property just ignore
 			if (valueToSet == null)
@@ -330,16 +333,42 @@ public class Processor<S> implements IProcessor<S> {
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
 			actionOptions.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
 
-			final Object result = this.mapper(this.source, clazz, this.create(clazz));
+			final Object $destination = this.mapper(this.source, clazz, this.create(clazz));
 
 			// Performs the AFTER_MAP action if the modifier is set
-			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, result);
-			actionOptions.call(MappingActionsEnum.AFTER_EACH_MAP, source, result);
+			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, $destination);
+			actionOptions.call(MappingActionsEnum.AFTER_EACH_MAP, source, $destination);
 
-			return result;
+			return $destination;
 		} catch (Exception e) {
 			Printer.err(
 					"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
+					"Error details: " + e.getMessage(), e);
+			return null;
+		}
+	}
+
+	protected <D> Object fromDestination(D destination) {
+		// Swapped the roles of each object
+		final Object _source = destination;
+		final Object _destination = source;
+
+		try {
+			// Performs the BEFORE_MAP action if the modifier is set
+			actionOptions.call(MappingActionsEnum.BEFORE_MAP, _source, null);
+			actionOptions.call(MappingActionsEnum.BEFORE_EACH_MAP, _source, null);
+
+			this.mapper(_source, _destination.getClass(), _destination);
+
+			// Performs the AFTER_MAP action if the modifier is set
+			actionOptions.call(MappingActionsEnum.AFTER_MAP, _source, _destination);
+			actionOptions.call(MappingActionsEnum.AFTER_EACH_MAP, _source, _destination);
+
+			return _destination;
+		} catch (Exception e) {
+			Printer.err(
+					"Error whiling mapping the from '" + _source.getClass().getName() + "' to '"
+							+ _destination.getClass().getName() + "'",
 					"Error details: " + e.getMessage(), e);
 			return null;
 		}
