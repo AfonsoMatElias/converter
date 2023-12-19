@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -364,5 +365,82 @@ public class ApiTest {
 
         assertNotNull(dto);
         assertTrue(funCallTracker.get("function_calling_counter") == 2);
+    }
+
+    @Test
+    public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddress() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Sprite");
+        dto.setPrice(1f);
+
+        Product modelMapped = converter.map(model).from(dto);
+
+        assertTrue(modelMapped != null);
+        assertTrue(modelMapped == model);
+        assertSame(modelMapped, model);
+        assertEquals(modelMapped.getName(), dto.getName());
+        assertEquals(modelMapped.getPrice(), dto.getPrice());
+        assertEquals(modelMapped, model);
+    }
+
+    @Test
+    public void shouldSkipMemberOnExtractionUsingStringMember() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Sprite");
+        dto.setPrice(1f);
+
+        Product modelMapped = converter.map(model).from(dto, (options) -> {
+            options.skipMembers("price");
+        });
+
+        assertTrue(modelMapped != null);
+        assertTrue(modelMapped == model);
+        assertSame(modelMapped, model);
+        assertEquals(modelMapped.getName(), dto.getName());
+        assertNotEquals(modelMapped.getPrice(), dto.getPrice());
+        assertEquals(modelMapped, model);
+    }
+
+    @Test
+    public void shouldSkipMemberOnExtractionUsingFieldMember() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Sprite");
+        dto.setPrice(1f);
+
+        Product modelMapped = converter.map(model).from(dto, (options) -> {
+            try {
+                options.skipMembers(Product.class.getDeclaredField("price"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        assertTrue(modelMapped != null);
+        assertTrue(modelMapped == model);
+        assertSame(modelMapped, model);
+        assertEquals(modelMapped.getName(), dto.getName());
+        assertNotEquals(modelMapped.getPrice(), dto.getPrice());
+        assertEquals(modelMapped, model);
     }
 }
