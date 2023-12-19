@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Enums.MappingActionsEnum;
+import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
 
 @SuppressWarnings("unchecked")
@@ -21,9 +21,7 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 
 	public MappingActions(MappingActions<S, D> outActionOptions) {
 		// Merging the configurations
-		for (Entry<MappingActionsEnum, List<CallbackV2<Object, Object>>> entry : outActionOptions.actions.entrySet()) {
-			this.actions.put(entry.getKey(), entry.getValue());
-		}
+		outActionOptions.actions.entrySet().forEach(entry -> this.actions.put(entry.getKey(), entry.getValue()));
 	}
 
 	// Stores all the actions according to the type
@@ -66,35 +64,57 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 		// Setting the actual list of action
 		for (int i = 0; i < mActions.size(); i++) {
 			final CallbackV2<Object, Object> action = mActions.get(i);
-			final Iterator<Object> srcIterator = ((Iterable<Object>) src).iterator();
 
-			// BEFORE_EACH_MAP Config
-			if (targetAction == MappingActionsEnum.BEFORE_EACH_MAP && isArray.call(src)) {
-				while (srcIterator.hasNext()) {
+			switch (targetAction) {
+				case BEFORE_MAP:
+				case AFTER_MAP:
+
+					// Normal Options Config action
 					// Calling the action for each item
-					action.call(srcIterator.next(), null);
-				}
+					action.call(src, dst);
+					continue;
 
-				continue;
+				case BEFORE_EACH_MAP:
+				case AFTER_EACH_MAP:
+
+					// If the source is not array, show a message and ignore the mapping
+					if (!isArray.call(src)) {
+						Printer.out("The Source Object is not an array to be applied the '" + targetAction.name() + "' action.");
+						continue;
+					}
+
+					// Casting the object to an iterable one
+					final Iterator<Object> srcIterator = ((Iterable<Object>) src).iterator();
+
+					// BEFORE_EACH_MAP Config
+					if (targetAction == MappingActionsEnum.BEFORE_EACH_MAP && isArray.call(src)) {
+						while (srcIterator.hasNext()) {
+							// Calling the action for each item
+							action.call(srcIterator.next(), null);
+						}
+
+						continue;
+					}
+
+					// Combining the checking for code shrinking
+					final boolean isEachAction = (targetAction == MappingActionsEnum.AFTER_EACH_MAP
+							|| targetAction == MappingActionsEnum.BEFORE_EACH_MAP);
+
+					// Casting the object to an iterable one
+					final Iterator<Object> dstIterator = ((Iterable<Object>) dst).iterator();
+
+					// AFTER_EACH_MAP Config
+					if (isEachAction && isArray.call(src)) {
+						while (srcIterator.hasNext() && dstIterator.hasNext()) {
+							// Calling the action for each item
+							action.call(srcIterator.next(), dstIterator.next());
+						}
+
+						continue;
+					}
+
+					continue;
 			}
-
-			final boolean isEachAction = (targetAction == MappingActionsEnum.AFTER_EACH_MAP
-					|| targetAction == MappingActionsEnum.BEFORE_EACH_MAP);
-			final Iterator<Object> dstIterator = ((Iterable<Object>) dst).iterator();
-
-			// AFTER_EACH_MAP Config
-			if (isEachAction && isArray.call(src)) {
-				while (srcIterator.hasNext() && dstIterator.hasNext()) {
-					// Calling the action for each item
-					action.call(srcIterator.next(), dstIterator.next());
-				}
-
-				continue;
-			}
-
-			// Normal Options Config action
-			// Calling the action for each item
-			action.call(src, dst);
 		}
 	}
 
