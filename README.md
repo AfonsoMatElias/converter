@@ -110,6 +110,9 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
     .forMember("name", (src) -> {
       return " Sr(a)." + src.getName();
     })
+    .forMember(UserDto::setUsername, (src) -> {
+      return "@" + src.getUsername();
+    })
     .skipMember("password");
 ```
 
@@ -149,7 +152,7 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
     options.beforeMap((src, dst) -> {
       // TODO: something nice 🤩 before the object is mapped
       // src -> List<Product>
-      // dst -> List<ProductDto> null
+      // dst -> List<ProductDto> <null>
     });
 
     options.afterMap((src, dst) -> {
@@ -160,8 +163,8 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
     
     options.beforeEachMap((src, dst) -> {
       // TODO: something nice 🤩 before the object is mapped
-      // src -> item: List<Product>
-      // dst -> item: List<ProductDto> null
+      // src -> item: Product
+      // dst -> item: ProductDto <null>
     });
 
     options.afterEachMap((src, dst) -> {
