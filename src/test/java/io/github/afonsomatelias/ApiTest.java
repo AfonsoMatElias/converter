@@ -156,6 +156,25 @@ public class ApiTest {
     }
 
     @Test
+    public void shouldSkipMemberMappingIfAllMembersAreNullReturnNull() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Transformacao de tipo no momento de converçao
+        converter.createMap(Product.class, ProductDto.class)
+                .skipMember("name")
+                .skipMember("price");
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNull(dto);
+    }
+
+    @Test
     public void shouldCallBeforeMapActionWithSourceValueAndNullDestination() {
         // Converter Instance
         IConverter converter = new Converter();

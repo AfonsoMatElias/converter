@@ -2,6 +2,7 @@ package io.github.afonsomatelias.Models;
 
 public class ProductDto {
     private String name;
+    private Float price;
     private ProductDto parent;
     private String[] categories;
 
@@ -11,6 +12,14 @@ public class ProductDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Float getPrice() {
+        return price;
+    }
+
+    public void setPrice(Float price) {
+        this.price = price;
     }
 
     public ProductDto getParent() {
