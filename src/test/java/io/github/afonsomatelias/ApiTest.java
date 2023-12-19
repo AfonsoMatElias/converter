@@ -98,7 +98,47 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldSkiptMemberMapping() {
+    public void shouldChangeMemberValueAccording() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        converter.createMap(Product.class, ProductDto.class)
+            .forMember("name", (src) -> {
+                return "Wine";
+            });
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNotEquals(model.getName(), dto.getName());
+        assertEquals(dto.getName(), "Wine");
+    }
+
+    @Test
+    public void shouldChangeSetterMemberValueAccording() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        converter.createMap(Product.class, ProductDto.class)
+            .forMember(ProductDto::setName, (src) -> {
+                return "Wine";
+            });
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNotEquals(model.getName(), dto.getName());
+        assertEquals(dto.getName(), "Wine");
+    }
+
+    @Test
+    public void shouldSkipMemberMapping() {
         // Converter Instance
         IConverter converter = new Converter();
 
