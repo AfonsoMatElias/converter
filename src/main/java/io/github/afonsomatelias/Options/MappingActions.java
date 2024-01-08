@@ -34,8 +34,9 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	/**
 	 * Subscribes {@link MappingActionsEnum} actions
 	 * 
-	 * @param targetAction
-	 * @param action
+	 * @param targetAction the target action to be called
+	 * @param action       the action that need to be performed when the target
+	 *                     matches
 	 */
 	public void on(MappingActionsEnum targetAction, CallbackV2<Object, Object> action) {
 		// Defining the default List of Actions
@@ -101,15 +102,11 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 						continue;
 					}
 
-					// Combining the checking for code shrinking
-					final boolean isEachAction = (targetAction == MappingActionsEnum.AFTER_EACH_MAP
-							|| targetAction == MappingActionsEnum.BEFORE_EACH_MAP);
-
 					// Casting the object to an iterable one
 					final Iterator<Object> dstIterator = ((Iterable<Object>) dst).iterator();
 
 					// AFTER_EACH_MAP Config
-					if (isEachAction && isArray.call(src)) {
+					if (isArray.call(src)) {
 						while (srcIterator.hasNext() && dstIterator.hasNext()) {
 							// Calling the action for each item
 							action.call(srcIterator.next(), dstIterator.next());
@@ -163,7 +160,8 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	}
 
 	/**
-	 * Checks if the member provided is registed as member to be skipped 
+	 * Checks if the member provided is registed as member to be skipped
+	 * 
 	 * @param member the member to be checked
 	 * @return true / false
 	 */
@@ -172,7 +170,8 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	}
 
 	/**
-	 * Checks if the member provided is registed as member to be skipped 
+	 * Checks if the member provided is registed as member to be skipped
+	 * 
 	 * @param member the member to be checked
 	 * @return true / false
 	 */
