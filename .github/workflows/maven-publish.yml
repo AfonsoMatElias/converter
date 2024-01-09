@@ -3,7 +3,7 @@
 
 name: Publish Maven Package to Github Packages
 
-on: 
+on:
   release:
     types: [released]
 
