@@ -5,7 +5,8 @@ import java.util.List;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Mapper.Interfaces.IListProcessor;
-import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.MappingListActions;
+import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
 @SuppressWarnings("unchecked")
 public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> {
@@ -39,14 +40,11 @@ public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> 
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> List<D> to(Class<D> clazz, CallbackV1<MappingActions<List<S>, List<D>>> modifier) {
+	public <D> List<D> to(Class<D> clazz, CallbackV1<IMappingListActions<S, D>> modifier) {
 		try {
 			if (modifier != null) {
-				// Assing to object to be able to trick the compiler
-				Object modifierAsObject = actionOptions;
-
 				// Calling the function
-				modifier.call((MappingActions<List<S>, List<D>>) modifierAsObject);
+				modifier.call(MappingListActions.toBase(actionOptions));
 			}
 
 			return (List<D>) this.toDestination(clazz);

@@ -1,11 +1,15 @@
 package io.github.afonsomatelias.Mapper;
 
+import static io.github.afonsomatelias.Helpers.FieldHelper.fields;
+import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
@@ -15,8 +19,6 @@ import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MapperConfig;
 import io.github.afonsomatelias.Enums.MappingActionsEnum;
-import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
-import static io.github.afonsomatelias.Helpers.FieldHelper.fields;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Mapper.Interfaces.IProcessor;
 import io.github.afonsomatelias.Options.MappingActions;
@@ -50,6 +52,15 @@ public class Processor<S> implements IProcessor<S> {
 
 	/** Action Controller for this Processor */
 	protected final MappingActions<Object, Object> actionOptions = new MappingActions<>();
+
+	<T> Boolean allMatch(List<T> source, CallbackP1<T, Boolean> callback) {
+		List<Boolean> allMatching = new ArrayList<>();
+
+		for (T t : source)
+			allMatching.add(callback.call(t));
+
+		return allMatching.isEmpty() ? false : allMatching.stream().allMatch(x -> x);
+	};
 
 	/**
 	 * Creates a new instance of the provided class
@@ -219,23 +230,29 @@ public class Processor<S> implements IProcessor<S> {
 				return transformResult;
 		}
 
-		if (isArray.call(source)) {
-			return listMapper.call(source, clsDestination);
-		}
-
 		final String createdMapActionOptionName = source.getClass().getName() + ":" + clsDestination.getName();
 
 		// Retrieving the action for this field
 		final MappingActions<Object, Object> createdMapActionOption = shared.globalActionOptions
 				.getOrDefault(createdMapActionOptionName, null);
 
-		if (createdMapActionOption != null)
+		if (createdMapActionOption != null) {
 			// Performing BEFORE_MAP action
 			createdMapActionOption.call(MappingActionsEnum.BEFORE_MAP, source, null);
+			// Performing BEFORE_EACH_MAP action
+			createdMapActionOption.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
+		}
+
+		if (isArray.call(source)) {
+			return listMapper.call(source, clsDestination);
+		}
 
 		// Looping all the source fields
-		fields(source, (fieldNameSource, fieldValueSource, fieldTypeSource) -> {
+		fields(source, (fieldNameSource, fieldValueSource, field, fieldTypeSource) -> {
 			Object valueToSet = fieldValueSource;
+
+			if (actionOptions.isSkipMember(field) || actionOptions.isSkipMember(fieldNameSource))
+				return;
 
 			// If there is no value set in the property just ignore
 			if (valueToSet == null)
@@ -282,9 +299,21 @@ public class Processor<S> implements IProcessor<S> {
 			fieldSetter.call(fieldDestination, valueToSet);
 		});
 
-		if (createdMapActionOption != null)
+		if (createdMapActionOption != null) {
 			// Performing AFTER_MAP action
 			createdMapActionOption.call(MappingActionsEnum.AFTER_MAP, source, destination);
+			createdMapActionOption.call(MappingActionsEnum.AFTER_EACH_MAP, source, destination);
+		}
+
+		// If all the fields are null, nullify the destination object
+		if (allMatch(fieldsDestination.values().stream().collect(Collectors.toList()), (x) -> {
+			try {
+				return x.get(destination) == null;
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				return true;
+			}
+		}) == true)
+			return null;
 
 		return destination;
 	}
@@ -302,16 +331,44 @@ public class Processor<S> implements IProcessor<S> {
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
+			actionOptions.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
 
-			final Object result = this.mapper(this.source, clazz, this.create(clazz));
+			final Object $destination = this.mapper(this.source, clazz, this.create(clazz));
 
 			// Performs the AFTER_MAP action if the modifier is set
-			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, result);
+			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, $destination);
+			actionOptions.call(MappingActionsEnum.AFTER_EACH_MAP, source, $destination);
 
-			return result;
+			return $destination;
 		} catch (Exception e) {
 			Printer.err(
 					"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
+					"Error details: " + e.getMessage(), e);
+			return null;
+		}
+	}
+
+	protected <D> Object fromDestination(D destination) {
+		// Swapped the roles of each object
+		final Object _source = destination;
+		final Object _destination = source;
+
+		try {
+			// Performs the BEFORE_MAP action if the modifier is set
+			actionOptions.call(MappingActionsEnum.BEFORE_MAP, _source, null);
+			actionOptions.call(MappingActionsEnum.BEFORE_EACH_MAP, _source, null);
+
+			this.mapper(_source, _destination.getClass(), _destination);
+
+			// Performs the AFTER_MAP action if the modifier is set
+			actionOptions.call(MappingActionsEnum.AFTER_MAP, _source, _destination);
+			actionOptions.call(MappingActionsEnum.AFTER_EACH_MAP, _source, _destination);
+
+			return _destination;
+		} catch (Exception e) {
+			Printer.err(
+					"Error whiling mapping the from '" + _source.getClass().getName() + "' to '"
+							+ _destination.getClass().getName() + "'",
 					"Error details: " + e.getMessage(), e);
 			return null;
 		}

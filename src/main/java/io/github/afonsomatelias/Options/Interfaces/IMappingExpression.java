@@ -11,6 +11,14 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
+	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, CallbackP1<S, Object> transform);
+	
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 * @param transform         the interception bahavior
+	 */
 	IMappingExpression<S, D> forMember(String destinationMember, CallbackP1<S, Object> transform);
 	
 	/**

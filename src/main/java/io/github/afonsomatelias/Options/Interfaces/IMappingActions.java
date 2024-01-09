@@ -1,5 +1,7 @@
 package io.github.afonsomatelias.Options.Interfaces;
 
+import java.lang.reflect.Field;
+
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Enums.MappingActionsEnum;
 
@@ -9,15 +11,7 @@ public interface IMappingActions<S, D> {
 	 * @param targetAction
 	 * @param action
 	 */
-	void on(MappingActionsEnum targetAction, CallbackV2<S, D> action);
-
-	/**
-	 * Action caller
-	 * @param targetAction the target action to be called
-	 * @param src the source object
-	 * @param dst the destination object
-	 */
-	void call(MappingActionsEnum targetAction, S src, D dst);
+	void on(MappingActionsEnum targetAction, CallbackV2<Object, Object> action);
 
 	/**
      * Subscribes {@link MappingActionsEnum.BEFORE_MAP} action
@@ -31,4 +25,18 @@ public interface IMappingActions<S, D> {
      * @param modifier the delegate having the modification
      */
     void afterMap(CallbackV2<S, D> modifier);
+
+    /**
+	 * skips member that do not need to be mapped
+	 * 
+	 * @param members the member that will be skipped
+	 */
+	void skipMembers(String... members);
+
+    /**
+	 * skips member that do not need to be mapped
+	 * 
+	 * @param members the member that will be skipped
+	 */
+	void skipMembers(Field... members);
 }

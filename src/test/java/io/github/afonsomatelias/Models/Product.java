@@ -3,12 +3,14 @@ package io.github.afonsomatelias.Models;
 public class Product {
 
     private String name;
+    private Float price;
     private Product parent;
     private String categories = "Liquid;Refrig";
 
 
     public Product() {
         name = "Coca Cola";
+        price = 0.5f;
     }
 
     public String getName() {
@@ -17,6 +19,14 @@ public class Product {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Float getPrice() {
+        return price;
+    }
+
+    public void setPrice(Float price) {
+        this.price = price;
     }
 
     public Product getParent() {

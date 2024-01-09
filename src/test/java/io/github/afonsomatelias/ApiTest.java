@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -98,7 +99,47 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldSkiptMemberMapping() {
+    public void shouldChangeMemberValueAccording() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        converter.createMap(Product.class, ProductDto.class)
+            .forMember("name", (src) -> {
+                return "Wine";
+            });
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNotEquals(model.getName(), dto.getName());
+        assertEquals(dto.getName(), "Wine");
+    }
+
+    @Test
+    public void shouldChangeSetterMemberValueAccording() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        converter.createMap(Product.class, ProductDto.class)
+            .forMember(ProductDto::setName, (src) -> {
+                return "Wine";
+            });
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNotEquals(model.getName(), dto.getName());
+        assertEquals(dto.getName(), "Wine");
+    }
+
+    @Test
+    public void shouldSkipMemberMapping() {
         // Converter Instance
         IConverter converter = new Converter();
 
@@ -113,6 +154,25 @@ public class ApiTest {
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
         assertNull(dto.getName());
+    }
+
+    @Test
+    public void shouldSkipMemberMappingIfAllMembersAreNullReturnNull() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Transformacao de tipo no momento de converçao
+        converter.createMap(Product.class, ProductDto.class)
+                .skipMember("name")
+                .skipMember("price");
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNull(dto);
     }
 
     @Test
@@ -251,5 +311,136 @@ public class ApiTest {
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
         assertTrue(dto == null);
+    }
+
+        @Test
+    public void shouldCallBeforeEachMapActionWithSourceValueAndNullDestination() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+
+        funCallTracker.put("function_calling_counter", 0);
+
+        // Mapping
+        List<ProductDto> dto = converter.map(Arrays.asList(model, model)).to(ProductDto.class, (options) -> {
+
+            options.beforeEachMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNull(dst);
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+                
+            });
+
+        });
+
+        assertNotNull(dto);
+        assertTrue(funCallTracker.get("function_calling_counter") == 2);
+    }
+
+    @Test
+    public void shouldCallAfterEachMapActionWithSourceValueAndDestination() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+
+        funCallTracker.put("function_calling_counter", 0);
+
+        // Mapping
+        List<ProductDto> dto = converter.map(Arrays.asList(model, model)).to(ProductDto.class, (options) -> {
+
+            options.afterEachMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNotNull(dst);
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+
+            });
+
+        });
+
+        assertNotNull(dto);
+        assertTrue(funCallTracker.get("function_calling_counter") == 2);
+    }
+
+    @Test
+    public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddress() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Sprite");
+        dto.setPrice(1f);
+
+        Product modelMapped = converter.map(model).from(dto);
+
+        assertTrue(modelMapped != null);
+        assertTrue(modelMapped == model);
+        assertSame(modelMapped, model);
+        assertEquals(modelMapped.getName(), dto.getName());
+        assertEquals(modelMapped.getPrice(), dto.getPrice());
+        assertEquals(modelMapped, model);
+    }
+
+    @Test
+    public void shouldSkipMemberOnExtractionUsingStringMember() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Sprite");
+        dto.setPrice(1f);
+
+        Product modelMapped = converter.map(model).from(dto, (options) -> {
+            options.skipMembers("price");
+        });
+
+        assertTrue(modelMapped != null);
+        assertTrue(modelMapped == model);
+        assertSame(modelMapped, model);
+        assertEquals(modelMapped.getName(), dto.getName());
+        assertNotEquals(modelMapped.getPrice(), dto.getPrice());
+        assertEquals(modelMapped, model);
+    }
+
+    @Test
+    public void shouldSkipMemberOnExtractionUsingFieldMember() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Sprite");
+        dto.setPrice(1f);
+
+        Product modelMapped = converter.map(model).from(dto, (options) -> {
+            try {
+                options.skipMembers(Product.class.getDeclaredField("price"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        assertTrue(modelMapped != null);
+        assertTrue(modelMapped == model);
+        assertSame(modelMapped, model);
+        assertEquals(modelMapped.getName(), dto.getName());
+        assertNotEquals(modelMapped.getPrice(), dto.getPrice());
+        assertEquals(modelMapped, model);
     }
 }

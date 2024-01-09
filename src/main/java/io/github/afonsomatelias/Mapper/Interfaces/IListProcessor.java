@@ -3,7 +3,7 @@ package io.github.afonsomatelias.Mapper.Interfaces;
 import java.util.List;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
-import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
 public interface IListProcessor<S> extends IProcessor<S> {
 	/**
@@ -25,5 +25,5 @@ public interface IListProcessor<S> extends IProcessor<S> {
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> List<D> to(Class<D> clazz, CallbackV1<MappingActions<List<S>, List<D>>> modifier);
+	public <D> List<D> to(Class<D> clazz, CallbackV1<IMappingListActions<S, D>> modifier);
 }

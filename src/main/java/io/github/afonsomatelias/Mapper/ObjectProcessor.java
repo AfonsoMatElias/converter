@@ -2,8 +2,10 @@ package io.github.afonsomatelias.Mapper;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
 import io.github.afonsomatelias.Configurations.ConverterShared;
+import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Mapper.Interfaces.IObjectProcessor;
 import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
 
 @SuppressWarnings("unchecked")
 public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor<S> {
@@ -20,7 +22,7 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 	 */
 	public <D> D to(Class<D> clazz) {
 		try {
-			return (D) this.toDestination(clazz);
+			return (D) super.toDestination(clazz);
 		} catch (Exception e) {
 			return null;
 		}
@@ -35,7 +37,7 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> D to(Class<D> clazz, CallbackV1<MappingActions<S, D>> modifier) {
+	public <D> D to(Class<D> clazz, CallbackV1<IMappingActions<S, D>> modifier) {
 		try {
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler
@@ -43,7 +45,56 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 
 				modifier.call((MappingActions<S, D>) modifierAsObject);
 			}
-			return (D) this.toDestination(clazz);
+			return (D) super.toDestination(clazz);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Maps or Extracts values from the destination to the source
+	 * 
+	 * @param <D> the {@link D} object type
+	 * @return the object Converted
+	 */
+	@Override
+	public <D> S from(D destination) {
+		if (destination == null) {
+			Printer.out("Invalid destination object, it cannot be null.");
+			return null;
+		}
+
+		try {
+			return (S) super.fromDestination(destination);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Maps or Extracts values from the destination to the source
+	 * with a
+	 * mapper modifier
+	 * 
+	 * @param <D>      the {@link D} object type
+	 * @param modifier mapping options that will be applied on map
+	 * @return the object Converted
+	 */
+	@Override
+	public <D> S from(D destination, CallbackV1<IMappingActions<S, D>> modifier) {
+		if (destination == null) {
+			Printer.out("Invalid destination object, it cannot be null.");
+			return null;
+		}
+		
+		try {
+
+			if (modifier != null) {
+				// Assing to object to be able to trick the compiler
+				Object modifierAsObject = actionOptions;
+				modifier.call((MappingActions<S, D>) modifierAsObject);
+			}
+			return (S) super.fromDestination(destination);
 		} catch (Exception e) {
 			return null;
 		}

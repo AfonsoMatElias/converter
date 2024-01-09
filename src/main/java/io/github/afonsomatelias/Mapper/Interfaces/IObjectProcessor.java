@@ -1,7 +1,7 @@
 package io.github.afonsomatelias.Mapper.Interfaces;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
-import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
 
 public interface IObjectProcessor<S> extends IProcessor<S> {
 	/**
@@ -22,5 +22,23 @@ public interface IObjectProcessor<S> extends IProcessor<S> {
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> D to(Class<D> clazz, CallbackV1<MappingActions<S, D>> modifier);
+	public <D> D to(Class<D> clazz, CallbackV1<IMappingActions<S, D>> modifier);
+	
+	/**
+	 * Maps or Extracts values from a Converts from the destination to the source
+	 * 
+	 * @param <D>   the {@link D} object type
+	 * @return the object Converted
+	 */
+	public <D> S from(D destination);
+
+	/**
+	 * Maps or Extracts values from a Converts from the destination to the source with a
+	 * mapper modifier
+	 * 
+	 * @param <D>      the {@link D} object type
+	 * @param modifier mapping options that will be applied on map
+	 * @return the object Converted
+	 */
+	public <D> S from(D destination, CallbackV1<IMappingActions<S, D>> modifier);
 }

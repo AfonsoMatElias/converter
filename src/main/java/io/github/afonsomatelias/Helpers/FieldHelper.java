@@ -17,6 +17,10 @@ public class FieldHelper {
     public interface IFieldkeyValue<TKey, TValue> {
         void run(TKey key, TValue value, Class<?> type);
     }
+    
+    public interface IFieldOptionCallback<TKey, TValue> {
+        void run(TKey key, TValue value, Field field, Class<?> type);
+    }
 
     public static Field[] toFields(Class<?> clazz) {
         if (clazz == null)
@@ -88,6 +92,16 @@ public class FieldHelper {
         return toMappedFields(obj.getClass(), (name, field, type) -> {
             try {
                 forEachField.run(name, field.get(obj), type);
+            } catch (IllegalAccessException | IllegalArgumentException e) {
+                Printer.err(e);
+            }
+        });
+    }
+
+    public static <T> Map<String, Field> fields(T obj, IFieldOptionCallback<String, Object> forEachField) {
+        return toMappedFields(obj.getClass(), (name, field, type) -> {
+            try {
+                forEachField.run(name, field.get(obj), field, type);
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 Printer.err(e);
             }

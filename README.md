@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.0
+# Converter v1.1
 
 ## Introduction
 
@@ -110,6 +110,9 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
     .forMember("name", (src) -> {
       return " Sr(a)." + src.getName();
     })
+    .forMember(UserDto::setUsername, (src) -> {
+      return "@" + src.getUsername();
+    })
     .skipMember("password");
 ```
 
@@ -129,6 +132,90 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
 
     options.afterMap((src, dst) -> {
       // TODO: something nice 🤩 after the object is mapped
+    });
+  });
+```
+
+* Mapping or Extracting values from another object
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product dbModel = new Product();
+  dbModel.setName("Coca Cola");
+  dbModel.setPrice(0.5f);
+
+  // Mapping
+  ProductDto dtoModel = new ProductDto();
+  dtoModel.setName("Sprite");
+  dtoModel.setPrice(1f);
+
+  Product dbModelMapped = converter.map(dbModel).from(dtoModel);
+
+  // Has the same memory address
+  Boolean isEquals = dbModel == dbModelMapped;  
+```
+
+* Members can be skipped while extracting values from another object using mapping actions
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product dbModel = new Product();
+  dbModel.setName("Coca Cola");
+  dbModel.setPrice(0.5f);
+
+  // Mapping
+  ProductDto dtoModel = new ProductDto();
+  dtoModel.setName("Sprite");
+  dtoModel.setPrice(1f);
+
+  Product dbModelMapped = converter.map(dbModel).from(dtoModel, (options) -> {
+    options.skipMembers("price");
+
+    // Note: We advice to use this one
+    // The other one target every property having the same name even in their child
+    // options.skipMembers(Product.class.getDeclaredField("price"));
+  });
+```
+
+* Converting and modifying a list
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product model1 = new Product();
+  Product model2 = new Product();
+
+  List<Product> models = Arrays.asList(model1, model2);
+
+  // Mapping
+  List<ProductDto> dto = converter.map(models).to(ProductDto.class, (options) -> {
+    options.beforeMap((src, dst) -> {
+      // TODO: something nice 🤩 before the object is mapped
+      // src -> List<Product>
+      // dst -> List<ProductDto> <null>
+    });
+
+    options.afterMap((src, dst) -> {
+      // TODO: something nice 🤩 after the object is mapped
+      // src -> List<Product>
+      // dst -> List<ProductDto>
+    });
+    
+    options.beforeEachMap((src, dst) -> {
+      // TODO: something nice 🤩 before the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto <null>
+    });
+
+    options.afterEachMap((src, dst) -> {
+      // TODO: something nice 🤩 after the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto
     });
   });
 ```
