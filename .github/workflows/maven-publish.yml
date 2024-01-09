@@ -3,9 +3,9 @@
 
 name: Publish Maven Package to Github Packages
 
-on: push
-  # release:
-  #   types: [released]
+on:
+  release:
+    types: [released]
 
 jobs:
   publish:
