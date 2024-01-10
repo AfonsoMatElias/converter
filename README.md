@@ -236,7 +236,9 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
 
     @Bean @Primary
     public Converter autowire() throws InstantiationException, IllegalAccessException {
-      return this;
+      // This method is used to give the possibility to 
+      // instantiate the class using @Autowired annotation
+      return this; 
     }
   }
 ```
@@ -273,3 +275,45 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
     }
   }
 ```
+
+## How to import into a maven project
+
+To load the dependency to you a Maven project, you can follow these steps:
+
+### 1. Add the following repository to your pom.xml file:
+
+```xml
+  <repositories>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+```
+
+### 2. Add the dependency to your pom.xml file:
+
+```xml
+  <dependencies>
+    ...
+    
+    <dependency>
+      <groupId>io.github.afonsomatelias</groupId>
+      <artifactId>converter</artifactId>
+      <version>[tag]</version>
+    </dependency>
+
+  </dependencies>
+```
+
+  Note: Converter tags beggins with v[number]. Example: *v.1.1* 
+
+### 3. Save the pom.xml file.
+
+### 4. Download and Install the dependency.
+
+```bash
+  mvn clean install
+```
+
+### 5. You can now use the Converter in your Maven project.
