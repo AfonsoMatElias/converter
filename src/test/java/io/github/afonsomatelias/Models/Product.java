@@ -1,11 +1,15 @@
 package io.github.afonsomatelias.Models;
 
+import java.util.List;
+
 public class Product {
 
     private String name;
     private Float price;
-    private Product parent;
     private String categories = "Liquid;Refrig";
+
+    private Product parent;
+    private List<Product> products;
 
 
     public Product() {
@@ -35,6 +39,14 @@ public class Product {
 
     public void setParent(Product parent) {
         this.parent = parent;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<Product> products) {
+        this.products = products;
     }
 
     public String getCategories() {

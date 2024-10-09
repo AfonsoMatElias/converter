@@ -6,9 +6,11 @@ import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
@@ -36,13 +38,53 @@ public class Processor<S> implements IProcessor<S> {
 		this.source = source;
 	}
 
+	public final Map<Class<?>, Class<?>> PRIMITIVE_MAPPER = new HashMap<Class<?>, Class<?>>() {
+		{
+			put(Integer.class, int.class);
+			put(Byte.class, byte.class);
+			put(String.class, String.class);
+			put(Character.class, char.class);
+			put(Boolean.class, boolean.class);
+			put(Double.class, double.class);
+			put(Float.class, float.class);
+			put(Long.class, long.class);
+			put(Short.class, short.class);
+			put(Void.class, void.class);
+		}
+	};
+
+	public final Set<Class<?>> PRIMITIVES = new HashSet<Class<?>>() {
+		{
+			add(Integer.class);
+			add(Byte.class);
+			add(String.class);
+			add(Character.class);
+			add(Boolean.class);
+			add(Double.class);
+			add(Float.class);
+			add(Long.class);
+			add(Short.class);
+			add(Void.class);
+
+			add(int.class);
+			add(byte.class);
+			add(char.class);
+			add(boolean.class);
+			add(double.class);
+			add(float.class);
+			add(long.class);
+			add(short.class);
+			add(void.class);
+		}
+	};
+
 	/** Stores the {@link S} object */
-	private S source;
+	private final S source;
 
 	/**
 	 * Stores all the shared public properties of the main {@link Converter} Class
 	 */
-	private ConverterShared shared;
+	private final ConverterShared shared;
 
 	/**
 	 * Stores all the times that an object was mapped for to avoid Self Reference
@@ -380,6 +422,7 @@ public class Processor<S> implements IProcessor<S> {
 	 * 
 	 * @return new object instance
 	 */
+	@Override
 	public S to() {
 		try {
 			return (S) this.toDestination(source.getClass());

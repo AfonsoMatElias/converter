@@ -270,7 +270,9 @@ public class ApiTest {
 
         // Entities
         Product model = new Product();
+        model.setName("ABC");
         model.setParent(model);
+        model.setProducts(Arrays.asList(model));
 
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);

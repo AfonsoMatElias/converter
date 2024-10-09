@@ -27,7 +27,7 @@ public class Converter implements IConverter {
 	}
 
 	// All the public properties that will e shared between inner instances
-	private ConverterShared shared;
+	private final ConverterShared shared;
 
 	/**
 	 * Creates Mapping Processor for the {@link S} Object
@@ -49,6 +49,7 @@ public class Converter implements IConverter {
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
+    @Override
 	public <S> IListProcessor<S> map(List<S> source) {
 		return new ListProcessor<S>(shared, source);
 	}
@@ -61,6 +62,7 @@ public class Converter implements IConverter {
 	 * @param source      the {@link S} Class
 	 * @param destination the {@link D} Class
 	 */
+    @Override
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
 			Class<D> destination) {
@@ -76,6 +78,7 @@ public class Converter implements IConverter {
 	 * @param source      the {@link S} Class
 	 * @param destination the {@link D} Class
 	 */
+    @Override
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
 			Class<D> destination,
@@ -110,6 +113,7 @@ public class Converter implements IConverter {
 	 * @param to                the {@link TypeSource} Class
 	 * @param behavior          the interception bahavior
 	 */
+    @Override
 	public <TypeSource, TypeDestination> void addTransform(Class<TypeSource> from, Class<TypeDestination> to,
 			CallbackP1<TypeSource, TypeDestination> behavior) {
 		String name = new StringBuilder().append(from.getName()).append(":").append(to.getName()).toString();
@@ -121,6 +125,7 @@ public class Converter implements IConverter {
 	 * 
 	 * @return map of the configurations
 	 */
+    @Override
 	public Map<String, Object> getConfigs() {
 		return new HashMap<String, Object>() {
 			{
@@ -140,6 +145,7 @@ public class Converter implements IConverter {
 	 * @param useMapConfig a boolean value to indicates if the mapping configuration
 	 *                     needs to be used
 	 */
+    @Override
 	public void setUseMapConfiguration(boolean useMapConfig) {
 		shared.USE_MAPPING_CONFIG = useMapConfig;
 	}
@@ -150,6 +156,7 @@ public class Converter implements IConverter {
 	 * @param limit the number of cycle
 	 * @see DefaultValue Default Value is `3`
 	 */
+    @Override
 	public void setLimitCycleMapping(int limit) {
 		shared.LIMIT_CYCLE_MAPPING = limit;
 	}
