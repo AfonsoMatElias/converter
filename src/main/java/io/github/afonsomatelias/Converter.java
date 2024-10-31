@@ -55,7 +55,7 @@ public class Converter implements IConverter {
 	}
 
 	/**
-	 * Creates a Mapping configuration for the Source ans Destination Object type
+	 * Creates a Mapping configuration for the Source and Destination Object type
 	 * 
 	 * @param <S>         the {@link S} Type
 	 * @param <D>         the {@link D} Type
@@ -71,7 +71,7 @@ public class Converter implements IConverter {
 	}
 
 	/**
-	 * Creates a Mapping configuration for the Source ans Destination Object type
+	 * Creates a Mapping configuration for the Source and Destination Object type
 	 * 
 	 * @param <S>         the {@link S} Type
 	 * @param <D>         the {@link D} Type

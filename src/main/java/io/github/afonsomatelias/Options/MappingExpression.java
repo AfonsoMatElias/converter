@@ -1,9 +1,12 @@
 package io.github.afonsomatelias.Options;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
+import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MapperConfig;
@@ -11,6 +14,8 @@ import io.github.afonsomatelias.Helpers.FieldHelper;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Options.Interfaces.IMappingExpression;
 import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
+import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
+import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
 @SuppressWarnings("unchecked")
 public class MappingExpression<S, D> implements IMappingExpression<S, D> {
@@ -33,9 +38,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	public MappingExpression<S, D> forMember(String destinationMember,
-			CallbackP1<S, Object> transform) {
-		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+	public MappingExpression<S, D> forMember(String destinationMember, CallbackP1<S, Object> transform) {
+		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
 			Printer.err("Field '" + destinationMember + "' does not exists");
@@ -43,8 +47,27 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		}
 
 		// Compiler trick
-		final Object transformAsObject = transform;
-		shared.forMemberMapping.put(field, (CallbackP1<Object, Object>) transformAsObject);
+		shared.forMemberMapping.put(field, transform);
+
+		return this;
+	}
+
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 * @param transform         the interception bahavior
+	 */
+	public MappingExpression<S, D> forMember(String destinationMember, CallbackP2<S, MemberMapping, Object> transform) {
+		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+
+		if (field == null) {
+			Printer.err("Field '" + destinationMember + "' does not exists");
+			return this;
+		}
+
+		// Compiler trick
+		shared.forMemberMapping.put(field, transform);
 
 		return this;
 	}
@@ -58,14 +81,30 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
 			CallbackP1<S, Object> transform) {
 
-		this.getMapperActions().afterMap((src, dst) -> {
-			S source = (S)src;
-			D destination = (D)dst;
-			U result = (U) transform.call(source);
+		final Class<?> key = destinationClass.getClass();
+		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
+				new ArrayList<SetterMemberMapping>());
 
-			setterPropertyMember.accept(destination, result);
-		});
+		setters.add(new SetterMemberMapping(setterPropertyMember, transform));
+		shared.forSetterMemberMapping.put(key, setters);
+		return this;
+	}
 
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param setterPropertyMember the member that will be transformed
+	 * @param transform            the interception bahavior
+	 */
+	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
+			CallbackP2<S, MemberMapping, Object> transform) {
+
+		final Class<?> key = destinationClass.getClass();
+		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
+				new ArrayList<SetterMemberMapping>());
+
+		setters.add(new SetterMemberMapping(setterPropertyMember, transform));
+		shared.forSetterMemberMapping.put(key, setters);
 		return this;
 	}
 
@@ -82,7 +121,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 			return this;
 		}
 
-		shared.forMemberMapping.put(field, (obj) -> null);
+		CallbackP1<Object, Object> fnVoid = (o) -> null;
+		shared.forMemberMapping.put(field, fnVoid);
 
 		return this;
 	}

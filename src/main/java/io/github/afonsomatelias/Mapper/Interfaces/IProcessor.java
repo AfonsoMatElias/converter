@@ -8,6 +8,5 @@ public interface IProcessor<S> {
 	 * 
 	 * @return new object instance
 	 */
-	S to();
-
+	<D extends S> D to();
 }

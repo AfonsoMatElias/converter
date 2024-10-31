@@ -1,8 +1,10 @@
 package io.github.afonsomatelias.Options.Interfaces;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
+import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Options.MappingExpression;
+import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
 
 public interface IMappingExpression<S, D> {
 	/**
@@ -11,7 +13,23 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, CallbackP1<S, Object> transform);
+	IMappingExpression<S, D> forMember(String destinationMember, CallbackP1<S, Object> transform);
+
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 * @param transform         the interception bahavior
+	 */
+	IMappingExpression<S, D> forMember(String destinationMember, CallbackP2<S, MemberMapping, Object> transform);
+
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 * @param transform         the interception bahavior
+	 */
+	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, CallbackP2<S, MemberMapping, Object> transform);
 	
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
@@ -19,8 +37,9 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	IMappingExpression<S, D> forMember(String destinationMember, CallbackP1<S, Object> transform);
+	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, CallbackP1<S, Object> transform);
 	
+
 	/**
 	 * skips or set null to the destination member provided
 	 * 

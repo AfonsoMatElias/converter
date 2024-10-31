@@ -116,6 +116,8 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 					}
 
 					continue;
+				default:
+					break;
 			}
 		}
 	}

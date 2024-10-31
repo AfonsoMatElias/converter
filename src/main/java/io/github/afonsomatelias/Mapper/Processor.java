@@ -6,6 +6,7 @@ import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
+import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP3;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
@@ -23,6 +25,8 @@ import io.github.afonsomatelias.Enums.MappingActionsEnum;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Mapper.Interfaces.IProcessor;
 import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
+import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
 @SuppressWarnings("unchecked")
 public class Processor<S> implements IProcessor<S> {
@@ -143,11 +147,11 @@ public class Processor<S> implements IProcessor<S> {
 	private <D> Object mapper(Object source, Class<?> clsDestination, Object destination)
 			throws IllegalArgumentException, IllegalAccessException {
 
-		final Map<String, Field> fieldsDestination = toMappedFields(clsDestination);
-		final Map<String, MapperConfig> configurations = this.shared.configurations;
-
 		if (source == null || destination == null)
 			return null;
+
+		final Map<String, Field> fieldsDestination = toMappedFields(clsDestination);
+		final Map<String, MapperConfig> configurations = this.shared.configurations;
 
 		final boolean hasDiffTypes = (source.getClass() != destination.getClass());
 
@@ -345,11 +349,21 @@ public class Processor<S> implements IProcessor<S> {
 				return;
 
 			// Try to get for member mapping for this field
-			final CallbackP1<Object, Object> forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination,
-					null);
+			final Object forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
 
 			if (forMemberMapping != null) {
-				fieldSetter.call(fieldDestination, forMemberMapping.call(source));
+				Object memberMappingResult = null;
+
+				if (CallbackP1.class.equals(forMemberMapping.getClass())) {
+					memberMappingResult = ((CallbackP1<Object, Object>) forMemberMapping).call(source);
+				}
+
+				if (CallbackP2.class.equals(forMemberMapping.getClass())) {
+					memberMappingResult = ((CallbackP2<Object, MemberMapping, Object>) forMemberMapping)
+							.call(source, new MemberMapping(this));
+				}
+
+				fieldSetter.call(fieldDestination, memberMappingResult);
 				return; // Breaking the process as the member is already mapped
 			}
 
@@ -388,6 +402,12 @@ public class Processor<S> implements IProcessor<S> {
 			fieldSetter.call(fieldDestination, valueToSet);
 		});
 
+		// Performing all the setter of this class
+		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(clsDestination, Arrays.asList());
+		for (SetterMemberMapping setterMemberMapping : setters) {
+			setterMemberMapping.call(source, fieldsDestination, this);
+		}
+
 		if (createdMapActionOption != null) {
 			// Performing AFTER_MAP action
 			createdMapActionOption.call(MappingActionsEnum.AFTER_MAP, source, destination);
@@ -416,7 +436,10 @@ public class Processor<S> implements IProcessor<S> {
 	 * @return the {@link D} instance mapped from the {@link S}
 	 *         instance
 	 */
-	protected <D> Object toDestination(Class<?> clazz) {
+	public <D> Object toDestination(Class<?> clazz) {
+		if (this.source == null)
+			return null;
+
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
@@ -438,7 +461,10 @@ public class Processor<S> implements IProcessor<S> {
 		}
 	}
 
-	protected <D> Object fromDestination(D destination) {
+	public <D> Object fromDestination(D destination) {
+		if (this.source == null)
+			return null;
+
 		// Swapped the roles of each object
 		final Object _source = destination;
 		final Object _destination = source;
@@ -471,9 +497,12 @@ public class Processor<S> implements IProcessor<S> {
 	 * @return new object instance
 	 */
 	@Override
-	public S to() {
+	public <D extends S> D to() {
+		if (this.source == null)
+			return null;
+
 		try {
-			return (S) this.toDestination(source.getClass());
+			return (D) this.toDestination(source.getClass());
 		} catch (Exception e) {
 			return null;
 		}
