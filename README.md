@@ -90,13 +90,13 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
 ```
 
 * For self-reference objects we can limit how many objects we want to be returned using.
-  By default is *2*.
+  By default is *1*.
 
 ```java
 
   // Converter Instance
   IConverter converter = new Converter();
-  converter.setLimitCycleMapping(1);
+  converter.setLimitCycleMapping(2);
 
 ```
 
@@ -157,6 +157,23 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
   Boolean isEquals = dbModel == dbModelMapped;  
 ```
 
+* Making a copy of an Object with different memory address
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // Entities
+  Product model = new Product();
+  model.setName("Coca Cola");
+  model.setPrice(0.5f);
+
+  Product copy = converter.map(model).to();
+
+  // Has the different memory address
+  Boolean isEquals = dbModel == dbModelMapped;  
+```
+Note: We can also apply modifiers, like: ``.to((options) -> { })``
+
 * Members can be skipped while extracting values from another object using mapping actions
 ```java
   // Converter Instance
@@ -187,8 +204,8 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
   IConverter converter = new Converter();
 
   // Entities
-  Product model1 = new Product();
-  Product model2 = new Product();
+  Product model1 = new Product("Coca Cola");
+  Product model2 = new Product("Sprite");
 
   List<Product> models = Arrays.asList(model1, model2);
 
@@ -220,6 +237,7 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
   });
 ```
 
+
 ### Using Spring Boot
 
 If you use SpringBoot and want to use Dependency Injection, you can create a converter config file and assign it as *@Component*:
@@ -229,7 +247,6 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
   public class ConverterConfig extends Converter {
     public ConverterConfig() {
       
-      setLimitCycleMapping(1);
       createMap(Product.class, ProductDto.class);
 
     }
