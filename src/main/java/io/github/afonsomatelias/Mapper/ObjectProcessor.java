@@ -54,6 +54,28 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 	}
 
 	/**
+	 * Creates a new instance of object provided, just like copy and paste with
+	 * different memory address
+	 * 
+	 * @return new object instance
+	 */
+	@Override
+	public <D extends S> S to(CallbackV1<IMappingActions<S, D>> modifier) {
+		try {
+			if (modifier != null) {
+				// Assing to object to be able to trick the compiler
+				Object modifierAsObject = actionOptions;
+
+				modifier.call((MappingActions<S, D>) modifierAsObject);
+			}
+
+			return (S) this.toDestination(source.getClass());
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/**
 	 * Maps or Extracts values from the destination to the source
 	 * 
 	 * @param <D> the {@link D} object type

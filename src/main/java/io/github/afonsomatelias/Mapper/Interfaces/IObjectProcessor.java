@@ -25,6 +25,15 @@ public interface IObjectProcessor<S> extends IProcessor<S> {
 	public <D> D to(Class<D> clazz, CallbackV1<IMappingActions<S, D>> modifier);
 	
 	/**
+	 * Creates a new instance of object provided, just like copy and paste with
+	 * different memory address
+	 * 
+	 * @param modifier mapping options that will be applied on map
+	 * @return new object instance
+	 */
+	public <D extends S> S to(CallbackV1<IMappingActions<S, D>> modifier);
+
+	/**
 	 * Maps or Extracts values from a Converts from the destination to the source
 	 * 
 	 * @param <D>   the {@link D} object type

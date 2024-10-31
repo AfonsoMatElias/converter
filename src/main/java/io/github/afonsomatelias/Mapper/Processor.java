@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP3;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
@@ -50,6 +49,16 @@ public class Processor<S> implements IProcessor<S> {
 			put(Long.class, long.class);
 			put(Short.class, short.class);
 			put(Void.class, void.class);
+
+			put(int.class, Integer.class);
+			put(byte.class, Byte.class);
+			put(char.class, Character.class);
+			put(boolean.class, Boolean.class);
+			put(double.class, Double.class);
+			put(float.class, Float.class);
+			put(long.class, Long.class);
+			put(short.class, Short.class);
+			put(void.class, Void.class);
 		}
 	};
 
@@ -79,7 +88,7 @@ public class Processor<S> implements IProcessor<S> {
 	};
 
 	/** Stores the {@link S} object */
-	private final S source;
+	protected final S source;
 
 	/**
 	 * Stores all the shared public properties of the main {@link Converter} Class
@@ -95,7 +104,12 @@ public class Processor<S> implements IProcessor<S> {
 	/** Action Controller for this Processor */
 	protected final MappingActions<Object, Object> actionOptions = new MappingActions<>();
 
-	<T> Boolean allMatch(List<T> source, CallbackP1<T, Boolean> callback) {
+	protected enum ListTypeEnum {
+		ARRAY,
+		COLLECTION
+	}
+
+	private <T> Boolean allMatch(List<T> source, CallbackP1<T, Boolean> callback) {
 		List<Boolean> allMatching = new ArrayList<>();
 
 		for (T t : source)
@@ -149,25 +163,31 @@ public class Processor<S> implements IProcessor<S> {
 
 		// Checks if an object is reached the limit o cycle
 		final CallbackP1<Object, Boolean> isObjInLimitCycle = (obj) -> {
-			final String memoryAddress = Integer.toHexString(obj.hashCode());
+			final String memoryAddress = obj.getClass().getSimpleName() + ":"
+					+ Integer.toHexString(System.identityHashCode(obj));
 
 			// Getting the number of times that this object was mapped
 			final int numberOfMapping = objectCycleMappingCounter.getOrDefault(memoryAddress, 0) + 1;
-
-			// Adding the number of mapping of an object
-			objectCycleMappingCounter.put(memoryAddress, numberOfMapping);
 
 			// If it is above the LIMIT defined, do not map
 			if (numberOfMapping > shared.LIMIT_CYCLE_MAPPING)
 				return true;
 
+			// Adding the number of mapping of an object
+			objectCycleMappingCounter.put(memoryAddress, numberOfMapping);
 			return false;
 		};
 
 		// Helper Function that gets the type Argument of a List
-		final CallbackP1<Field, Class<?>> getListType = (
-				field) -> (Class<?>) ((ParameterizedType) field.getGenericType())
+		final CallbackP1<Field, Class<?>> getListType = (field) -> {
+			Class<?> type = field.getType().getComponentType();
+
+			if (type == null)
+				type = (Class<?>) ((ParameterizedType) field.getGenericType())
 						.getActualTypeArguments()[0];
+
+			return type;
+		};
 
 		// Main Function to map an Object
 		final CallbackP3<Object, Class<?>, Class<?>, Object> objMapper = (valueSource, fieldTypeSource,
@@ -176,9 +196,6 @@ public class Processor<S> implements IProcessor<S> {
 			Object tReturn = null;
 			Class<?> configClsSource = null;
 			Class<?> configClsDestination = null;
-
-			if (isObjInLimitCycle.call(valueSource))
-				return tReturn;
 
 			if (shared.USE_MAPPING_CONFIG) {
 				// Checking the configuration for this source
@@ -205,7 +222,8 @@ public class Processor<S> implements IProcessor<S> {
 				// Mapping the object, and assigning the value to set in the property
 				tReturn = this.mapper(valueSource, configClsDestination, create(configClsDestination));
 			} catch (Exception e) {
-				Printer.err(e);
+				Printer.err("Error while mapping Source: " + fieldTypeSource.getName() + "; to Destination: "
+						+ fieldTypeDestination.getName(), e);
 			}
 
 			return tReturn;
@@ -230,7 +248,9 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Function to map a List Of Object
-		final CallbackP2<Object, Class<?>, Object> listMapper = (valueSource, fieldType) -> {
+		final CallbackP3<Object, ListTypeEnum, Class<?>, Object> listMapper = (valueSource, destinationListType,
+				fieldTypeDestination) -> {
+
 			// Creating a new instance of a generic list
 			final ArrayList<Object> tReturn = new ArrayList<Object>();
 
@@ -243,13 +263,24 @@ public class Processor<S> implements IProcessor<S> {
 			 */
 			for (Object item : (Iterable<Object>) valueSource) {
 				try {
-					final Object result = this.mapper(item, fieldType, create(fieldType));
+					// If the item is a primitive, just add, do not map
+					if (PRIMITIVES.contains(item.getClass())) {
+						tReturn.add(item);
+						continue;
+					}
+
+					final Object result = this.mapper(item, fieldTypeDestination, create(fieldTypeDestination));
 					if (result == null)
-						break;
+						continue;
+
 					tReturn.add(result);
 				} catch (Exception e) {
-					Printer.err(e);
+					Printer.err("Error while mapping to Destination: " + fieldTypeDestination.getName(), e);
 				}
+			}
+
+			if (ListTypeEnum.ARRAY == destinationListType) {
+				return tReturn.toArray(new Object[tReturn.size()]);
 			}
 
 			// assigning the value to set in the property
@@ -261,7 +292,7 @@ public class Processor<S> implements IProcessor<S> {
 			try {
 				field.set(destination, value);
 			} catch (Exception e) {
-				Printer.err(e);
+				Printer.err("Error setting value to field: " + field.getName(), e);
 			}
 		};
 
@@ -286,14 +317,20 @@ public class Processor<S> implements IProcessor<S> {
 		}
 
 		if (isArray.call(source)) {
-			return listMapper.call(source, clsDestination);
+			final ListTypeEnum listType = source.getClass().getComponentType() == null ? ListTypeEnum.COLLECTION
+					: ListTypeEnum.ARRAY;
+
+			return listMapper.call(source, listType, clsDestination);
 		}
 
+		if (isObjInLimitCycle.call(source))
+			return null;
+
 		// Looping all the source fields
-		fields(source, (fieldNameSource, fieldValueSource, field, fieldTypeSource) -> {
+		fields(source, (fieldNameSource, fieldValueSource, fieldSource, fieldTypeSource) -> {
 			Object valueToSet = fieldValueSource;
 
-			if (actionOptions.isSkipMember(field) || actionOptions.isSkipMember(fieldNameSource))
+			if (actionOptions.isSkipMember(fieldSource) || actionOptions.isSkipMember(fieldNameSource))
 				return;
 
 			// If there is no value set in the property just ignore
@@ -321,6 +358,13 @@ public class Processor<S> implements IProcessor<S> {
 			final Object transformationResult = transformMapper.call(fieldValueSource, fieldTypeSource,
 					fieldTypeDestination);
 
+			// if they fields are equals, just set it
+			if ((fieldTypeDestination == fieldTypeSource)
+					&& (valueToSet.getClass().getSimpleName().equals("PersistentBag"))) {
+				fieldSetter.call(fieldDestination, valueToSet);
+				return;
+			}
+
 			// Checking if there is a transformation for these two properties and assign it
 			// to the Value To Set
 			if (transformationResult != null) {
@@ -334,8 +378,11 @@ public class Processor<S> implements IProcessor<S> {
 			} else
 			// Checking if the value is an array
 			if (isArray.call(valueToSet)) {
+				final ListTypeEnum destinationListType = fieldDestination.getClass().getComponentType() == null
+						? ListTypeEnum.COLLECTION
+						: ListTypeEnum.ARRAY;
 				// Mapping the list and assigning the value
-				valueToSet = listMapper.call(fieldValueSource, getListType.call(fieldDestination));
+				valueToSet = listMapper.call(fieldValueSource, destinationListType, getListType.call(fieldDestination));
 			}
 
 			fieldSetter.call(fieldDestination, valueToSet);
