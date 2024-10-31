@@ -432,7 +432,8 @@ public class Processor<S> implements IProcessor<S> {
 		} catch (Exception e) {
 			Printer.err(
 					"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
-					"Error details: " + e.getMessage(), e);
+					"Error details: " + e.getMessage(),
+					e);
 			return null;
 		}
 	}
