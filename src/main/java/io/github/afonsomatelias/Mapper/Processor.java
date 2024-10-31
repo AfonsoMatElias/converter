@@ -360,7 +360,7 @@ public class Processor<S> implements IProcessor<S> {
 
 			// if they fields are equals, just set it
 			if ((fieldTypeDestination == fieldTypeSource)
-					&& (valueToSet.getClass().getSimpleName().equals("PersistentBag"))) {
+					&& !(valueToSet.getClass().getSimpleName().equals("PersistentBag"))) {
 				fieldSetter.call(fieldDestination, valueToSet);
 				return;
 			}

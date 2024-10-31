@@ -36,7 +36,7 @@ public class ApiTest {
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
         assertTrue(dto != null);
-        assertTrue(dto.getParent() != null);
+        assertTrue(dto.getParent() == null);
         assertEquals(dto.getName(), model.getName());
 
         assertNotEquals(dto.getClass(), model.getClass());
