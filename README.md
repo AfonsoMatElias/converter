@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.1
+# Converter v1.2
 
 ## Introduction
 
