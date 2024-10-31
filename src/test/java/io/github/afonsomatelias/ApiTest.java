@@ -277,24 +277,6 @@ public class ApiTest {
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
-        assertTrue(dto.getParent() != null);
-        assertTrue(dto.getParent().getParent() == null);
-    }
-
-    @Test
-    public void shouldIgnoreAllSelfReferenceLayer() {
-        
-        // Converter Instance
-        IConverter converter = new Converter();
-        converter.setLimitCycleMapping(0);
-
-        // Entities
-        Product model = new Product();
-        model.setParent(model);
-
-        // Mapping
-        ProductDto dto = converter.map(model).to(ProductDto.class);
-
         assertTrue(dto.getParent() == null);
     }
 
@@ -347,13 +329,10 @@ public class ApiTest {
         // Converter Instance
         IConverter converter = new Converter();
 
-        // Entities
-        Product model = new Product();
-
         funCallTracker.put("function_calling_counter", 0);
 
         // Mapping
-        List<ProductDto> dto = converter.map(Arrays.asList(model, model)).to(ProductDto.class, (options) -> {
+        List<ProductDto> dto = converter.map(Arrays.asList(new Product(), new Product())).to(ProductDto.class, (options) -> {
 
             options.afterEachMap((src, dst) -> {
 

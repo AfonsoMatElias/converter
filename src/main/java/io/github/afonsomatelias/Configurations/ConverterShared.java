@@ -8,7 +8,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Options.MappingActions;
 
 public class ConverterShared {
-	public int LIMIT_CYCLE_MAPPING = 3;
+	public int LIMIT_CYCLE_MAPPING = 1;
 	public boolean USE_MAPPING_CONFIG = false;
 	public final Map<String, MapperConfig> configurations = new HashMap<>();
 	public final Map<String, CallbackP1<Object, Object>> tranformations = new HashMap<>();

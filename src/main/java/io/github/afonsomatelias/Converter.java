@@ -151,10 +151,10 @@ public class Converter implements IConverter {
 	}
 
 	/**
-	 * Sets the limit while mapping self references objects
+	 * Sets the limit of many time an object can be mapped, to avoid self references objects
 	 * 
 	 * @param limit the number of cycle
-	 * @see DefaultValue Default Value is `3`
+	 * @see DefaultValue Default Value is `1`
 	 */
     @Override
 	public void setLimitCycleMapping(int limit) {

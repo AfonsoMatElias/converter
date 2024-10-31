@@ -90,7 +90,7 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
 ```
 
 * For self-reference objects we can limit how many objects we want to be returned using.
-  By default is *3*.
+  By default is *2*.
 
 ```java
 
