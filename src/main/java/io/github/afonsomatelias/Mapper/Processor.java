@@ -358,7 +358,7 @@ public class Processor<S> implements IProcessor<S> {
 			final Object transformationResult = transformMapper.call(fieldValueSource, fieldTypeSource,
 					fieldTypeDestination);
 
-			// if they fields are equals, just set it
+			// if the fields are equals, just set it, but skip `PersistentBag`
 			if ((fieldTypeDestination == fieldTypeSource)
 					&& !(valueToSet.getClass().getSimpleName().equals("PersistentBag"))) {
 				fieldSetter.call(fieldDestination, valueToSet);
