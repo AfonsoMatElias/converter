@@ -7,6 +7,7 @@ import java.util.Map;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
 public class ConverterShared {
@@ -15,7 +16,7 @@ public class ConverterShared {
 	public final Map<String, MapperConfig> configurations = new HashMap<>();
 	public final Map<String, CallbackP1<Object, Object>> tranformations = new HashMap<>();
 
-	public final Map<Field, Object> forMemberMapping = new HashMap<>();
-	public final Map<Class<?>, List<SetterMemberMapping>> forSetterMemberMapping = new HashMap<>();
+	public final Map<Field, FieldMemberMapping> forMemberMapping = new HashMap<>();
+	public final Map<String, List<SetterMemberMapping>> forSetterMemberMapping = new HashMap<>();
 	public final Map<String, MappingActions<Object, Object>> globalActionOptions = new HashMap<>();
 }
