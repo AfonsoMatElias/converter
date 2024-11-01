@@ -93,6 +93,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
 			CallbackP1<S, Object> transform) {
 
+		// Building the unique name of the action
 		final String key = this.getMappingName();
 		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
 				new ArrayList<SetterMemberMapping>());
@@ -111,7 +112,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
 			CallbackP2<S, MemberMapping, Object> transform) {
 
-			// Building the unique name of the action
+		// Building the unique name of the action
 		final String key = this.getMappingName();
 		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
 				new ArrayList<SetterMemberMapping>());
