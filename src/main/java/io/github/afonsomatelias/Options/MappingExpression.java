@@ -58,7 +58,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 
 		// Compiler trick
 		shared.forMemberMapping.put(field,
-				new FieldMemberMapping(destinationMember, transform, MemberTypeEnum.DOUBLE_CALLBACK));
+				new FieldMemberMapping(destinationMember, transform, MemberTypeEnum.SINGLE_CALLBACK));
 
 		return this;
 	}
