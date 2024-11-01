@@ -12,10 +12,10 @@ public class MemberMapping {
 	}
 
 	public <S> MemberObjectMapping map(S source) {
-		return new MemberObjectMapping(this);
+		return new MemberObjectMapping(new Processor<S>(processor, source));
 	}
 
 	public <S> MemberListMapping map(List<S> source) {
-		return new MemberListMapping(this);
+		return new MemberListMapping(new Processor<List<S>>(processor, source));
 	}
 }

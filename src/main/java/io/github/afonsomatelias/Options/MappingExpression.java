@@ -10,10 +10,12 @@ import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MapperConfig;
+import io.github.afonsomatelias.Enums.MemberTypeEnum;
 import io.github.afonsomatelias.Helpers.FieldHelper;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Options.Interfaces.IMappingExpression;
 import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
+import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
@@ -32,6 +34,14 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	Class<D> destinationClass;
 	ConverterShared shared;
 
+	public String getMappingName() {
+		return new StringBuilder()
+				.append(sourceClass.getName())
+				.append(":")
+				.append(destinationClass.getName())
+				.toString();
+	}
+
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
@@ -47,7 +57,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		}
 
 		// Compiler trick
-		shared.forMemberMapping.put(field, transform);
+		shared.forMemberMapping.put(field,
+				new FieldMemberMapping(destinationMember, transform, MemberTypeEnum.DOUBLE_CALLBACK));
 
 		return this;
 	}
@@ -67,7 +78,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		}
 
 		// Compiler trick
-		shared.forMemberMapping.put(field, transform);
+		shared.forMemberMapping.put(field,
+				new FieldMemberMapping(destinationMember, transform, MemberTypeEnum.DOUBLE_CALLBACK));
 
 		return this;
 	}
@@ -81,11 +93,11 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
 			CallbackP1<S, Object> transform) {
 
-		final Class<?> key = destinationClass.getClass();
+		final String key = this.getMappingName();
 		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
 				new ArrayList<SetterMemberMapping>());
 
-		setters.add(new SetterMemberMapping(setterPropertyMember, transform));
+		setters.add(new SetterMemberMapping(setterPropertyMember, transform, MemberTypeEnum.SINGLE_CALLBACK));
 		shared.forSetterMemberMapping.put(key, setters);
 		return this;
 	}
@@ -99,11 +111,12 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	public <U> MappingExpression<S, D> forMember(ISetterFunction<D, U> setterPropertyMember,
 			CallbackP2<S, MemberMapping, Object> transform) {
 
-		final Class<?> key = destinationClass.getClass();
+			// Building the unique name of the action
+		final String key = this.getMappingName();
 		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
 				new ArrayList<SetterMemberMapping>());
 
-		setters.add(new SetterMemberMapping(setterPropertyMember, transform));
+		setters.add(new SetterMemberMapping(setterPropertyMember, transform, MemberTypeEnum.DOUBLE_CALLBACK));
 		shared.forSetterMemberMapping.put(key, setters);
 		return this;
 	}
@@ -114,7 +127,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 */
 	public MappingExpression<S, D> skipMember(String destinationMember) {
-		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
 			Printer.err("Field '" + destinationMember + "' does not exists");
@@ -122,7 +135,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		}
 
 		CallbackP1<Object, Object> fnVoid = (o) -> null;
-		shared.forMemberMapping.put(field, fnVoid);
+		shared.forMemberMapping.put(field,
+				new FieldMemberMapping(destinationMember, fnVoid, MemberTypeEnum.SINGLE_CALLBACK));
 
 		return this;
 	}
@@ -134,11 +148,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		final Map<String, MappingActions<Object, Object>> globalActionOptions = shared.globalActionOptions;
 
 		// Building the unique name of the action
-		final String fieldActionOptionName = new StringBuilder()
-				.append(sourceClass.getName())
-				.append(":")
-				.append(destinationClass.getName())
-				.toString();
+		final String fieldActionOptionName = this.getMappingName();
 
 		MappingActions<Object, Object> mappingActions = globalActionOptions.getOrDefault(fieldActionOptionName, null);
 
