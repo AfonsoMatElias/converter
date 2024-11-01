@@ -4,21 +4,19 @@ import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Enums.MemberTypeEnum;
 import io.github.afonsomatelias.Mapper.Processor;
-import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
 
 @SuppressWarnings("unchecked")
-public class SetterMemberMapping {
+public class FieldMemberMapping {
 
-	private ISetterFunction<Object, Object> member;
+	private String member;
 	private Object callback;
 	private MemberTypeEnum type;
 
-	public SetterMemberMapping(
-			ISetterFunction<?, ?> setter,
+	public FieldMemberMapping(
+			String member,
 			Object callback,
 			MemberTypeEnum type) {
-
-		this.member = (ISetterFunction<Object, Object>) setter;
+		this.member = member;
 		this.callback = callback;
 		this.type = type;
 	}
@@ -37,7 +35,6 @@ public class SetterMemberMapping {
 				break;
 		}
 
-		member.accept(destination, memberMappingResult);
 		return memberMappingResult;
 	}
 }
