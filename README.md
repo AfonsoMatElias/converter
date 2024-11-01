@@ -113,8 +113,22 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
     .forMember(UserDto::setUsername, (src) -> {
       return "@" + src.getUsername();
     })
+    .forMember("role", (src, member) -> {
+      
+      // Adding extra mapping while mapping the member
+      // Getting just one record from the list and mapping
+      // From: List<Role> to: Role
+      UserRoleDto role = member.map(src.getRoles().get(0)).to(UserRoleDto.class);
+
+      return role;
+    })
     .skipMember("password");
 ```
+
+Note: When creating ``forMember`` map expression with inner mapping, always use ``memberMapping`` from 
+the second `argument` of the expresion: ``.forMember("field", (src, memberMapping) -> { })``.
+We cannot use the main ``converter`` instance because whenever ``converter.map({})`` is called, 
+it creates a new instance of MappingProcessor, ignoring the previous configuration.
 
 * Converting and modifying
 ```java
@@ -248,6 +262,9 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
     public ConverterConfig() {
       
       createMap(Product.class, ProductDto.class);
+      
+      createMap(User.class, UserDto.class)
+        .skipMember("password");
 
     }
 
