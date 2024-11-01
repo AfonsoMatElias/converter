@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP3;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
@@ -25,7 +24,7 @@ import io.github.afonsomatelias.Enums.MappingActionsEnum;
 import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Mapper.Interfaces.IProcessor;
 import io.github.afonsomatelias.Options.MappingActions;
-import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
+import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
 @SuppressWarnings("unchecked")
@@ -38,6 +37,19 @@ public class Processor<S> implements IProcessor<S> {
 	 */
 	public Processor(ConverterShared shared, S source) {
 		this.shared = shared;
+		this.source = source;
+	}
+
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param source the {@link S} object
+	 */
+	public Processor(Processor<?> parent, S source) {
+		this.objectCycleMappingCounter = parent.objectCycleMappingCounter;
+		this.actionOptions = parent.actionOptions;
+		this.shared = parent.shared;
 		this.source = source;
 	}
 
@@ -103,10 +115,10 @@ public class Processor<S> implements IProcessor<S> {
 	 * Stores all the times that an object was mapped for to avoid Self Reference
 	 * Cycle Mapping
 	 */
-	private final Map<String, Integer> objectCycleMappingCounter = new HashMap<>();
+	private Map<String, Integer> objectCycleMappingCounter = new HashMap<>();
 
 	/** Action Controller for this Processor */
-	protected final MappingActions<Object, Object> actionOptions = new MappingActions<>();
+	protected MappingActions<Object, Object> actionOptions = new MappingActions<>();
 
 	protected enum ListTypeEnum {
 		ARRAY,
@@ -307,11 +319,11 @@ public class Processor<S> implements IProcessor<S> {
 				return transformResult;
 		}
 
-		final String createdMapActionOptionName = source.getClass().getName() + ":" + clsDestination.getName();
+		final String mapActionUniqueName = source.getClass().getName() + ":" + clsDestination.getName();
 
 		// Retrieving the action for this field
 		final MappingActions<Object, Object> createdMapActionOption = shared.globalActionOptions
-				.getOrDefault(createdMapActionOptionName, null);
+				.getOrDefault(mapActionUniqueName, null);
 
 		if (createdMapActionOption != null) {
 			// Performing BEFORE_MAP action
@@ -349,20 +361,10 @@ public class Processor<S> implements IProcessor<S> {
 				return;
 
 			// Try to get for member mapping for this field
-			final Object forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
+			final FieldMemberMapping forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
 
 			if (forMemberMapping != null) {
-				Object memberMappingResult = null;
-
-				if (CallbackP1.class.equals(forMemberMapping.getClass())) {
-					memberMappingResult = ((CallbackP1<Object, Object>) forMemberMapping).call(source);
-				}
-
-				if (CallbackP2.class.equals(forMemberMapping.getClass())) {
-					memberMappingResult = ((CallbackP2<Object, MemberMapping, Object>) forMemberMapping)
-							.call(source, new MemberMapping(this));
-				}
-
+				Object memberMappingResult = forMemberMapping.call(source, destination, this);
 				fieldSetter.call(fieldDestination, memberMappingResult);
 				return; // Breaking the process as the member is already mapped
 			}
@@ -403,9 +405,9 @@ public class Processor<S> implements IProcessor<S> {
 		});
 
 		// Performing all the setter of this class
-		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(clsDestination, Arrays.asList());
+		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(mapActionUniqueName, Arrays.asList());
 		for (SetterMemberMapping setterMemberMapping : setters) {
-			setterMemberMapping.call(source, fieldsDestination, this);
+			setterMemberMapping.call(source, destination, this);
 		}
 
 		if (createdMapActionOption != null) {
