@@ -262,7 +262,7 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
     public ConverterConfig() {
       
       createMap(Product.class, ProductDto.class);
-      
+
       createMap(User.class, UserDto.class)
         .skipMember("password");
 
@@ -340,7 +340,7 @@ To load the dependency to you a Maven project, you can follow these steps:
   </dependencies>
 ```
 
-  Note: Converter tags beggins with v[number]. Example: *v.1.1* 
+  Note: Converter tags begins with v[number]. Example: *v.1.1* 
 
 ### 3. Save the pom.xml file.
 
