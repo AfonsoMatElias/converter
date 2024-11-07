@@ -36,7 +36,7 @@ public class ApiTest {
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
         assertTrue(dto != null);
-        assertTrue(dto.getParent() == null);
+        assertTrue(dto.getParent() == dto);
         assertEquals(dto.getName(), model.getName());
 
         assertNotEquals(dto.getClass(), model.getClass());
@@ -262,11 +262,10 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldLimitSelfReferenceLayerToValueAssigned() {
+    public void shouldHaveTheSameReferencesOnMappingTheSameObject() {
         
         // Converter Instance
         IConverter converter = new Converter();
-        converter.setLimitCycleMapping(1);
 
         // Entities
         Product model = new Product();
@@ -277,7 +276,7 @@ public class ApiTest {
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
-        assertTrue(dto.getParent() == null);
+        assertTrue(dto.getParent() == dto);
     }
 
     @Test
