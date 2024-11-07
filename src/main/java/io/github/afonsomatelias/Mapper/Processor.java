@@ -7,11 +7,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
@@ -47,7 +47,7 @@ public class Processor<S> implements IProcessor<S> {
 	 * @param source the {@link S} object
 	 */
 	public Processor(Processor<?> parent, S source) {
-		this.objectCycleMappingCounter = parent.objectCycleMappingCounter;
+		this.mappedObject = parent.mappedObject;
 		this.actionOptions = parent.actionOptions;
 		this.shared = parent.shared;
 		this.source = source;
@@ -115,7 +115,7 @@ public class Processor<S> implements IProcessor<S> {
 	 * Stores all the times that an object was mapped for to avoid Self Reference
 	 * Cycle Mapping
 	 */
-	private Map<String, Integer> objectCycleMappingCounter = new HashMap<>();
+	private Map<String, Object> mappedObject = new HashMap<>();
 
 	/** Action Controller for this Processor */
 	protected MappingActions<Object, Object> actionOptions = new MappingActions<>();
@@ -177,21 +177,22 @@ public class Processor<S> implements IProcessor<S> {
 		// Helper Function to check if an object is an Array
 		final CallbackP1<Object, Boolean> isArray = (in) -> (in.getClass().isArray() || (in instanceof List<?>));
 
-		// Checks if an object is reached the limit o cycle
-		final CallbackP1<Object, Boolean> isObjInLimitCycle = (obj) -> {
+		// Register Mapped Object
+		final CallbackP1<Object, Object> registerMap = (obj) -> {
+
 			final String memoryAddress = obj.getClass().getSimpleName() + ":"
 					+ Integer.toHexString(System.identityHashCode(obj));
 
 			// Getting the number of times that this object was mapped
-			final int numberOfMapping = objectCycleMappingCounter.getOrDefault(memoryAddress, 0) + 1;
+			final Object mapped = mappedObject.getOrDefault(memoryAddress, null);
 
-			// If it is above the LIMIT defined, do not map
-			if (numberOfMapping > shared.LIMIT_CYCLE_MAPPING)
-				return true;
+			if (mapped == null) {
+				mappedObject.put(memoryAddress, destination);
+				return null;
+			}
 
 			// Adding the number of mapping of an object
-			objectCycleMappingCounter.put(memoryAddress, numberOfMapping);
-			return false;
+			return mapped;
 		};
 
 		// Helper Function that gets the type Argument of a List
@@ -270,9 +271,6 @@ public class Processor<S> implements IProcessor<S> {
 			// Creating a new instance of a generic list
 			final ArrayList<Object> tReturn = new ArrayList<Object>();
 
-			if (isObjInLimitCycle.call(valueSource))
-				return tReturn;
-
 			// Looping them
 			/**
 			 * NOTE: this cast to Iterable<T> can throw an exception
@@ -339,8 +337,9 @@ public class Processor<S> implements IProcessor<S> {
 			return listMapper.call(source, listType, clsDestination);
 		}
 
-		if (isObjInLimitCycle.call(source))
-			return null;
+		final Object mappedObject = registerMap.call(source);
+		if (mappedObject != null)
+			return mappedObject;
 
 		// Looping all the source fields
 		fields(source, (fieldNameSource, fieldValueSource, fieldSource, fieldTypeSource) -> {
@@ -405,7 +404,8 @@ public class Processor<S> implements IProcessor<S> {
 		});
 
 		// Performing all the setter of this class
-		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(mapActionUniqueName, Arrays.asList());
+		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(mapActionUniqueName,
+				Arrays.asList());
 		for (SetterMemberMapping setterMemberMapping : setters) {
 			setterMemberMapping.call(source, destination, this);
 		}

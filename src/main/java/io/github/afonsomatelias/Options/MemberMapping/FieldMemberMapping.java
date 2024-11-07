@@ -5,7 +5,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Enums.MemberTypeEnum;
 import io.github.afonsomatelias.Mapper.Processor;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "unused"})
 public class FieldMemberMapping {
 
 	private String member;

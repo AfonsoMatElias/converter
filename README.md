@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.3
+# Converter v1.4
 
 ## Introduction
 
@@ -89,16 +89,6 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
   });
 ```
 
-* For self-reference objects we can limit how many objects we want to be returned using.
-  By default is *1*.
-
-```java
-
-  // Converter Instance
-  IConverter converter = new Converter();
-  converter.setLimitCycleMapping(2);
-
-```
 
 * Using *forMember* method we can target a member and modify it value, and *skipMember* to avoid member mapping
 

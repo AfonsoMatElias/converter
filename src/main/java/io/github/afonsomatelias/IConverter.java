@@ -83,12 +83,4 @@ public interface IConverter {
 	 *                     needs to be used
 	 */
 	void setUseMapConfiguration(boolean useMapConfig);
-
-	/**
-	 * Sets the limit of many time an object can be mapped, to avoid self references objects
-	 * 
-	 * @param limit the number of cycle
-	 * @see DefaultValue Default Value is `1`
-	 */
-	void setLimitCycleMapping(int limit);
 }

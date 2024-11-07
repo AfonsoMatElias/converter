@@ -130,7 +130,6 @@ public class Converter implements IConverter {
 		return new HashMap<String, Object>() {
 			{
 				put("USE_MAPPING_CONFIG", shared.USE_MAPPING_CONFIG);
-				put("LIMIT_CYCLE_MAPPING", shared.LIMIT_CYCLE_MAPPING);
 				put("GLOBAL_ACTIONOPTIONS", shared.globalActionOptions);
 				put("CONFIGURATIONS", shared.configurations);
 				put("TRANFORMATIONS", shared.tranformations);
@@ -150,14 +149,4 @@ public class Converter implements IConverter {
 		shared.USE_MAPPING_CONFIG = useMapConfig;
 	}
 
-	/**
-	 * Sets the limit of many time an object can be mapped, to avoid self references objects
-	 * 
-	 * @param limit the number of cycle
-	 * @see DefaultValue Default Value is `1`
-	 */
-    @Override
-	public void setLimitCycleMapping(int limit) {
-		shared.LIMIT_CYCLE_MAPPING = limit;
-	}
 }
