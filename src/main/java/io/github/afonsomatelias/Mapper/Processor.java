@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP3;
+import io.github.afonsomatelias.Callback.ICallbacks.CallbackP4;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MapperConfig;
@@ -125,6 +126,12 @@ public class Processor<S> implements IProcessor<S> {
 		COLLECTION
 	}
 
+	class CreateInput {
+		public Class<?> dstClazz;
+		public String dstFieldName;
+		public Class<?> fieldToInstance;
+	}
+
 	private <T> Boolean allMatch(List<T> source, CallbackP1<T, Boolean> callback) {
 		List<Boolean> allMatching = new ArrayList<>();
 
@@ -140,14 +147,20 @@ public class Processor<S> implements IProcessor<S> {
 	 * @param clazz the class to create instace of
 	 * @return the instance object
 	 */
-	private Object create(Class<?> clazz) {
+	private Object create(CreateInput input) {
+		Class<?> clazz = input.fieldToInstance;
+
 		try {
 			return clazz.getConstructor().newInstance();
 		} catch (Exception e) {
-			Printer.err(
-					"Error creating the destination type '" + clazz.getName()
-							+ "', try to use .addTransform(...) or .forMember(...) to intercept the member mapping",
-					"Error details: " + e.getMessage());
+			final String cls = input.dstClazz == null ? "[Class]" : input.dstClazz.getName();
+			final String clsFieldName = input.dstFieldName == null ? "[Field]" : input.dstFieldName;
+			final String clsFieldType = clazz.getName();
+			final String path = String.join(".", Arrays.asList(cls, clsFieldName + ":" + clsFieldType));
+
+			Printer.err("Error creating the destination type for " + path + ", try to use .addTransform(...) or .forMember(...) "
+				+ "to intercept the member mapping, or .skip(...) in mapping options to ignore the field mapping. Exception Details: "
+				+ e.getMessage() + "\n");
 		}
 
 		return null;
@@ -207,8 +220,8 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Main Function to map an Object
-		final CallbackP3<Object, Class<?>, Class<?>, Object> objMapper = (valueSource, fieldTypeSource,
-				fieldTypeDestination) -> {
+		final CallbackP4<Object, Class<?>, Class<?>, String, Object> objMapper = (valueSource, fieldTypeSource,
+				fieldTypeDestination, fieldName) -> {
 
 			Object tReturn = null;
 			Class<?> configClsSource = null;
@@ -236,8 +249,15 @@ public class Processor<S> implements IProcessor<S> {
 			}
 
 			try {
+				final Class<?> _configClsDestination = configClsDestination;
 				// Mapping the object, and assigning the value to set in the property
-				tReturn = this.mapper(valueSource, configClsDestination, create(configClsDestination));
+				tReturn = this.mapper(valueSource, configClsDestination, create(new CreateInput() {
+					{
+						dstClazz = clsDestination;
+						dstFieldName = fieldName;
+						fieldToInstance = _configClsDestination;
+					}
+				}));
 			} catch (Exception e) {
 				Printer.err("Error while mapping Source: " + fieldTypeSource.getName() + "; to Destination: "
 						+ fieldTypeDestination.getName(), e);
@@ -265,8 +285,8 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Function to map a List Of Object
-		final CallbackP3<Object, ListTypeEnum, Class<?>, Object> listMapper = (valueSource, destinationListType,
-				fieldTypeDestination) -> {
+		final CallbackP4<Object, ListTypeEnum, Class<?>, String, Object> listMapper = (valueSource, destinationListType,
+				fieldTypeDestination, fieldName) -> {
 
 			// Creating a new instance of a generic list
 			final ArrayList<Object> tReturn = new ArrayList<Object>();
@@ -283,7 +303,13 @@ public class Processor<S> implements IProcessor<S> {
 						continue;
 					}
 
-					final Object result = this.mapper(item, fieldTypeDestination, create(fieldTypeDestination));
+					final Object result = this.mapper(item, fieldTypeDestination, create(new CreateInput() {
+						{
+							dstClazz = clsDestination;
+							dstFieldName = fieldName;
+							fieldToInstance = fieldTypeDestination;
+						}
+					}));
 					if (result == null)
 						continue;
 
@@ -334,7 +360,7 @@ public class Processor<S> implements IProcessor<S> {
 			final ListTypeEnum listType = source.getClass().getComponentType() == null ? ListTypeEnum.COLLECTION
 					: ListTypeEnum.ARRAY;
 
-			return listMapper.call(source, listType, clsDestination);
+			return listMapper.call(source, listType, clsDestination, null);
 		}
 
 		final Object mappedObject = registerMap.call(source);
@@ -348,6 +374,16 @@ public class Processor<S> implements IProcessor<S> {
 			if (actionOptions.isSkipMember(fieldSource) || actionOptions.isSkipMember(fieldNameSource))
 				return;
 
+			// Skip if the type needs to me ignored
+			final Boolean isSkipTypeGlobal = shared.classTypesToIgnore.contains(fieldSource.getType().getName()) || 
+				shared.classTypesToIgnore.contains(fieldSource.getType().getSimpleName());
+
+			final Boolean isSkipTypeInline = actionOptions.isSkipType(fieldTypeSource.getSimpleName()) || 
+				actionOptions.isSkipType(fieldTypeSource);
+
+			if (isSkipTypeGlobal || isSkipTypeInline)
+				return;
+
 			// If there is no value set in the property just ignore
 			if (valueToSet == null)
 				return;
@@ -358,6 +394,7 @@ public class Processor<S> implements IProcessor<S> {
 			// Just ignore if the field is was not found
 			if (fieldDestination == null)
 				return;
+
 
 			// Try to get for member mapping for this field
 			final FieldMemberMapping forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
@@ -389,7 +426,7 @@ public class Processor<S> implements IProcessor<S> {
 			// Checking object types
 			if (fieldTypeDestination != fieldTypeSource) {
 				// Mapping the object and assigning the value
-				valueToSet = objMapper.call(fieldValueSource, fieldTypeSource, fieldTypeDestination);
+				valueToSet = objMapper.call(fieldValueSource, fieldTypeSource, fieldTypeDestination, fieldNameSource);
 			} else
 			// Checking if the value is an array
 			if (isArray.call(valueToSet)) {
@@ -397,7 +434,8 @@ public class Processor<S> implements IProcessor<S> {
 						? ListTypeEnum.COLLECTION
 						: ListTypeEnum.ARRAY;
 				// Mapping the list and assigning the value
-				valueToSet = listMapper.call(fieldValueSource, destinationListType, getListType.call(fieldDestination));
+				valueToSet = listMapper.call(fieldValueSource, destinationListType, getListType.call(fieldDestination),
+						fieldNameSource);
 			}
 
 			fieldSetter.call(fieldDestination, valueToSet);
@@ -447,7 +485,13 @@ public class Processor<S> implements IProcessor<S> {
 			actionOptions.call(MappingActionsEnum.BEFORE_MAP, source, null);
 			actionOptions.call(MappingActionsEnum.BEFORE_EACH_MAP, source, null);
 
-			final Object $destination = this.mapper(this.source, clazz, this.create(clazz));
+			final Object $destination = this.mapper(this.source, clazz, create(new CreateInput() {
+				{
+					dstClazz = clazz;
+					dstFieldName = "[Root]";
+					fieldToInstance = clazz;
+				}
+			}));
 
 			// Performs the AFTER_MAP action if the modifier is set
 			actionOptions.call(MappingActionsEnum.AFTER_MAP, source, $destination);

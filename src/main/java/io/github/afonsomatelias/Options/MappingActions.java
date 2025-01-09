@@ -4,9 +4,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
@@ -30,6 +32,9 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 
 	// Stores all the actions according to the type
 	protected Map<String, Field> inlineSkippingMembers = new HashMap<>();
+
+	// Stores all the actions according to the type
+	protected Set<String> inlineSkippingTypes = new HashSet<>();
 
 	/**
 	 * Subscribes {@link MappingActionsEnum} actions
@@ -162,6 +167,26 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	}
 
 	/**
+	 * Subscribes all the types that need to be skipped in current mapping
+	 * 
+	 * @param types the types that needs to be skipped
+	 */
+	public void skipTypes(String... types) {
+		for (String type : types)
+			inlineSkippingTypes.add(type);
+	}
+
+	/**
+	 * Subscribes all the types that need to be skipped in current mapping
+	 * 
+	 * @param types the types that needs to be skipped
+	 */
+	public void skipTypes(Class<?>... types) {
+		for (Class<?> type : types)
+			inlineSkippingTypes.add(type.getName());
+	}
+
+	/**
 	 * Checks if the member provided is registed as member to be skipped
 	 * 
 	 * @param member the member to be checked
@@ -179,5 +204,25 @@ public class MappingActions<S, D> implements IMappingActions<S, D> {
 	 */
 	public boolean isSkipMember(Field member) {
 		return inlineSkippingMembers.containsValue(member);
+	}
+
+	/**
+	 * Checks if the type provided is registed as type to be skipped
+	 * 
+	 * @param type the type to be checked
+	 * @return true / false
+	 */
+	public boolean isSkipType(String typeName) {
+		return inlineSkippingTypes.contains(typeName);
+	}
+
+	/**
+	 * Checks if the type provided is registed as type to be skipped
+	 * 
+	 * @param type the type to be checked
+	 * @return true / false
+	 */
+	public boolean isSkipType(Class<?> type) {
+		return inlineSkippingTypes.contains(type.getName());
 	}
 }

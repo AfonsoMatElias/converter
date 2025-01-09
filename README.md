@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.4
+# Converter v1.4.1
 
 ## Introduction
 
@@ -113,6 +113,27 @@ The options can be added on **Mapping Configuration Creation** or after, it depe
       return role;
     })
     .skipMember("password");
+```
+
+* We can also use *skipTypes* to avoid certain type mapping
+
+```java
+  // Converter Instance
+  IConverter converter = new Converter();
+
+  // We can use name of the Class
+  converter.skipTypes("Float");
+
+  // Or, we can use the Class Type
+  converter.skipTypes(String.class);
+
+  // Entities
+  Product model = new Product();
+
+  // Mapping
+  ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+    options.skipTypes(Integer.class);
+  });
 ```
 
 Note: When creating ``forMember`` map expression with inner mapping, always use ``memberMapping`` from 

@@ -6,6 +6,7 @@ public class Product {
 
     private String name;
     private Float price;
+    private Integer quantity;
     private String categories = "Liquid;Refrig";
 
     private Product parent;
@@ -55,5 +56,13 @@ public class Product {
 
     public void setCategories(String categories) {
         this.categories = categories;
+    }
+    
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 }

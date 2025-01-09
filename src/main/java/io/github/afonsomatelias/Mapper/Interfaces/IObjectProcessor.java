@@ -49,5 +49,5 @@ public interface IObjectProcessor<S> extends IProcessor<S> {
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> S from(D destination, CallbackV1<IMappingActions<S, D>> modifier);
+	public <D> S from(D destination, CallbackV1<IMappingActions<D, S>> modifier);
 }

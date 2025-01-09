@@ -83,4 +83,18 @@ public interface IConverter {
 	 *                     needs to be used
 	 */
 	void setUseMapConfiguration(boolean useMapConfig);
+
+	/**
+	 * Register classes name that needs to ignored (This one is more precise)
+	 * 
+	 * @param classes the classes that need to be ignored globally
+	 */
+	void skipTypes(Class<?>... classes);
+
+	/**
+	 * Register classes name that needs to ignored
+	 * 
+	 * @param classNames the classes name that need to be ignored globally
+	 */
+	void skipTypes(String... classNames);
 }

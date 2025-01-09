@@ -49,7 +49,7 @@ public class Converter implements IConverter {
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-    @Override
+	@Override
 	public <S> IListProcessor<S> map(List<S> source) {
 		return new ListProcessor<S>(shared, source);
 	}
@@ -62,7 +62,7 @@ public class Converter implements IConverter {
 	 * @param source      the {@link S} Class
 	 * @param destination the {@link D} Class
 	 */
-    @Override
+	@Override
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
 			Class<D> destination) {
@@ -78,7 +78,7 @@ public class Converter implements IConverter {
 	 * @param source      the {@link S} Class
 	 * @param destination the {@link D} Class
 	 */
-    @Override
+	@Override
 	public <S, D> IMappingExpression<S, D> createMap(
 			Class<S> source,
 			Class<D> destination,
@@ -113,7 +113,7 @@ public class Converter implements IConverter {
 	 * @param to                the {@link TypeSource} Class
 	 * @param behavior          the interception bahavior
 	 */
-    @Override
+	@Override
 	public <TypeSource, TypeDestination> void addTransform(Class<TypeSource> from, Class<TypeDestination> to,
 			CallbackP1<TypeSource, TypeDestination> behavior) {
 		String name = new StringBuilder().append(from.getName()).append(":").append(to.getName()).toString();
@@ -125,7 +125,7 @@ public class Converter implements IConverter {
 	 * 
 	 * @return map of the configurations
 	 */
-    @Override
+	@Override
 	public Map<String, Object> getConfigs() {
 		return new HashMap<String, Object>() {
 			{
@@ -133,6 +133,7 @@ public class Converter implements IConverter {
 				put("GLOBAL_ACTIONOPTIONS", shared.globalActionOptions);
 				put("CONFIGURATIONS", shared.configurations);
 				put("TRANFORMATIONS", shared.tranformations);
+				put("TYPES_TO_IGNORE", shared.classTypesToIgnore);
 			}
 		};
 	}
@@ -144,9 +145,30 @@ public class Converter implements IConverter {
 	 * @param useMapConfig a boolean value to indicates if the mapping configuration
 	 *                     needs to be used
 	 */
-    @Override
+	@Override
 	public void setUseMapConfiguration(boolean useMapConfig) {
 		shared.USE_MAPPING_CONFIG = useMapConfig;
 	}
 
+	/**
+	 * Register classes name that needs to ignored (This one is more precise)
+	 * 
+	 * @param classes the classes that need to be ignored globally
+	 */
+	@Override
+	public void skipTypes(Class<?>... classes) {
+		for (Class<?> cls : classes)
+			shared.classTypesToIgnore.add(cls.getName());
+	}
+	
+	/**
+	 * Register classes name that needs to ignored
+	 * 
+	 * @param classNames the classes name that need to be ignored globally
+	 */
+	@Override
+	public void skipTypes(String... classNames) {
+		for (String clsName : classNames)
+			shared.classTypesToIgnore.add(clsName);
+	}
 }

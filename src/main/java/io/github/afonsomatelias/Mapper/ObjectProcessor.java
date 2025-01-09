@@ -105,7 +105,7 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 	 * @return the object Converted
 	 */
 	@Override
-	public <D> S from(D destination, CallbackV1<IMappingActions<S, D>> modifier) {
+	public <D> S from(D destination, CallbackV1<IMappingActions<D, S>> modifier) {
 		if (destination == null) {
 			Printer.out("Invalid destination object, it cannot be null.");
 			return null;
@@ -116,7 +116,7 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler
 				Object modifierAsObject = actionOptions;
-				modifier.call((MappingActions<S, D>) modifierAsObject);
+				modifier.call((MappingActions<D, S>) modifierAsObject);
 			}
 			return (S) super.fromDestination(destination);
 		} catch (Exception e) {

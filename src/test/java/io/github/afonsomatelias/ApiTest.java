@@ -371,6 +371,31 @@ public class ApiTest {
     }
 
     @Test
+    public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddressAndModifyingTheValuesInOptions() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        // Entities
+        Product model = new Product();
+        model.setParent(model);
+
+        ProductDto dto = new ProductDto();
+        dto.setName("Coca-Cola");
+        dto.setPrice(2f);
+
+        funCallTracker.put("function_calling_counter", 0);
+
+        Product modelMapped = converter.map(model).from(dto, (options) -> {
+            options.afterMap((srcDto, dstDb) -> {
+                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+            });
+        });
+
+        assertTrue(modelMapped != null);
+        assertTrue(funCallTracker.get("function_calling_counter") == 1);
+    }
+
+    @Test
     public void shouldSkipMemberOnExtractionUsingStringMember() {
         // Converter Instance
         IConverter converter = new Converter();
@@ -423,4 +448,65 @@ public class ApiTest {
         assertNotEquals(modelMapped.getPrice(), dto.getPrice());
         assertEquals(modelMapped, model);
     }
+
+    @Test
+    public void shouldSkipTypeMappingAccordingGlobalConfigAsClassType() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        converter.skipTypes(Float.class);
+
+        // Entities
+        Product model = new Product();
+        model.setName("Sprite");
+        model.setPrice(1f);
+
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertTrue(dto != null);
+        assertTrue(dto.getPrice() == null);
+    }
+
+    @Test
+    public void shouldSkipTypeMappingAccordingGlobalConfigAsStringName() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+        converter.skipTypes("Float");
+
+        // Entities
+        Product model = new Product();
+        model.setName("Sprite");
+        model.setPrice(1f);
+
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertTrue(dto != null);
+        assertTrue(dto.getPrice() == null);
+    }
+
+    @Test
+    public void shouldSkipTypeMappingAccordingToMappingOptions() {
+        // Converter Instance
+        IConverter converter = new Converter();
+
+
+        // Entities
+        Product model = new Product();
+        model.setName("Sprite");
+        model.setPrice(1f);
+        model.setQuantity(15);
+
+        ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+            options.skipTypes(String.class);
+            options.skipTypes("Float");
+        });
+
+        assertTrue(dto != null);
+        
+        assertTrue(dto.getName() == null);
+        assertTrue(dto.getPrice() == null);
+        assertTrue(dto.getQuantity() != null);
+    }
+
 }

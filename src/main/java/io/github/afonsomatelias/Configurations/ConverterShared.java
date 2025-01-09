@@ -2,8 +2,10 @@ package io.github.afonsomatelias.Configurations;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Options.MappingActions;
@@ -18,4 +20,6 @@ public class ConverterShared {
 	public final Map<Field, FieldMemberMapping> forMemberMapping = new HashMap<>();
 	public final Map<String, List<SetterMemberMapping>> forSetterMemberMapping = new HashMap<>();
 	public final Map<String, MappingActions<Object, Object>> globalActionOptions = new HashMap<>();
+
+	public final Set<String> classTypesToIgnore = new HashSet<>();
 }
