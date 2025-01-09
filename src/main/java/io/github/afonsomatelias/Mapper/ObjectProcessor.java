@@ -116,6 +116,7 @@ public class ObjectProcessor<S> extends Processor<S> implements IObjectProcessor
 			if (modifier != null) {
 				// Assing to object to be able to trick the compiler
 				Object modifierAsObject = actionOptions;
+				// Inverting the models to be able to apply options
 				modifier.call((MappingActions<D, S>) modifierAsObject);
 			}
 			return (S) super.fromDestination(destination);
