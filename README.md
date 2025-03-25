@@ -1,19 +1,24 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.4.1
+# Converter v1.5.0
 
-## Introduction
+## What is Converter?
 
 Converter is a Library used to convert/map an object to another, in a simple way without doing making to many steps to achieve the object conversion.
 
-This Mapper Lib inspired in C# AutoMapper Library.
+This Mapper Lib inspired in C# AutoMapper Library... but, in this mapper you can map object right away no need to config anything. 
+
+In case of restricting the object conversion, you can set it to always use mapper configurations and fails if there is no configuration provided.
 
 ## Usage
 
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
+  // Converter Configuration Instance
+  ConverterConfiguration config = new ConverterConfiguration();
+  
+  // Creating the Converter
+  IConverter converter = config.createConverter();
 
   // Entities
   Product model = new Product();
@@ -22,149 +27,285 @@ This Mapper Lib inspired in C# AutoMapper Library.
   ProductDto dto = converter.map(model).to(ProductDto.class);
 ```
 
+You can use the ``beforeMap`` and ``afterMap`` methods to modify the input and/or output.
+
+### Mapping and modifying
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Entities
+  Product model = new Product();
+
+  // Mapping
+  ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+    options.beforeMap((src, dst) -> {
+      // TODO: something nice 🤩 before the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto <null>
+    });
+
+    options.afterMap((src, dst) -> {
+      // TODO: something nice 🤩 after the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto
+    });
+  });
+```
+
+In case of list objects you can use the ``beforeEachMap`` and ``afterEachMap`` methods to modify during the mapping process. **Note**: you may use the previous ``beforeMap`` and ``afterMap`` methods too, but the args will be the list of objects.
+
+### Mapping and modifying a list
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Entities
+  Product model1 = new Product("Coca Cola");
+  Product model2 = new Product("Sprite");
+
+  List<Product> models = Arrays.asList(model1, model2);
+
+  // Mapping
+  List<ProductDto> dto = converter.map(models).to(ProductDto.class, (options) -> {
+    options.beforeEachMap((src, dst) -> {
+      // TODO: something nice 🤩 before the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto <null>
+    });
+
+    options.afterEachMap((src, dst) -> {
+      // TODO: something nice 🤩 after the object is mapped
+      // src -> item: Product
+      // dst -> item: ProductDto
+    });
+
+    // But these still work
+    options.beforeMap((src, dst) -> { /* ... */ });
+
+    options.afterMap((src, dst) -> { /* ... */ });
+  });
+```
+
+You can skip members or types that do not need to be mapped, to achieve that you can use the ``skipMembers`` and ``skipTypes`` methods.
+
+### Mapping and skipping
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Entities
+  Product model = new Product();
+
+  // Mapping
+  ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+    
+    // 1. Skip Members passing String
+    options.skipMembers("name", "price");
+    // 2. Skip Members passing Field (Note: Try and Catch is needed using fields)
+    options.skipMembers(
+      ProductDto.class.getDeclaredField("name"),
+      ProductDto.class.getDeclaredField("price")
+    );
+
+    // 1. Skip Types passing String
+    options.skipTypes("String", "int");
+    // 2. Skip Types passing Class
+    options.skipTypes(String.class, int.class);
+
+  });
+```
+
+You can also make a copy of an object. **Note**: the returned object should have a different memory address.
+
+### Making a copy of an Object
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Entities
+  Product model = new Product();
+  model.setName("Coca Cola");
+  model.setPrice(0.5f);
+
+  Product copy = converter.map(model).to();
+
+  // Has the different memory address
+  Boolean isEquals = dbModel == dbModelMapped;  
+```
+Note: We can also apply modifiers, like: ``.to((options) -> { })``
+
 ## Creating Mapping for each class type
 
 We can also create mapping configuration for each class type, and add global options if needed.
 The options can be added on **Mapping Configuration Creation** or after, it depends to you.
 
-* Mapping Configuration Creation
+### Global Configuration
 
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
-
-  converter.createMap(Category.class, CategoryDto.class);
-
-  converter.createMap(Product.class, ProductDto.class, (options) -> {
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
     
-    options.beforeMap((src, dst) -> {
-      // TODO: something nice 🤩 before the object is mapped
-    });
-
-    options.afterMap((src, dst) -> {
-      // TODO: something nice 🤩 after the object is mapped
+    cfg.createMap(Category.class, CategoryDto.class);
+  
+    cfg.createMap(Product.class, ProductDto.class, (options) -> {
+      options.beforeMap((src, dst) -> { /* ... */ });
+      options.afterMap((src, dst) -> { /* ... */ });
     });
 
   });
 ```
 
-* After Mapping Configuration Creation, this way we can chain them
+After the mapping configuration is created, we can also add fields modification using ``beforeMap`` and ``afterMap``. It can be chained.
 
+### Mapping Configuration Creation
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+    
+    cfg.createMap(Category.class, CategoryDto.class);
+    
+    cfg.createMap(Product.class, ProductDto.class, (options) -> { /* ... */ })
+      .beforeMap((src, dst) -> { /* ... */ })
+      .afterMap((src, dst) -> { /* ... */ });
 
-  converter.createMap(Category.class, CategoryDto.class);
-
-  converter.createMap(Product.class, ProductDto.class)
-    .beforeMap((src, dst) -> {
-      // TODO: something nice 🤩 before the object is mapped
-    })
-    .afterMap((src, dst) -> {
-      // TODO: something nice 🤩 after the object is mapped
-    });
-```
-
-* If you also want to add reverse mapping for the entities, we use reverseMap to achieve that
-
-```java
-  // Converter Instance
-  IConverter converter = new Converter();
-
-  converter.createMap(Category.class, CategoryDto.class)
-    .reverseMap();
-```
-
-* We can also mutate or transform a value types
-
-```java
-  // Converter Instance
-  IConverter converter = new Converter();
-
-  converter.addTransform(String.class, String[].class, (source) -> {
-
-      String[] arrayOfStringValue = source.split(";");
-
-      return arrayOfStringValue;
   });
 ```
 
+In case of mapping both ways, we can use the *reverseMap* method to swap the types, instead of creating a new mapping. **Note**: but you need to also define it own configurations.
 
-* Using *forMember* method we can target a member and modify it value, and *skipMember* to avoid member mapping
-
+### Reverse Mapping
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+    
+    cfg.createMap(Product.class, ProductDto.class, (options) -> { /* ... */ })
+      .beforeMap((src, dst) -> { /* ... */ })
+      .afterMap((src, dst) -> { /* ... */ })
 
-  converter.createMap(User.class, UserDto.class)
-    .forMember("name", (src) -> {
-      return " Sr(a)." + src.getName();
-    })
-    .forMember(UserDto::setUsername, (src) -> {
-      return "@" + src.getUsername();
-    })
-    .forMember("role", (src, member) -> {
+      .reverseMap()
+      .beforeMap((src, dst) -> { /* ... */ })
+      .afterMap((src, dst) -> { /* ... */ });
+
+  });
+```
+
+We can also mutate or transform a value types... Whenever the Converter finds the mapping of the source type to the destination type, it will call the *mutate* the value.
+
+### Transformations
+```java
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+
+    cfg.addTransform(RoleString.class, RoleCollection.class, (roleString) -> {
+
+      RoleCollection roleCollection = new RoleCollection();
+      source.getValue().split(",").forEach((role) -> {
+        collection.set(role);
+      });
+
+      return collection;
+    });
+    
+  });
+```
+
+Using ``forMember`` method we can target a member and modify it value on mapping process. It can be chained.
+
+### Using forMember
+```java
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+
+    cfg.createMap(User.class, UserDto.class)
       
-      // Adding extra mapping while mapping the member
-      // Getting just one record from the list and mapping
-      // From: List<Role> to: Role
-      UserRoleDto role = member.map(src.getRoles().get(0)).to(UserRoleDto.class);
+      // # Using fieldName
+      .forMember("name", (src) -> {
+        return " Sr(a)." + src.getName();
+      })
 
-      return role;
-    })
-    .skipMember("password");
-```
+      // # Using setter
+      .forMember(UserDto::setUserName, (src) -> {
+        return "@" + src.getUserName();
+      })
 
-* We can also use *skipTypes* to avoid certain type mapping
+      // # Using member converver
+      .forMember("role", (src, cvt) -> {
+        
+        // Adding extra mapping while mapping the member
+        // Getting just one record from the list and mapping
+        // From: List<Role> to: Role
+        UserRoleDto role = cvt.map(src.getRoles().get(0)).to(UserRoleDto.class);
 
-```java
-  // Converter Instance
-  IConverter converter = new Converter();
+        return role;
+      })
 
-  // We can use name of the Class
-  converter.skipTypes("Float");
-
-  // Or, we can use the Class Type
-  converter.skipTypes(String.class);
-
-  // Entities
-  Product model = new Product();
-
-  // Mapping
-  ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
-    options.skipTypes(Integer.class);
+      // # Using skipMember to avoid mapping the field "password"
+      .skipMember("password");
   });
 ```
 
-Note: When creating ``forMember`` map expression with inner mapping, always use ``memberMapping`` from 
-the second `argument` of the expresion: ``.forMember("field", (src, memberMapping) -> { })``.
-We cannot use the main ``converter`` instance because whenever ``converter.map({})`` is called, 
-it creates a new instance of MappingProcessor, ignoring the previous configuration.
+You can also restrict the mapping by setting ``useMappingConfig`` to ``true``, this way only the mapping configuration will be used, otherwise it will fail on non existing configuration mapping.
 
-* Converting and modifying
+### Restricting Mapping
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+    cfg.useMappingConfig(true);
 
-  // Entities
-  Product model = new Product();
+    cfg.createMap(Category.class, CategoryDto.class);
+    cfg.createMap(Product.class, ProductDto.class);
 
-  // Mapping
-  ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
-     options.beforeMap((src, dst) -> {
-      // TODO: something nice 🤩 before the object is mapped
-    });
-
-    options.afterMap((src, dst) -> {
-      // TODO: something nice 🤩 after the object is mapped
-    });
   });
 ```
 
-* Mapping or Extracting values from another object
+By default the Converter logs all the warnings, like the *fields that could not be instantiated*, but if you want to avoid it, you can use the ``setSilentLogs`` method in the configuration.
+
+### Silent Logs
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+    cfg.setSilentLogs(true);
+  });
+```
+
+## Mapping Profiles
+
+You can separete the configuration of each class type, and the global configuration, to achieve this we can use the ``Profile`` class.
+
+You just need to create a class that extends the ``Profile`` class, use the ``@Override`` **init** method to create the configuration and add the profile class to the ConverterConfiguration.
+
+### Profiles
+```java
+  public class UserProfile extends Profile {
+    @Override
+    public void init() {
+      createMap(User.class, UserDto.class);
+    }
+  }
+  
+  public class ProductProfile extends Profile {
+    @Override
+    public void init() {
+      createMap(Product.class, ProductDto.class);
+    }
+  }
+```
+
+And then add the profiles to the ConverterConfiguration
+
+### Adding Profiles
+```java
+  ConverterConfiguration config = new ConverterConfiguration((cfg) -> {
+    cfg.addProfile(
+      UserProfile.class,
+      ProductProfile.class
+    );
+  });
+```
+
+## Extracting Values From Another Object
+
+Converter can also extract values from another object, as long as the object has the same structure.
+**Note**: the returned object should have the same memory address and only the fields with non null values will be extracted.
+
+### Mapping or Extracting values from another object
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
 
   // Entities
   Product dbModel = new Product();
@@ -182,27 +323,10 @@ it creates a new instance of MappingProcessor, ignoring the previous configurati
   Boolean isEquals = dbModel == dbModelMapped;  
 ```
 
-* Making a copy of an Object with different memory address
-```java
-  // Converter Instance
-  IConverter converter = new Converter();
-
-  // Entities
-  Product model = new Product();
-  model.setName("Coca Cola");
-  model.setPrice(0.5f);
-
-  Product copy = converter.map(model).to();
-
-  // Has the different memory address
-  Boolean isEquals = dbModel == dbModelMapped;  
-```
-Note: We can also apply modifiers, like: ``.to((options) -> { })``
-
 * Members can be skipped while extracting values from another object using mapping actions
 ```java
-  // Converter Instance
-  IConverter converter = new Converter();
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
 
   // Entities
   Product dbModel = new Product();
@@ -223,57 +347,19 @@ Note: We can also apply modifiers, like: ``.to((options) -> { })``
   });
 ```
 
-* Converting and modifying a list
-```java
-  // Converter Instance
-  IConverter converter = new Converter();
+## Using Spring Boot
 
-  // Entities
-  Product model1 = new Product("Coca Cola");
-  Product model2 = new Product("Sprite");
-
-  List<Product> models = Arrays.asList(model1, model2);
-
-  // Mapping
-  List<ProductDto> dto = converter.map(models).to(ProductDto.class, (options) -> {
-    options.beforeMap((src, dst) -> {
-      // TODO: something nice 🤩 before the object is mapped
-      // src -> List<Product>
-      // dst -> List<ProductDto> <null>
-    });
-
-    options.afterMap((src, dst) -> {
-      // TODO: something nice 🤩 after the object is mapped
-      // src -> List<Product>
-      // dst -> List<ProductDto>
-    });
-    
-    options.beforeEachMap((src, dst) -> {
-      // TODO: something nice 🤩 before the object is mapped
-      // src -> item: Product
-      // dst -> item: ProductDto <null>
-    });
-
-    options.afterEachMap((src, dst) -> {
-      // TODO: something nice 🤩 after the object is mapped
-      // src -> item: Product
-      // dst -> item: ProductDto
-    });
-  });
-```
-
-
-### Using Spring Boot
-
-If you use SpringBoot and want to use Dependency Injection, you can create a converter config file and assign it as *@Component*:
+If you use SpringBoot and want to use Dependency Injection, you can create a converter config class extending ``ConverterConfiguration`` and assign it as ``@Component`` annotation:
 
 ```java
   @Component
-  public class ConverterConfig extends Converter {
+  public class ConverterConfig extends ConverterConfiguration {
     public ConverterConfig() {
       
-      createMap(Product.class, ProductDto.class);
+      // Only crutial logs (System.err) will be printed
+      setSilentLogs(true);
 
+      createMap(Product.class, ProductDto.class);
       createMap(User.class, UserDto.class)
         .skipMember("password");
 
@@ -283,7 +369,7 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
     public Converter autowire() throws InstantiationException, IllegalAccessException {
       // This method is used to give the possibility to 
       // instantiate the class using @Autowired annotation
-      return this; 
+      return this.createConverter(); 
     }
   }
 ```
@@ -340,18 +426,15 @@ To load the dependency to you a Maven project, you can follow these steps:
 
 ```xml
   <dependencies>
-    ...
-    
     <dependency>
       <groupId>io.github.afonsomatelias</groupId>
       <artifactId>converter</artifactId>
       <version>[tag]</version>
     </dependency>
-
   </dependencies>
 ```
 
-  Note: Converter tags begins with v[number]. Example: *v.1.1* 
+  Note: Converter tags begins with v[number]. Example: *v.1.5.0* 
 
 ### 3. Save the pom.xml file.
 
@@ -361,4 +444,7 @@ To load the dependency to you a Maven project, you can follow these steps:
   mvn clean install
 ```
 
-### 5. You can now use the Converter in your Maven project.
+<p >
+  <h2 align="center">You can now use the Converter in your Maven project.</h2>
+  <h1 align="center"> Congrats 🥳🎉 </h1>
+</p>
