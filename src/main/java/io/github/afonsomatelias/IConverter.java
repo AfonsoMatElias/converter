@@ -1,14 +1,9 @@
 package io.github.afonsomatelias;
 
 import java.util.List;
-import java.util.Map;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
 import io.github.afonsomatelias.Mapper.Interfaces.IListProcessor;
 import io.github.afonsomatelias.Mapper.Interfaces.IObjectProcessor;
-import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
-import io.github.afonsomatelias.Options.Interfaces.IMappingExpression;
 
 public interface IConverter {
 	/**
@@ -30,71 +25,4 @@ public interface IConverter {
 	 *         perform
 	 */
 	<S> IListProcessor<S> map(List<S> source);
-
-	/**
-	 * Creates a Mapping configuration for the Source and Destination Object type
-	 * 
-	 * @param <S>      the {@link S} Type
-	 * @param <D> the {@link D} Type
-	 * @param source        the {@link S} Class
-	 * @param destination   the {@link D} Class
-	 */
-	<S, D> IMappingExpression<S, D> createMap(
-			Class<S> source,
-			Class<D> destination);
-
-	/**
-	 * Creates a Mapping configuration for the Source and Destination Object type
-	 * 
-	 * @param <S>         the {@link S} Type
-	 * @param <D>         the {@link D} Type
-	 * @param source      the {@link S} Class
-	 * @param destination the {@link D} Class
-	 */
-	<S, D> IMappingExpression<S, D> createMap(
-			Class<S> source,
-			Class<D> destination,
-			CallbackV1<IMappingActions<S, D>> modifier);
-
-	/**
-	 * Add tranformation to a mapping behavior for {@link From} Type to {@link To}
-	 * Type
-	 * 
-	 * @param <From>   the Type that needs to intercepted
-	 * @param <To>     the Type to be converted to
-	 * @param from     the {@link From} Class
-	 * @param to       the {@link From} Class
-	 * @param behavior the interception bahavior
-	 */
-	<From, To> void addTransform(Class<From> from, Class<To> to, CallbackP1<From, To> behavior);
-
-	/**
-	 * Gets all the configurations of the converter and return a Map of it
-	 * 
-	 * @return map of the configurations
-	 */
-	Map<String, Object> getConfigs();
-
-	/**
-	 * Sets the configuration value that allow to use mapping configuration on map
-	 * or not
-	 * 
-	 * @param useMapConfig a boolean value to indicates if the mapping configuration
-	 *                     needs to be used
-	 */
-	void setUseMapConfiguration(boolean useMapConfig);
-
-	/**
-	 * Register classes name that needs to ignored (This one is more precise)
-	 * 
-	 * @param classes the classes that need to be ignored globally
-	 */
-	void skipTypes(Class<?>... classes);
-
-	/**
-	 * Register classes name that needs to ignored
-	 * 
-	 * @param classNames the classes name that need to be ignored globally
-	 */
-	void skipTypes(String... classNames);
 }

@@ -1,24 +1,15 @@
 package io.github.afonsomatelias;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
 import io.github.afonsomatelias.Configurations.ConverterShared;
-import io.github.afonsomatelias.Configurations.MapperConfig;
 import io.github.afonsomatelias.Mapper.ListProcessor;
 import io.github.afonsomatelias.Mapper.ObjectProcessor;
 import io.github.afonsomatelias.Mapper.Interfaces.IListProcessor;
 import io.github.afonsomatelias.Mapper.Interfaces.IObjectProcessor;
-import io.github.afonsomatelias.Options.MappingActions;
-import io.github.afonsomatelias.Options.MappingExpression;
-import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
-import io.github.afonsomatelias.Options.Interfaces.IMappingExpression;
 
-@SuppressWarnings("unchecked")
-public class Converter implements IConverter {
+
+public abstract class Converter implements IConverter {
 	/**
 	 * Default Converter
 	 */
@@ -27,7 +18,7 @@ public class Converter implements IConverter {
 	}
 
 	// All the public properties that will e shared between inner instances
-	private final ConverterShared shared;
+	protected final ConverterShared shared;
 
 	/**
 	 * Creates Mapping Processor for the {@link S} Object
@@ -52,123 +43,5 @@ public class Converter implements IConverter {
 	@Override
 	public <S> IListProcessor<S> map(List<S> source) {
 		return new ListProcessor<S>(shared, source);
-	}
-
-	/**
-	 * Creates a Mapping configuration for the Source and Destination Object type
-	 * 
-	 * @param <S>         the {@link S} Type
-	 * @param <D>         the {@link D} Type
-	 * @param source      the {@link S} Class
-	 * @param destination the {@link D} Class
-	 */
-	@Override
-	public <S, D> IMappingExpression<S, D> createMap(
-			Class<S> source,
-			Class<D> destination) {
-		shared.configurations.put(source.getName(), new MapperConfig(source, destination));
-		return new MappingExpression<>(source, destination, shared);
-	}
-
-	/**
-	 * Creates a Mapping configuration for the Source and Destination Object type
-	 * 
-	 * @param <S>         the {@link S} Type
-	 * @param <D>         the {@link D} Type
-	 * @param source      the {@link S} Class
-	 * @param destination the {@link D} Class
-	 */
-	@Override
-	public <S, D> IMappingExpression<S, D> createMap(
-			Class<S> source,
-			Class<D> destination,
-			CallbackV1<IMappingActions<S, D>> modifier) {
-		this.createMap(source, destination);
-
-		if (modifier != null) {
-			// Building the unique name of the action
-			String fieldActionOptionName = new StringBuilder().append(source.getName()).append(":")
-					.append(destination.getName()).toString();
-
-			// Registering the action
-			MappingActions<Object, Object> actionOptions = new MappingActions<>();
-			shared.globalActionOptions.put(fieldActionOptionName, actionOptions);
-
-			// Assing to object to be able to trick the compiler
-			Object modifierAsObject = actionOptions;
-
-			modifier.call((MappingActions<S, D>) modifierAsObject);
-		}
-
-		return new MappingExpression<>(source, destination, shared);
-	}
-
-	/**
-	 * Add tranformation to a mapping behavior for {@link TypeSource} Type to
-	 * {@link TypeDestination} Type
-	 * 
-	 * @param <TypeSource>      the Type that needs to intercepted
-	 * @param <TypeDestination> the Type to be converted to
-	 * @param from              the {@link TypeSource} Class
-	 * @param to                the {@link TypeSource} Class
-	 * @param behavior          the interception bahavior
-	 */
-	@Override
-	public <TypeSource, TypeDestination> void addTransform(Class<TypeSource> from, Class<TypeDestination> to,
-			CallbackP1<TypeSource, TypeDestination> behavior) {
-		String name = new StringBuilder().append(from.getName()).append(":").append(to.getName()).toString();
-		shared.tranformations.put(name, (CallbackP1<Object, Object>) behavior);
-	}
-
-	/**
-	 * Gets all the configurations of the converter and return a Map of it
-	 * 
-	 * @return map of the configurations
-	 */
-	@Override
-	public Map<String, Object> getConfigs() {
-		return new HashMap<String, Object>() {
-			{
-				put("USE_MAPPING_CONFIG", shared.USE_MAPPING_CONFIG);
-				put("GLOBAL_ACTIONOPTIONS", shared.globalActionOptions);
-				put("CONFIGURATIONS", shared.configurations);
-				put("TRANFORMATIONS", shared.tranformations);
-				put("TYPES_TO_IGNORE", shared.classTypesToIgnore);
-			}
-		};
-	}
-
-	/**
-	 * Sets the configuration value that allow to use mapping configuration on map
-	 * or not
-	 * 
-	 * @param useMapConfig a boolean value to indicates if the mapping configuration
-	 *                     needs to be used
-	 */
-	@Override
-	public void setUseMapConfiguration(boolean useMapConfig) {
-		shared.USE_MAPPING_CONFIG = useMapConfig;
-	}
-
-	/**
-	 * Register classes name that needs to ignored (This one is more precise)
-	 * 
-	 * @param classes the classes that need to be ignored globally
-	 */
-	@Override
-	public void skipTypes(Class<?>... classes) {
-		for (Class<?> cls : classes)
-			shared.classTypesToIgnore.add(cls.getName());
-	}
-	
-	/**
-	 * Register classes name that needs to ignored
-	 * 
-	 * @param classNames the classes name that need to be ignored globally
-	 */
-	@Override
-	public void skipTypes(String... classNames) {
-		for (String clsName : classNames)
-			shared.classTypesToIgnore.add(clsName);
 	}
 }
