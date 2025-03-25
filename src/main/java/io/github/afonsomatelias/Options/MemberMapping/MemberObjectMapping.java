@@ -10,6 +10,13 @@ public class MemberObjectMapping {
 		this.processor = processor;
 	}
 
+	/**
+	 * Maps the source object to the destination class provided
+	 * 
+	 * @param <D>   the {@link D} object type
+	 * @param clazz the {@link D} class type
+	 * @return the object Converted
+	 */
 	public <D> D to(Class<D> clazz) {
 		try {
 			return (D) this.processor.toDestination(clazz);

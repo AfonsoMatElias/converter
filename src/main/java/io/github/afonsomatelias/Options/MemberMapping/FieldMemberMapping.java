@@ -2,26 +2,39 @@ package io.github.afonsomatelias.Options.MemberMapping;
 
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
-import io.github.afonsomatelias.Enums.MemberTypeEnum;
+import io.github.afonsomatelias.Enums.EMemberType;
 import io.github.afonsomatelias.Mapper.Processor;
 
 @SuppressWarnings({"unchecked", "unused"})
 public class FieldMemberMapping {
 
-	private String member;
-	private Object callback;
-	private MemberTypeEnum type;
+	private final String member;
+	private final Object callback;
+	private final EMemberType type;
 
 	public FieldMemberMapping(
-			String member,
-			Object callback,
-			MemberTypeEnum type) {
+		String member,
+		Object callback,
+		EMemberType type
+	) {
 		this.member = member;
 		this.callback = callback;
 		this.type = type;
 	}
-
-	public Object call(Object source, Object destination, Processor<?> processor) {
+	
+	/**
+	 * Calls the mapping callback method to resolve the member value for the given source object.
+	 * 
+	 * @param source the source object from which the member value is to be resolved
+	 * @param destination the destination object to which the mapped value is to be set
+	 * @param processor the Processor object that triggered the mapping
+	 * @return the mapped value
+	 */
+	public Object call(
+		Object source, 
+		Object destination, 
+		Processor<?> processor
+	) {
 		Object memberMappingResult = null;
 
 		switch (this.type) {

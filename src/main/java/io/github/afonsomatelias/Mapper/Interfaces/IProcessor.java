@@ -3,10 +3,11 @@ package io.github.afonsomatelias.Mapper.Interfaces;
 public interface IProcessor<S> {
 	
 	/**
-	 * Creates a new instance of object provided, just like copy and paste with
-	 * different memory address
+	 * Creates a new instance of the source object, effectively acting like a 
+	 * copy operation but with a different memory address.
 	 * 
-	 * @return new object instance
+	 * @param <D> the type of the object extending the source type
+	 * @return a new instance of the source object, or null if the source is null
 	 */
 	<D extends S> D to();
 }
