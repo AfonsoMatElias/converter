@@ -8,25 +8,43 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import io.github.afonsomatelias.Configurations.ConverterConfiguration;
+import io.github.afonsomatelias.Helpers.MethodCallCounter;
 import io.github.afonsomatelias.Models.Product;
 import io.github.afonsomatelias.Models.ProductDto;
+import io.github.afonsomatelias.Models.User;
+import io.github.afonsomatelias.Models.UserDto;
+import io.github.afonsomatelias.Profiles.ProductProfile;
+import io.github.afonsomatelias.Profiles.UserProfile;
 
 /**
  * Unit test for simple Api.
  */
 public class ApiTest {
-    Map<String, Integer> funCallTracker = new HashMap<>();
+    MethodCallCounter method;
+
+    public ApiTest() {
+        new ConverterConfiguration((config) -> {
+            config.setSilentLogs(true);
+        });
+    }
+
+    @Before
+    public void beforeTest() {
+        method = MethodCallCounter.$new();
+    }
 
     @Test
     public void shouldConvertFromModelToDto() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -44,8 +62,10 @@ public class ApiTest {
 
     @Test
     public void shouldConvertFromListModelToListDto() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -61,8 +81,10 @@ public class ApiTest {
 
     @Test
     public void shouldCopyAndPasteModel() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model1 = new Product();
@@ -77,16 +99,18 @@ public class ApiTest {
 
     @Test
     public void shouldTransformeValue() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
 
         // Transformacao de tipo no momento de converçao
-        converter.addTransform(String.class, String[].class, (source) -> {
+        config.addTransform(String.class, String[].class, (source) -> {
 
             String[] arrayOfStringValue = source.split(";");
 
             return arrayOfStringValue;
         });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -99,14 +123,16 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldChangeMemberValueAccording() {
-        // Converter Instance
-        IConverter converter = new Converter();
+    public void shouldChangeMemberValueAccordingForMemberValue() {
+        final ConverterConfiguration config = new ConverterConfiguration();
 
-        converter.createMap(Product.class, ProductDto.class)
-            .forMember("name", (src) -> {
-                return "Wine";
-            });
+        config.createMap(Product.class, ProductDto.class)
+                .forMember("name", (src) -> {
+                    return "Wine";
+                });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -120,13 +146,15 @@ public class ApiTest {
 
     @Test
     public void shouldChangeSetterMemberValueAccording() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
 
-        converter.createMap(Product.class, ProductDto.class)
-            .forMember(ProductDto::setName, (src) -> {
-                return "Wine";
-            });
+        config.createMap(Product.class, ProductDto.class)
+                .forMember(ProductDto::setName, (src) -> {
+                    return "Wine";
+                });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -139,13 +167,38 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldSkipMemberMapping() {
-        // Converter Instance
-        IConverter converter = new Converter();
+    public void shouldMapFieldUsingForMemberMapInstance() {
+        final ConverterConfiguration config = new ConverterConfiguration();
 
-        // Transformacao de tipo no momento de converçao
-        converter.createMap(Product.class, ProductDto.class)
+        config.createMap(Product.class, ProductDto.class)
+                .forMember(ProductDto::setForMemberMapTestChild, (src, cvtr) -> {
+                    return cvtr.map(src).to(ProductDto.class);
+                });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNotNull(dto);
+        assertEquals(model.getName(), dto.getName());
+        assertNotNull(dto.getForMemberMapTestChild());
+        assertEquals(model.getName(), dto.getForMemberMapTestChild().getName());
+    }
+
+    @Test
+    public void shouldSkipMemberMapping() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
+        config.createMap(Product.class, ProductDto.class)
                 .skipMember("name");
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -158,13 +211,15 @@ public class ApiTest {
 
     @Test
     public void shouldSkipMemberMappingIfAllMembersAreNullReturnNull() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
 
         // Transformacao de tipo no momento de converçao
-        converter.createMap(Product.class, ProductDto.class)
+        config.createMap(Product.class, ProductDto.class)
                 .skipMember("name")
                 .skipMember("price");
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -176,39 +231,38 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldCallBeforeMapActionWithSourceValueAndNullDestination() {
+    public void shouldCallBeforeMapActionWithSourceValueAndDestination() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
 
-        funCallTracker.put("function_calling_counter", 0);
-
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
-
             options.beforeMap((src, dst) -> {
                 assertNotNull(src);
                 assertNull(dst);
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+
+                method.call();
             });
-
         });
-
+        
         assertNotNull(dto);
-        assertTrue(funCallTracker.get("function_calling_counter") == 1);
+        method.assertMethodCalled(1);
     }
 
     @Test
     public void shouldCallAfterMapActionWithSourceValueAndDestination() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
-
-        funCallTracker.put("function_calling_counter", 0);
 
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
@@ -216,39 +270,40 @@ public class ApiTest {
             options.afterMap((src, dst) -> {
                 assertNotNull(src);
                 assertNotNull(dst);
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+
+                method.call();
             });
 
         });
 
         assertNotNull(dto);
-        assertTrue(funCallTracker.get("function_calling_counter") == 1);
+        method.assertMethodCalled(1);
     }
 
     @Test
     public void shouldCallGlobalBeforeMapAndAfterMapActions() {
-        // Converter Instance
-        IConverter converter = new Converter();
-        funCallTracker.put("beforeMap_function_calling_counter", 0);
-        funCallTracker.put("afterMap_function_calling_counter", 0);
-
-        converter.createMap(Product.class, ProductDto.class, (options) -> {
+        final ConverterConfiguration config = new ConverterConfiguration();
+        
+        config.createMap(Product.class, ProductDto.class, (options) -> {
 
             options.beforeMap((src, dst) -> {
                 assertNotNull(src);
                 assertNull(dst);
-                funCallTracker.put("beforeMap_function_calling_counter",
-                        funCallTracker.get("beforeMap_function_calling_counter") + 1);
+
+                method.call();
             });
 
             options.afterMap((src, dst) -> {
                 assertNotNull(src);
                 assertNotNull(dst);
-                funCallTracker.put("afterMap_function_calling_counter",
-                        funCallTracker.get("afterMap_function_calling_counter") + 1);
+
+                method.call();
             });
 
         });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -257,15 +312,15 @@ public class ApiTest {
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
         assertNotNull(dto);
-        assertTrue(funCallTracker.get("beforeMap_function_calling_counter") == 1);
-        assertTrue(funCallTracker.get("afterMap_function_calling_counter") == 1);
+        method.assertMethodCalled(2);
     }
 
     @Test
     public void shouldHaveTheSameReferencesOnMappingTheSameObject() {
-        
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -281,10 +336,12 @@ public class ApiTest {
 
     @Test
     public void shouldNotMapIfSetToUseConfigAlways() {
-        
+        final ConverterConfiguration config = new ConverterConfiguration();
+
+        config.setUseMapConfiguration(true);
+
         // Converter Instance
-        IConverter converter = new Converter();
-        converter.setUseMapConfiguration(true);
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -293,18 +350,18 @@ public class ApiTest {
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
-        assertTrue(dto == null);
+        assertNull(dto);
     }
 
-        @Test
-    public void shouldCallBeforeEachMapActionWithSourceValueAndNullDestination() {
+    @Test
+    public void shouldCallBeforeEachMapActionWithSourceValueAndDestination() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
-
-        funCallTracker.put("function_calling_counter", 0);
 
         // Mapping
         List<ProductDto> dto = converter.map(Arrays.asList(model, model)).to(ProductDto.class, (options) -> {
@@ -313,22 +370,83 @@ public class ApiTest {
 
                 assertNotNull(src);
                 assertNull(dst);
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
-                
+
+                method.call();
+
+            });
+
+            options.afterEachMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNotNull(dst);
+
+                method.call();
             });
 
         });
 
         assertNotNull(dto);
-        assertTrue(funCallTracker.get("function_calling_counter") == 2);
+
+        method.assertMethodCalled(4);
+    }
+    
+    @Test
+    public void shouldCallAllTheMappingActionsAccordingToTheActionAndNumberItems() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        List<ProductDto> dto = converter.map(Arrays.asList(model, model)).to(ProductDto.class, (options) -> {
+
+            options.beforeMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNull(dst);
+                method.call();
+
+            });
+
+            options.afterMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNotNull(dst);
+                method.call();
+
+            });
+            
+            options.beforeEachMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNull(dst);
+                method.call();
+
+            });
+
+            options.afterEachMap((src, dst) -> {
+
+                assertNotNull(src);
+                assertNotNull(dst);
+                method.call();
+
+            });
+
+        });
+
+        assertNotNull(dto);
+        method.assertMethodCalled(6);
     }
 
     @Test
     public void shouldCallAfterEachMapActionWithSourceValueAndDestination() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
 
-        funCallTracker.put("function_calling_counter", 0);
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Mapping
         List<ProductDto> dto = converter.map(Arrays.asList(new Product(), new Product())).to(ProductDto.class, (options) -> {
@@ -337,20 +455,23 @@ public class ApiTest {
 
                 assertNotNull(src);
                 assertNotNull(dst);
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+
+                method.call();
 
             });
 
         });
 
         assertNotNull(dto);
-        assertTrue(funCallTracker.get("function_calling_counter") == 2);
+        method.assertMethodCalled(2);
     }
 
     @Test
     public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddress() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -372,8 +493,10 @@ public class ApiTest {
 
     @Test
     public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddressAndModifyingTheValuesInOptions() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -383,22 +506,22 @@ public class ApiTest {
         dto.setName("Coca-Cola");
         dto.setPrice(2f);
 
-        funCallTracker.put("function_calling_counter", 0);
-
         Product modelMapped = converter.map(model).from(dto, (options) -> {
             options.afterMap((srcDto, dstDb) -> {
-                funCallTracker.put("function_calling_counter", funCallTracker.get("function_calling_counter") + 1);
+                method.call();
             });
         });
 
         assertTrue(modelMapped != null);
-        assertTrue(funCallTracker.get("function_calling_counter") == 1);
+        method.assertMethodCalled(1);
     }
 
     @Test
     public void shouldSkipMemberOnExtractionUsingStringMember() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -422,8 +545,10 @@ public class ApiTest {
 
     @Test
     public void shouldSkipMemberOnExtractionUsingFieldMember() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+
         // Converter Instance
-        IConverter converter = new Converter();
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -451,10 +576,12 @@ public class ApiTest {
 
     @Test
     public void shouldSkipTypeMappingAccordingGlobalConfigAsClassType() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
+        
+        config.skipTypes(Float.class);
 
-        converter.skipTypes(Float.class);
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -469,10 +596,12 @@ public class ApiTest {
 
     @Test
     public void shouldSkipTypeMappingAccordingGlobalConfigAsStringName() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
 
-        converter.skipTypes("Float");
+        config.skipTypes("Float");
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -481,15 +610,16 @@ public class ApiTest {
 
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
-        assertTrue(dto != null);
-        assertTrue(dto.getPrice() == null);
+        assertNotNull(dto);
+        assertNull(dto.getPrice());
     }
 
     @Test
     public void shouldSkipTypeMappingAccordingToMappingOptions() {
-        // Converter Instance
-        IConverter converter = new Converter();
+        final ConverterConfiguration config = new ConverterConfiguration();
 
+        // Converter Instance
+        final IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -502,11 +632,68 @@ public class ApiTest {
             options.skipTypes("Float");
         });
 
-        assertTrue(dto != null);
-        
-        assertTrue(dto.getName() == null);
-        assertTrue(dto.getPrice() == null);
-        assertTrue(dto.getQuantity() != null);
+        assertNotNull(dto);
+        assertNull(dto.getName());
+        assertNull(dto.getPrice());
+        assertNotNull(dto.getQuantity() != null);
     }
 
+    @Test
+    public void shouldAddTheProfilesAndUseTheConfiguration() {
+        final ConverterConfiguration config = new ConverterConfiguration((options) -> {
+            
+            options.setUseMapConfiguration(true);
+            options.addProfile(
+                ProductProfile.class,
+                UserProfile.class
+            );
+            
+            // options.addProfile(ApiTest.class);
+        });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
+
+        // Entities
+        Product product = new Product();
+        product.setName("Sprite");
+        product.setPrice(3f);
+
+        User user = new User();
+
+        ProductDto productDto = converter.map(product).to(ProductDto.class);
+        UserDto userDto = converter.map(user).to(UserDto.class);
+
+        assertNotNull(productDto);
+        assertNotNull(userDto);
+    }
+    
+    @Test
+    public void shouldNotMapAnyTypeWithNoConfigAndUseMapConfigAsTrue() {
+        final ConverterConfiguration config = new ConverterConfiguration((options) -> {
+            
+            options.setUseMapConfiguration(true);
+            options.addProfile(
+                // ProductProfile.class,
+                // UserProfile.class
+            );
+
+        });
+
+        // Converter Instance
+        final IConverter converter = config.createConverter();
+
+        // Entities
+        Product product = new Product();
+        product.setName("Sprite");
+        product.setPrice(3f);
+
+        User user = new User();
+
+        ProductDto productDto = converter.map(product).to(ProductDto.class);
+        UserDto userDto = converter.map(user).to(UserDto.class);
+
+        assertNull(productDto);
+        assertNull(userDto);
+    }
 }

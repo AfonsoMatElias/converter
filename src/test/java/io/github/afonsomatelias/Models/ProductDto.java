@@ -11,6 +11,8 @@ public class ProductDto {
     private ProductDto parent;
     private List<ProductDto> products;
     
+    private ProductDto forMemberMapTestChild;
+    
     public String getName() {
         return name;
     }
@@ -33,6 +35,14 @@ public class ProductDto {
 
     public void setParent(ProductDto parent) {
         this.parent = parent;
+    }
+
+    public ProductDto getForMemberMapTestChild() {
+        return forMemberMapTestChild;
+    }
+
+    public void setForMemberMapTestChild(ProductDto forMemberMapTestChild) {
+        this.forMemberMapTestChild = forMemberMapTestChild;
     }
 
     public List<ProductDto> getProducts() {
