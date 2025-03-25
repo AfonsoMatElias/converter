@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
+import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
 import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
@@ -170,11 +171,11 @@ public class Processor<S> implements IProcessor<S> {
 			}
 		};
 
-		final CallbackP1<Field, Object> fnGetSrcValue = (field) -> {
+		final CallbackP2<Object, Field, Object> fnGetValue = (obj, field) -> {
 			try {
 				if (field == null) return null;
                 field.setAccessible(true);
-				return field.get(objSource);
+				return field.get(obj);
 			} catch (Exception e) {
 				return null;
 			}
@@ -263,8 +264,10 @@ public class Processor<S> implements IProcessor<S> {
 
 			final Class<?> fieldTypeSource = fieldSource.getType();
 			final String fieldSourceName = fieldSource.getName();
-			final Object fieldSourceValue = fnGetSrcValue.call(fieldSource);
-			
+			final Object fieldSourceValue = fnGetValue.call(objSource, fieldSource);
+			final Object fieldDestinationValue = fnGetValue.call(objDestination, fieldDestination);
+
+
 			Object valueToSet = fieldSourceValue;
 
 
@@ -307,15 +310,18 @@ public class Processor<S> implements IProcessor<S> {
 
 			// Checking object types
 			if (fieldTypeDestination != fieldTypeSource) {
+				// if there is already an instance of the destination field, use it
+				final Object $objDestination = fieldDestinationValue != null ? fieldDestinationValue : create(
+					fieldTypeDestination,
+					fieldName, 
+					clsObjDestination
+				);
+
 				// Mapping the object and assigning the value
 				valueToSet = this.mapObject(
 					fieldSourceValue, 
 					fieldTypeDestination, 
-					create(
-						fieldTypeDestination,
-						fieldName, 
-						clsObjDestination
-					)
+					$objDestination
 				);
 			}
 
