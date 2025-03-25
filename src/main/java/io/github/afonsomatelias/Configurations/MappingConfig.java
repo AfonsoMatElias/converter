@@ -1,10 +1,10 @@
 package io.github.afonsomatelias.Configurations;
 
-public class MapperConfig {
+public class MappingConfig {
 	private Class<?> source;
 	private Class<?> destination;
 
-	public MapperConfig(Class<?> source, Class<?> destination) {
+	public MappingConfig(Class<?> source, Class<?> destination) {
 		this.source = source;
 		this.destination = destination;
 	}
