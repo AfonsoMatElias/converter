@@ -6,10 +6,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
 public class FieldHelper {
@@ -45,18 +43,16 @@ public class FieldHelper {
     }
 
     public static Map<String, Field> toMappedFields(Class<?> clazz, IFieldkeyValue<String, Field> forEachField) {
-        return new HashMap<String, Field>() {
-            {
-                final Field[] fields = toFields(clazz);
-                for (final Field field : fields) {
-                    field.setAccessible(true);
-                    put(field.getName(), field);
+        return new HashMap<String, Field>() {{
+            final Field[] fields = toFields(clazz);
+            for (final Field field : fields) {
+                field.setAccessible(true);
+                put(field.getName(), field);
 
-                    if (forEachField != null)
-                        forEachField.run(field.getName(), field, field.getType());
-                }
+                if (forEachField != null)
+                    forEachField.run(field.getName(), field, field.getType());
             }
-        };
+        }};
 
     }
 
@@ -81,7 +77,7 @@ public class FieldHelper {
                 // Running the action
                 action.run(fieldName, field.get(obj), field.getType());
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                Printer.err(e);
+                $$.err(e);
             }
         }
 
@@ -93,7 +89,7 @@ public class FieldHelper {
             try {
                 forEachField.run(name, field.get(obj), type);
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                Printer.err(e);
+                $$.err(e);
             }
         });
     }
@@ -103,7 +99,7 @@ public class FieldHelper {
             try {
                 forEachField.run(name, field.get(obj), field, type);
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                Printer.err(e);
+                $$.err(e);
             }
         });
     }
@@ -122,38 +118,6 @@ public class FieldHelper {
         }
     }
 
-    public static <T> void setField(T obj, String field, Object value) {
-        if (value == null)
-            return;
-
-        Map<String, Field> objFields = toMappedFields(obj.getClass());
-        Field fieldObj = objFields.getOrDefault(field, null);
-
-        if (fieldObj == null)
-            return;
-
-        try {
-            fieldObj.set(obj, value);
-        } catch (Exception e) {
-            Printer.err(e);
-        }
-    }
-
-    public static <T> Boolean hasField(T obj, String field) {
-        return toMappedFields(obj.getClass()).containsKey(field);
-    }
-
-    public static <T> Object getValue(T obj, String field) {
-        if (obj == null)
-            return null;
-
-        if (obj instanceof LinkedHashMap) {
-            return ((LinkedHashMap<String, Object>) obj).getOrDefault(field, null);
-        } else {
-            return field(obj, field);
-        }
-    }
-
     public static <T> T call(Object obj, String field, Object... params) {
 
         for (Method method : obj.getClass().getMethods()) {
@@ -163,41 +127,10 @@ public class FieldHelper {
                     return (T) method.invoke(obj, params);
                 }
             } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
-                Printer.err(e);
+                $$.err(e);
             }
         }
 
         return null;
-    }
-
-    /**
-     * Loops ClassModel or LinkedHashMap model
-     * 
-     * @param model  the model to be looped
-     * @param action the action that will be performed
-     */
-    public static void loop(Object model, IFieldkeyValue<String, Object> action) {
-
-        if (action == null)
-            return;
-
-        if (model instanceof LinkedHashMap) {
-            for (Entry<String, Object> entry : ((LinkedHashMap<String, Object>) model).entrySet()) {
-                action.run(entry.getKey(), entry.getValue(), entry.getValue().getClass());
-            }
-        } else {
-            for (Method method : model.getClass().getMethods()) {
-                // If it does not begin with get, skip!
-                if (!method.getName().startsWith("get"))
-                    continue;
-
-                try {
-                    action.run(method.getName().substring("get".length()), method.invoke(model),
-                            method.getReturnType());
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                    Printer.err(e);
-                }
-            }
-        }
     }
 }
