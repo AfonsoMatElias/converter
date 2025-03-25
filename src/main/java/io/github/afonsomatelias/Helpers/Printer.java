@@ -20,28 +20,13 @@ class Log {
 
     public String prefix() {
         String date = LocalDateTime.now().toString().replace("T", " ");
-        String sep = " - ";
-        return new StringBuilder()
-            .append("[")
-            .append(appName)
-            .append(sep)
-            .append(date)
-            .append("]: ")
-            .toString();
+        return "[" + appName + " - " + date + "]: ";
     }
 
     public String prefix(String source) {
-        String date = LocalDateTime.now().toString().replace("T", " ");
         String sep = " - ";
-        return new StringBuilder()
-            .append("[")
-            .append(appName)
-            .append(sep)
-            .append(source)
-            .append(sep)
-            .append(date)
-            .append("]: ")
-            .toString();
+        String date = LocalDateTime.now().toString().replace("T", " ");
+        return  "[" + appName + sep + source + sep + date + "]: ";
     }
 
     /**
@@ -100,13 +85,18 @@ class Log {
     public void out(Object... contents) {
         printMultipleMessages(System.out, appName, contents);
     }
-    
+
     public void err(Object... contents) {
         printMultipleMessages(System.err, appName, contents);
-    }    
+    }
 }
 
 public class Printer {
+    static Log LOGGER = null;
+
+    static Log log() {
+        return (LOGGER != null) ? LOGGER : (LOGGER = new Log("Printer"));
+    }
 
     /**
      * Prints out as info the content(s) provided
@@ -115,7 +105,7 @@ public class Printer {
      * @return the printer instance
      */
     public static void out(Object... contents) {
-        new Log("Printer").out(contents);
+        log().out(contents);
     }
 
     /**
@@ -125,7 +115,7 @@ public class Printer {
      * @return the printer instance
      */
     public static void err(Object... contents) {
-        new Log("Printer").out(contents);
+        log().err(contents);
     }
 
     /**
