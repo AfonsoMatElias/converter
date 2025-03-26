@@ -26,27 +26,27 @@ public abstract class Converter implements IConverter {
 	protected final ConverterShared shared;
 
 	/**
-	 * Creates Mapping Processor for the {@link S} Object
+	 * Creates Mapping Processor for the {@link Entry} Object
 	 * 
-	 * @param <S>    	the {@link S} Type
-	 * @param entry 	the {@link S} Object to be mapped
+	 * @param <Entry>    	the {@link Entry} Type
+	 * @param entry 		the {@link Entry} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	public <S> IObjectMapper<S> map(S entry) {
+	public <Entry> IObjectMapper<Entry> map(Entry entry) {
 		return new ObjectMapper<>(shared, entry);
 	}
 
 	/**
-	 * Creates Mapping Processor for the {@link S} Object
+	 * Creates Mapping Processor for the {@link Entry} Object
 	 * 
-	 * @param <S>    	the {@link S} Type
-	 * @param entry 	the {@link S} Object to be mapped
+	 * @param <Entry>    	the {@link Entry} Type
+	 * @param entry 		the {@link Entry} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
 	@Override
-	public <S> IListMapper<S> map(List<S> entry) {
+	public <Entry> IListMapper<Entry> map(List<Entry> entry) {
 		return new ListMapper<>(shared, entry);
 	}
 
@@ -55,7 +55,7 @@ public abstract class Converter implements IConverter {
 	 * a {@link Map} and the destination must also be a {@link Map}.
 	 * 
 	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link Map}
-	 * @param entry the {@link MapObject} Object to be mapped
+	 * @param entry			 the {@link MapObject} Object to be mapped
 	 * @return the Projector the where having all the all the different methods to
 	 *         perform
 	 */
