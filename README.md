@@ -7,9 +7,9 @@
 
 Converter is a Library used to convert/map an object to another, in a simple way without doing making to many steps to achieve the object conversion.
 
-This Mapper Lib inspired in C# AutoMapper Library... but, in this mapper you can map object right away no need to config anything. 
+This Mapper Lib inspired in C# AutoMapper Library... but, in this mapper you can map object right away no need to configure anything. 
 
-In case of restricting the object conversion, you can set it to always use mapper configurations and fails if there is no configuration provided.
+In case of restricting the object conversion, you can set it to always use mapper configurations and fail if there is no configuration provided.
 
 ## Usage
 
