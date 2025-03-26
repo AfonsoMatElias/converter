@@ -1,12 +1,17 @@
 package io.github.afonsomatelias;
 
 import java.util.List;
+import java.util.Map;
 
 import io.github.afonsomatelias.Configurations.ConverterShared;
-import io.github.afonsomatelias.Mapper.ListProcessor;
-import io.github.afonsomatelias.Mapper.ObjectProcessor;
-import io.github.afonsomatelias.Mapper.Interfaces.IListProcessor;
-import io.github.afonsomatelias.Mapper.Interfaces.IObjectProcessor;
+import io.github.afonsomatelias.Core.Mappers.ListMapper;
+import io.github.afonsomatelias.Core.Mappers.ObjectMapper;
+import io.github.afonsomatelias.Core.Mappers.Interfaces.IListMapper;
+import io.github.afonsomatelias.Core.Mappers.Interfaces.IObjectMapper;
+import io.github.afonsomatelias.Core.Projectors.ListProjector;
+import io.github.afonsomatelias.Core.Projectors.ObjectProjector;
+import io.github.afonsomatelias.Core.Projectors.Interfaces.IListProjector;
+import io.github.afonsomatelias.Core.Projectors.Interfaces.IObjectProjector;
 
 
 public abstract class Converter implements IConverter {
@@ -28,8 +33,8 @@ public abstract class Converter implements IConverter {
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	public <S> IObjectProcessor<S> map(S source) {
-		return new ObjectProcessor<S>(shared, source);
+	public <S> IObjectMapper<S> map(S source) {
+		return new ObjectMapper<>(shared, source);
 	}
 
 	/**
@@ -41,7 +46,37 @@ public abstract class Converter implements IConverter {
 	 *         perform
 	 */
 	@Override
-	public <S> IListProcessor<S> map(List<S> source) {
-		return new ListProcessor<S>(shared, source);
+	public <S> IListMapper<S> map(List<S> source) {
+		return new ListMapper<>(shared, source);
+	}
+
+	/**
+	 * Creates Mapping Projector for the {@link MapObject} Object, where the source must be
+	 * a {@link Map} and the destination must also be a {@link Map}.
+	 * 
+	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link Map}
+	 * @param source the {@link MapObject} Object to be mapped
+	 * @return the Projector the where having all the all the different methods to
+	 *         perform
+	 */
+	@Override
+	public <MapObject extends Map<String, ? extends Object>> IObjectProjector<MapObject> project(MapObject source) {
+		return new ObjectProjector<>(shared, source);
+	}
+	
+	/**
+	 * Creates Mapping Projector for the {@link MapObject} Object, where the source must be
+	 * a {@link List} of {@link Map} and the destination must also be a
+	 * {@link List} of {@link Map}.
+	 * 
+	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link List} of
+	 *                       {@link Map}
+	 * @param source the {@link MapObject} Object to be mapped
+	 * @return the Projector the where having all the all the different methods to
+	 *         perform
+	 */
+	@Override
+	public <MapObject extends List<Map<String, ? extends Object>>> IListProjector<MapObject> project(List<MapObject> source) {
+		return new ListProjector<>(shared, source);
 	}
 }

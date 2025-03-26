@@ -5,22 +5,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.github.afonsomatelias.Converter;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
+import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Options.MappingObjectActions;
 import io.github.afonsomatelias.Options.Expression.IMappingExpression;
 import io.github.afonsomatelias.Options.Expression.MappingExpression;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
+import static io.github.afonsomatelias.Helpers.Global.DEFAULT_TYPES_RESOLVER;
+
 @SuppressWarnings("unchecked")
 public class ConverterConfiguration extends Converter {
 	public ConverterConfiguration() {
-		super();
+		// Initializing all the default configs
+		super(); this.init();
 	}
 	
 	public ConverterConfiguration(IOptions<ConverterConfiguration> configOptions) {
-		super();
+		// Initializing all the default configs
+		super(); this.init();
+
+		// Apply the configuration after the initialization
 		configOptions.call(this);
 	}
 
@@ -28,14 +35,51 @@ public class ConverterConfiguration extends Converter {
 
 	@SafeVarargs
 	public final void addProfile(Class<? extends Profile>... profiles) {
-
+		// Initializing all the profiles
 		for (Class<? extends Profile> clsProfile : profiles) {
 			try {
+				// Initializing the profile
 				final Profile profile = clsProfile.newInstance();
+
+				// adding the Converter instance
 				profile.$super = this;
+
+				// Calling the config initialization
 				profile.init();
 			} catch (Exception e) {
 				$$.err("Profile: " + clsProfile.getName() + "not initialized");
+			}
+		}
+	}
+	
+	/**
+	 * Allows to use a specific type resolver for a given class type.
+	 * 
+	 * @param type    the class type that will be associated with the resolver
+	 * @param resolver the resolver to be associated with the class type
+	 */
+	public final void use(Class<?> type, ITypeResolver resolver) {
+		shared.typeResolvers.put(type, resolver);
+	}
+
+	/**
+	 * Allows to use a set of type resolvers for the conversion.
+	 * 
+	 * @param types the classes of the type resolvers to be used
+	 */
+	@SafeVarargs
+	public final void use(Class<? extends TypeResolver>... types) {
+
+		// Initializing all the profiles
+		for (Class<? extends TypeResolver> clsResolver : types) {
+			try {
+				// Initializing the profile
+				final TypeResolver typeResolver = clsResolver.newInstance();
+
+				// Applying the type resolver
+				shared.typeResolvers.put(typeResolver.type, (value) -> typeResolver.resolve(value));
+			} catch (Exception e) {
+				$$.err("Profile: " + clsResolver.getName() + "not initialized");
 			}
 		}
 	}
@@ -67,7 +111,7 @@ public class ConverterConfiguration extends Converter {
 	public <S, D> IMappingExpression<S, D> createMap(
 		Class<S> source,
 		Class<D> destination,
-		CallbackV1<IMappingObjectActions<S, D>> modifier
+		I1Action<IMappingObjectActions<S, D>> modifier
 	) {
 		final IMappingExpression<S, D> mappingExpression = this.createMap(source, destination);
 
@@ -102,10 +146,10 @@ public class ConverterConfiguration extends Converter {
 	public <TypeSource, TypeDestination> void addTransform(
 		Class<TypeSource> from, 
 		Class<TypeDestination> to,
-		CallbackP1<TypeSource, TypeDestination> behavior
+		I1Fn<TypeSource, TypeDestination> behavior
 	) {
 		final String uniqueName = from.getName() + ":" + to.getName();
-		shared.tranformations.put(uniqueName, (CallbackP1<Object, Object>) behavior);
+		shared.tranformations.put(uniqueName, (I1Fn<Object, Object>) behavior);
 	}
 
 	/**
@@ -164,5 +208,10 @@ public class ConverterConfiguration extends Converter {
 
 	public Converter createConverter() {
 		return this;
+	}
+
+	public void init() {
+		// Adding all the default types
+		DEFAULT_TYPES_RESOLVER.forEach((key, value) -> this.use(key, value));
 	}
 }
