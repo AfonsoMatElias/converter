@@ -253,7 +253,7 @@ You can also restrict the mapping by setting ``useMappingConfig`` to ``true``, t
   });
 ```
 
-By default the Converter logs all the warnings, like the *fields that could not be instantiated*, but if you want to avoid it, you can use the ``setSilentLogs`` method in the configuration.
+By default the Converter logs all the warnings, like the *fields that could not be instantiated*, but if you want to avoid it, you can use the ``setSilentLogs`` method in the configuration. We **RECOMMEND** setting it to ``true`` in production.
 
 ### Silent Logs
 ```java
@@ -347,9 +347,144 @@ Converter can also extract values from another object, as long as the object has
   });
 ```
 
+## Projecting HashMap to Model
+
+Converter can also project a ``HashMap`` types to a ``Model``, as long as the object has the same structure.
+
+### Projecting
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Map
+  LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+    put("name", "John Doe");
+    put("username", "johndoe");
+    put("password", "123.AbC");
+    put("bithdate", "1989-10-15");
+    put("roles", new String[]{ "ADMIN" });
+  }};
+
+  UserDto dto = converter.project(user).to(UserDto.class);
+```
+
+Like ``converter.map(...)`.to(...)``, ``converter.project(...)`.to(...)`` also provides the same options, ``beforeMap``, ``afterMap``, etc.
+
+### Projecting with Options
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Map
+  LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+    /* ... */
+  }};
+
+  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+    options.beforeMap((src, dst) -> { /* ... */ })
+    options.afterMap((src, dst) -> { /* ... */ })
+  });
+```
+
+Members and Type can be also skipped while projecting the values, just like using the ``converter.map(...)``
+
+### Skipping Members and/or Types while Projecting
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Entities
+  LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+    /* ... Properties ... */
+    put("password", "123.AbC");
+  }};
+
+  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+    options.skipTypes(LocalDate.class);
+    options.skipMembers("password");
+  });
+```
+
+In cases of types that could not be projected, you can provide a custom type resolver using the options the method ``use(...)`` in 
+the ``ConverterConfiguration``
+
+### Using Type Resolvers
+```java
+  ConverterConfiguration config = new ConverterConfiguration((options) -> {
+
+    options.use(LocalDate.class, (value) -> {
+        if (!(value instanceof String)) return null;
+        
+        final String str = value.toString();
+        return LocalDate.parse(str.split("T")[0]);
+    });
+  });
+  IConverter converter = config.createConverter();
+
+  // Entities
+  LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+    /* ... Properties ... */
+    put("bithdate", "2025-03-25T22:44:17.605Z");
+  }};
+
+  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+    options.skipTypes(LocalDate.class);
+    options.skipMembers("password");
+  });
+```
+
+Or, you can use a CustomTypeResolver class to maintain you configuration nice and clean, you just need to create a Class 
+that extends ``TypeResolver``, providing the type you want to resolve in the ``super`` *constructor*, implement the method ``resolve(...)``, and add it to the ConverterConfiguration
+
+### Using Type Resolvers (Class)
+```java	
+  public class LocalDateTypeResolver extends TypeResolver {
+    public LocalDateTypeResolver() {
+      // Setting the type to resolve
+      super(LocalDate.class);
+    }
+
+    @Override
+    public LocalDate resolve(Object value) {
+      // Resolving the type
+      
+      if (!(value instanceof String))
+        return null;
+
+      final String str = value.toString();
+      return LocalDate.parse(str.split("T")[0]);
+    } 
+  }
+```
+
+```java
+  ConverterConfiguration config = new ConverterConfiguration((options) -> {
+
+    options.use(LocalDate.class, (value) -> {
+        if (!(value instanceof String)) return null;
+        
+        final String str = value.toString();
+        return LocalDate.parse(str.split("T")[0]);
+    });
+  });
+  IConverter converter = config.createConverter();
+
+  // Entities
+  LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+    /* ... Properties ... */
+    put("bithdate", "2025-03-25T22:44:17.605Z");
+  }};
+
+  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+    options.skipTypes(LocalDate.class);
+    options.skipMembers("password");
+  });
+```
+
 ## Using Spring Boot
 
-If you use SpringBoot and want to use Dependency Injection, you can create a converter config class extending ``ConverterConfiguration`` and assign it as ``@Component`` annotation:
+If you use SpringBoot and want to use Dependency Injection, you can create a converter config class 
+extending ``ConverterConfiguration`` and assign it as ``@Component`` annotation:
 
 ```java
   @Component
@@ -359,10 +494,17 @@ If you use SpringBoot and want to use Dependency Injection, you can create a con
       // Only crutial logs (System.err) will be printed
       setSilentLogs(true);
 
-      createMap(Product.class, ProductDto.class);
-      createMap(User.class, UserDto.class)
-        .skipMember("password");
+      // Adding all the profiles
+      addProfile(
+        ProductProfile.class, 
+        UserProfile.class
+      );
 
+      // Adding all the type resolvers 
+      use(
+        LocalDateTypeResolver.class,
+        LocalDateTimeTypeResolver.class
+      );
     }
 
     @Bean @Primary
