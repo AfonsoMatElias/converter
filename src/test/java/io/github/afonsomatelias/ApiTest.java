@@ -7,7 +7,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.junit.Before;
@@ -21,6 +23,7 @@ import io.github.afonsomatelias.Models.User;
 import io.github.afonsomatelias.Models.UserDto;
 import io.github.afonsomatelias.Profiles.ProductProfile;
 import io.github.afonsomatelias.Profiles.UserProfile;
+import io.github.afonsomatelias.Resolvers.LocalDateTypeResolver;
 
 /**
  * Unit test for simple Api.
@@ -30,7 +33,7 @@ public class ApiTest {
 
     public ApiTest() {
         new ConverterConfiguration((config) -> {
-            config.setSilentLogs(true);
+            // config.setSilentLogs(true);
         });
     }
 
@@ -492,10 +495,8 @@ public class ApiTest {
     }
 
     @Test
-    public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddressAndModifyingTheValuesInOptions() {
+    public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddressApplyingOptions() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -519,8 +520,6 @@ public class ApiTest {
     @Test
     public void shouldSkipMemberOnExtractionUsingStringMember() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -547,7 +546,6 @@ public class ApiTest {
     public void shouldSkipMemberOnExtractionUsingFieldMember() {
         final ConverterConfiguration config = new ConverterConfiguration();
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -580,7 +578,6 @@ public class ApiTest {
         
         config.skipTypes(Float.class);
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -597,10 +594,8 @@ public class ApiTest {
     @Test
     public void shouldSkipTypeMappingAccordingGlobalConfigAsStringName() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
         config.skipTypes("Float");
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -617,8 +612,6 @@ public class ApiTest {
     @Test
     public void shouldSkipTypeMappingAccordingToMappingOptions() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -651,7 +644,6 @@ public class ApiTest {
             // options.addProfile(ApiTest.class);
         });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -671,16 +663,9 @@ public class ApiTest {
     @Test
     public void shouldNotMapAnyTypeWithNoConfigAndUseMapConfigAsTrue() {
         final ConverterConfiguration config = new ConverterConfiguration((options) -> {
-            
             options.setUseMapConfiguration(true);
-            options.addProfile(
-                // ProductProfile.class,
-                // UserProfile.class
-            );
-
         });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -695,5 +680,169 @@ public class ApiTest {
 
         assertNull(productDto);
         assertNull(userDto);
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapToTheProvidedClass() {
+
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
+            put("name", "Sprite");
+            put("price", 1f);
+            put("quantity", 15);
+        }};
+
+        ProductDto dto = converter.project(product).to(ProductDto.class);
+
+        assertNotNull(dto);
+    }
+    
+    @Test
+    public void shouldProjectAndResolveDefaultTypesIfSourceFieldIsString() {
+
+        final ConverterConfiguration config = new ConverterConfiguration();
+        // Converter Instance
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
+            put("name", "Sprite");
+            put("price", "1");
+            put("quantity", "15");
+        }};
+
+        ProductDto dto = converter.project(product).to(ProductDto.class);
+
+        assertNotNull(dto);
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapWithNestedLinkedHashMap() {
+
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
+            put("name", "Sprite");
+            put("price", 1f);
+            put("quantity", 15);
+
+            put("parent", new LinkedHashMap<String, Object>() {{
+                put("name", "Water");
+                put("price", 0.5f);
+                put("quantity", 35);
+            }});
+
+            put("products", Arrays.asList(
+                new LinkedHashMap<String, Object>() {{
+                    put("name", "Cola-Cola");
+                    put("price", 1f);
+                    put("quantity", 40);
+                }},
+                new LinkedHashMap<String, Object>() {{
+                    put("name", "Beer");
+                    put("price", 2f);
+                    put("quantity", 12);
+                }}
+            ));
+        }};
+
+        ProductDto dto = converter.project(product).to(ProductDto.class);
+        
+        assertNotNull(dto);
+        assertNotNull(dto.getParent());
+    }
+    
+    @Test
+    public void shouldProjectLinkedHashMapFromStringToLocalDate() {
+
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+            put("name", "Afonso Matumona");
+            put("username", "AfonsoMatElias");
+            put("password", "123.AbC");
+            put("bithdate", "1989-10-15");
+            put("roles", new String[]{ "ADMIN" });
+        }};
+
+        UserDto dto = converter.project(user).to(UserDto.class);
+        
+        assertNotNull(dto);
+    }
+
+    @Test
+    public void shouldNotProjectLinkedHashMapItemIfSourceValueCanNotBeResolved() {
+
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+            put("name", "Afonso Matumona");
+            put("username", "AfonsoMatElias");
+            put("password", "123.AbC");
+            put("bithdate", "2025-03-25T22:44:17.605Z");
+            put("roles", new String[]{ "ADMIN" });
+        }};
+
+        UserDto dto = converter.project(user).to(UserDto.class);
+        
+        assertNotNull(dto);
+        assertNull(dto.getBithdate());
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapAndUseFunctionResolver() {
+
+        final ConverterConfiguration config = new ConverterConfiguration(options -> {
+
+            // Resolve the LocalDate type using function
+            options.use(LocalDate.class, (value) -> {
+                if (!(value instanceof String)) return null;
+                
+                final String str = value.toString();
+                return LocalDate.parse(str.split("T")[0]);
+            });
+
+        });
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+            put("name", "Afonso Matumona");
+            put("username", "AfonsoMatElias");
+            put("password", "123.AbC");
+            put("bithdate", "2025-03-25T22:44:17.605Z");
+            put("roles", new String[]{ "ADMIN" });
+        }};
+
+        UserDto dto = converter.project(user).to(UserDto.class);
+        
+        assertNotNull(dto);
+        assertNotNull(dto.getBithdate());
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapAndUseClassTypeResolver() {
+
+        final ConverterConfiguration config = new ConverterConfiguration(options -> {
+            // Resolve the LocalDate type using ClassType
+            options.use(LocalDateTypeResolver.class);
+        });
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+            put("name", "Afonso Matumona");
+            put("username", "AfonsoMatElias");
+            put("password", "123.AbC");
+            put("bithdate", "2025-03-25T22:44:17.605Z");
+            put("roles", new String[]{ "ADMIN" });
+        }};
+
+        UserDto dto = converter.project(user).to(UserDto.class);
+        
+        assertNotNull(dto);
+        assertNotNull(dto.getBithdate());
     }
 }
