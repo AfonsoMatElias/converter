@@ -19,7 +19,7 @@ public abstract class Converter implements IConverter {
 	 * Default Converter
 	 */
 	public Converter() {
-		shared = new ConverterShared();
+		this.shared = new ConverterShared();
 	}
 
 	// All the public properties that will e shared between inner instances

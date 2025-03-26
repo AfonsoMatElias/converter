@@ -72,7 +72,7 @@ public abstract class BaseCore<Entry> {
 		} catch (Exception e) {
 			final String cls = fieldParentType == null ? "[Class]" : fieldParentType.getName();
 			final String clsFieldName = fieldName == null ? "[Field]" : fieldName;
-			final String clsFieldType = clazz.getName();
+			final String clsFieldType = clazz.getSimpleName();
 			final String path = String.join(":", Arrays.asList(cls, "[" + clsFieldType + "]", clsFieldName ));
 
 			$$.out("Error creating the destination type for " + path + ", try to use .addTransform(...) or .forMember(...) "

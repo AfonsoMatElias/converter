@@ -45,8 +45,6 @@ public class ApiTest {
     @Test
     public void shouldConvertFromModelToDto() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -66,8 +64,6 @@ public class ApiTest {
     @Test
     public void shouldConvertFromListModelToListDto() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -85,8 +81,6 @@ public class ApiTest {
     @Test
     public void shouldCopyAndPasteModel() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -104,7 +98,7 @@ public class ApiTest {
     public void shouldTransformeValue() {
         final ConverterConfiguration config = new ConverterConfiguration();
 
-        // Transformacao de tipo no momento de converçao
+        // Addin a type stransformation
         config.addTransform(String.class, String[].class, (source) -> {
 
             String[] arrayOfStringValue = source.split(";");
@@ -112,7 +106,6 @@ public class ApiTest {
             return arrayOfStringValue;
         });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -134,7 +127,6 @@ public class ApiTest {
                     return "Wine";
                 });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -156,7 +148,6 @@ public class ApiTest {
                     return "Wine";
                 });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -178,7 +169,6 @@ public class ApiTest {
                     return cvtr.map(src).to(ProductDto.class);
                 });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -200,7 +190,6 @@ public class ApiTest {
         config.createMap(Product.class, ProductDto.class)
                 .skipMember("name");
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -216,12 +205,10 @@ public class ApiTest {
     public void shouldSkipMemberMappingIfAllMembersAreNullReturnNull() {
         final ConverterConfiguration config = new ConverterConfiguration();
 
-        // Transformacao de tipo no momento de converçao
         config.createMap(Product.class, ProductDto.class)
                 .skipMember("name")
                 .skipMember("price");
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -236,8 +223,6 @@ public class ApiTest {
     @Test
     public void shouldCallBeforeMapActionWithSourceValueAndDestination() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -260,8 +245,6 @@ public class ApiTest {
     @Test
     public void shouldCallAfterMapActionWithSourceValueAndDestination() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -305,7 +288,6 @@ public class ApiTest {
 
         });
 
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -321,8 +303,6 @@ public class ApiTest {
     @Test
     public void shouldHaveTheSameReferencesOnMappingTheSameObject() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -359,8 +339,6 @@ public class ApiTest {
     @Test
     public void shouldCallBeforeEachMapActionWithSourceValueAndDestination() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -396,8 +374,6 @@ public class ApiTest {
     @Test
     public void shouldCallAllTheMappingActionsAccordingToTheActionAndNumberItems() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -447,8 +423,6 @@ public class ApiTest {
     @Test
     public void shouldCallAfterEachMapActionWithSourceValueAndDestination() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Mapping
@@ -472,8 +446,6 @@ public class ApiTest {
     @Test
     public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddress() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -545,7 +517,6 @@ public class ApiTest {
     @Test
     public void shouldSkipMemberOnExtractionUsingFieldMember() {
         final ConverterConfiguration config = new ConverterConfiguration();
-
         final IConverter converter = config.createConverter();
 
         // Entities
@@ -640,8 +611,7 @@ public class ApiTest {
                 ProductProfile.class,
                 UserProfile.class
             );
-            
-            // options.addProfile(ApiTest.class);
+
         });
 
         final IConverter converter = config.createConverter();
@@ -703,7 +673,6 @@ public class ApiTest {
     public void shouldProjectAndResolveDefaultTypesIfSourceFieldIsString() {
 
         final ConverterConfiguration config = new ConverterConfiguration();
-        // Converter Instance
         final IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
@@ -761,8 +730,8 @@ public class ApiTest {
         final IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "Afonso Matumona");
-            put("username", "AfonsoMatElias");
+            put("name", "John Doe");
+            put("username", "johndoe");
             put("password", "123.AbC");
             put("bithdate", "1989-10-15");
             put("roles", new String[]{ "ADMIN" });
@@ -780,8 +749,8 @@ public class ApiTest {
         final IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "Afonso Matumona");
-            put("username", "AfonsoMatElias");
+            put("name", "John Doe");
+            put("username", "johndoe");
             put("password", "123.AbC");
             put("bithdate", "2025-03-25T22:44:17.605Z");
             put("roles", new String[]{ "ADMIN" });
@@ -810,8 +779,8 @@ public class ApiTest {
         final IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "Afonso Matumona");
-            put("username", "AfonsoMatElias");
+            put("name", "John Doe");
+            put("username", "johndoe");
             put("password", "123.AbC");
             put("bithdate", "2025-03-25T22:44:17.605Z");
             put("roles", new String[]{ "ADMIN" });
@@ -833,8 +802,8 @@ public class ApiTest {
         final IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "Afonso Matumona");
-            put("username", "AfonsoMatElias");
+            put("name", "John Doe");
+            put("username", "johndoe");
             put("password", "123.AbC");
             put("bithdate", "2025-03-25T22:44:17.605Z");
             put("roles", new String[]{ "ADMIN" });
@@ -844,5 +813,55 @@ public class ApiTest {
         
         assertNotNull(dto);
         assertNotNull(dto.getBithdate());
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapAndCallTheModifiers() {
+
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+            put("name", "John Doe");
+            put("username", "johndoe");
+            put("password", "123.AbC");
+            put("bithdate", "1989-10-15");
+            put("roles", new String[]{ "ADMIN" });
+        }};
+
+        UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+            options.beforeMap((src, dst) -> {
+                method.call();
+            });
+
+            options.afterMap((src, dst) -> {
+                method.call();
+            });
+        });
+        
+        assertNotNull(dto);
+        method.assertMethodCalled(2);
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapAndSkipMembersAndTypes() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+            put("name", "John Doe");
+            put("username", "johndoe");
+            put("password", "123.AbC");
+            put("bithdate", "2025-03-25T22:44:17.605Z");
+            put("roles", new String[]{ "ADMIN" });
+        }};
+
+        UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+            options.skipTypes(LocalDate.class);
+            options.skipMembers("password");
+        });
+        
+        assertNull(dto.getPassword());
+        assertNull(dto.getBithdate());
     }
 }

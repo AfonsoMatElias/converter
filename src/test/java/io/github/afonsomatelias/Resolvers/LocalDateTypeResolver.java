@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import io.github.afonsomatelias.Configurations.TypeResolver;
 
 public class LocalDateTypeResolver extends TypeResolver {
-
+	
 	public LocalDateTypeResolver() {
 		super(LocalDate.class);
 	}
@@ -18,4 +18,5 @@ public class LocalDateTypeResolver extends TypeResolver {
 		final String str = value.toString();
 		return LocalDate.parse(str.split("T")[0]);
 	}
+	
 }
