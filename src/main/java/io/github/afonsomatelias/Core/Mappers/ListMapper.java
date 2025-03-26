@@ -1,18 +1,18 @@
-package io.github.afonsomatelias.Mapper;
+package io.github.afonsomatelias.Core.Mappers;
 
 import java.util.List;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
+import io.github.afonsomatelias.Core.Mappers.Interfaces.IListMapper;
 import io.github.afonsomatelias.Helpers.Printer;
-import io.github.afonsomatelias.Mapper.Interfaces.IListProcessor;
 import io.github.afonsomatelias.Options.MappingListActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
 @SuppressWarnings("unchecked")
-public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> {
+public class ListMapper<S> extends Mapper<S> implements IListMapper<S> {
 
-	public ListProcessor(ConverterShared shared, Object source) {
+	public ListMapper(ConverterShared shared, Object source) {
 		super(shared, (S) source);
 	}
 
@@ -43,7 +43,7 @@ public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> 
 	 * @return the object Converted
 	 */
 	@Override
-	public <D> List<D> to(Class<D> clazz, CallbackV1<IMappingListActions<S, D>> modifier) {
+	public <D> List<D> to(Class<D> clazz, I1Action<IMappingListActions<S, D>> modifier) {
 		try {
 			if (modifier != null) {
 				MappingListActions<S, D> actions = new MappingListActions<>();
@@ -66,7 +66,7 @@ public class ListProcessor<S> extends Processor<S> implements IListProcessor<S> 
 	 * @return new object instance or null in case of an exception
 	 */
 	@Override
-	public <D extends S> S to(CallbackV1<IMappingListActions<S, D>> modifier) {
+	public <D extends S> S to(I1Action<IMappingListActions<S, D>> modifier) {
 		try {
 			if (modifier != null) {
 				MappingListActions<S, D> actions = new MappingListActions<>();

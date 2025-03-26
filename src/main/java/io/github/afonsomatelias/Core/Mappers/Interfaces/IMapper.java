@@ -1,7 +1,6 @@
-package io.github.afonsomatelias.Mapper.Interfaces;
+package io.github.afonsomatelias.Core.Mappers.Interfaces;
 
-public interface IProcessor<S> {
-	
+public interface IMapper<S> {
 	/**
 	 * Creates a new instance of the source object, effectively acting like a 
 	 * copy operation but with a different memory address.

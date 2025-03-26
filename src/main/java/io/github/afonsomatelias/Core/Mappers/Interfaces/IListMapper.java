@@ -1,11 +1,11 @@
-package io.github.afonsomatelias.Mapper.Interfaces;
+package io.github.afonsomatelias.Core.Mappers.Interfaces;
 
 import java.util.List;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
-public interface IListProcessor<S> extends IProcessor<S> {
+public interface IListMapper<S> extends IMapper<S> {
 	/**
 	 * Maps the list of {@link S} objects to the list of destination class
 	 * provided
@@ -25,7 +25,7 @@ public interface IListProcessor<S> extends IProcessor<S> {
 	 * @param modifier mapping options that will be applied on map
 	 * @return the object Converted
 	 */
-	public <D> List<D> to(Class<D> clazz, CallbackV1<IMappingListActions<S, D>> modifier);
+	public <D> List<D> to(Class<D> clazz, I1Action<IMappingListActions<S, D>> modifier);
 
 	/**
 	 * Creates a new instance of the object provided, just like copy and paste with
@@ -35,5 +35,5 @@ public interface IListProcessor<S> extends IProcessor<S> {
 	 * @param modifier mapping options that will be applied on map
 	 * @return new object instance or null in case of an exception
 	 */
-	public <D extends S> S to(CallbackV1<IMappingListActions<S, D>> modifier);
+	public <D extends S> S to(I1Action<IMappingListActions<S, D>> modifier);
 }

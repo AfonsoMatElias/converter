@@ -1,4 +1,4 @@
-package io.github.afonsomatelias.Mapper;
+package io.github.afonsomatelias.Core.Mappers;
 
 import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
 import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
@@ -14,32 +14,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.github.afonsomatelias.Converter;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
+import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Mappers.Interfaces.IMapper;
+import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
 import io.github.afonsomatelias.Helpers.$$;
-import io.github.afonsomatelias.Mapper.Interfaces.IProcessor;
-import io.github.afonsomatelias.Options.MappingActions;
 import io.github.afonsomatelias.Options.MappingObjectActions;
 import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
 @SuppressWarnings("unchecked")
-public class Processor<S> implements IProcessor<S> {
+public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
 	 * @param source the {@link S} object
 	 */
-	public Processor(ConverterShared shared, S source) {
-		this.shared = shared;
-		this.source = source;
-		this.localActionOptions = new MappingActions();
+	public Mapper(ConverterShared shared, S source) {
+		super(shared, source);
 		this.mappedObject = new HashMap<>();
 	}
 
@@ -49,73 +47,15 @@ public class Processor<S> implements IProcessor<S> {
 	 * @param parent the parent processor 
 	 * @param source the source object
 	 */
-	public Processor(Processor<?> parent, S source) {
+	public Mapper(Mapper<?> parent, S source) {
+		super(parent.shared, source, parent.localActionOptions);
 		this.mappedObject = parent.mappedObject;
-		this.localActionOptions = parent.localActionOptions;
-		this.shared = parent.shared;
-		this.source = source;
 	}
-
-	/** Stores the {@link S} object */
-	protected final S source;
-
-	/**
-	 * Stores all the shared public properties of the main {@link Converter} Class
-	 */
-	private final ConverterShared shared;
 
 	/**
 	 * Stores all the times that an object was mapped for to avoid mapping and object already mapped
 	 */
 	private final Map<String, Object> mappedObject;
-
-	/** Action Controller for this Processor */
-	protected final MappingActions localActionOptions;
-
-	/** Collection types */
-	protected enum ECollectionType {
-		ARRAY, COLLECTION
-	};
-	
-	
-	/**
-	 * Tries to create a new instance of a provided class
-	 * 
-	 * @param classToCreate 		the type of the field to instantiate
-	 * @return the new instance of the destination type, or null if it fails
-	 */
-	private Object create(Class<?> classToCreate) {
-		return this.create(classToCreate, "[Root]", classToCreate);
-	}
-
-	/**
-	 * Tries to create a new instance of a provided class
-	 * 
-	 * @param classToCreate 		the type of the field to instantiate
-	 * @param dstFieldName 			the name of the destination field
-	 * @param dstClassType     		the class of the destination type
-	 * @return the new instance of the destination type, or null if it fails
-	 */
-	private Object create(
-		Class<?> classToCreate,
-		String dstFieldName,
-		Class<?> dstClassType
-	) {
-		try {
-			return classToCreate.getConstructor().newInstance();
-		} catch (Exception e) {
-			final String cls = dstClassType == null ? "[Class]" : dstClassType.getName();
-			final String clsFieldName = dstFieldName == null ? "[Field]" : dstFieldName;
-			final String clsFieldType = classToCreate.getName();
-			final String path = String.join(".", Arrays.asList(cls, "[" + clsFieldType + "]", clsFieldName ));
-
-			$$.out("Error creating the destination type for " + path + ", try to use .addTransform(...) or .forMember(...) "
-					+ "to intercept the member mapping, or .skip(...) in mapping options to ignore the field mapping. "+
-					"\nException Details: " + e.getMessage() + "\n");
-		}
-
-		return null;
-	}
 
 	/**
 	 * Maps properties from the source object to the destination object.
@@ -123,28 +63,28 @@ public class Processor<S> implements IProcessor<S> {
 	 * This function handles both direct field mappings and transformation
 	 * mappings, while considering mapping configurations and actions.
 	 * 
-	 * @param objSource       	 the source object from which the properties
+	 * @param $source       	 the source object from which the properties
 	 *                        	 are to be mapped
-	 * @param clsObjDestination  the class type of the destination object
-	 * @param objDestination  	 the destination object to which the properties
+	 * @param fieldClassType  the class type of the destination object
+	 * @param $destination  	 the destination object to which the properties
 	 * 							 are to be mapped
 	 * @return the mapped destination object, or null if mapping is not possible
 	 */
 	private Object mapObject(
-		Object objSource,
-		Class<?> clsObjDestination,
-		Object objDestination
+		Object $source,
+		Class<?> fieldClassType,
+		Object $destination
 	) {
-		if (objSource == null || objDestination == null)
+		if ($source == null || $destination == null)
 			return null;
 
 		// Beginning Mapping Process
-		final Map<String, Field> fieldsSource = toMappedFields(objSource.getClass());
-		final Map<String, Field> fieldsDestination = toMappedFields(clsObjDestination);
+		final Map<String, Field> fieldsSource = toMappedFields($source.getClass());
+		final Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
 		final Map<String, MappingConfig> configurations = this.shared.configurations;
 
 		// Helper Function to register Mapped Object
-		final CallbackP1<Object, Object> fnRegisterMappedObj = (obj) -> {
+		final I1Fn<Object, Object> fnRegisterMappedObj = (obj) -> {
 			final String memoryAddress = obj.getClass().getSimpleName() 
 					+ ":" + Integer.toHexString(System.identityHashCode(obj));
 
@@ -152,7 +92,7 @@ public class Processor<S> implements IProcessor<S> {
 			final Object mapped = mappedObject.getOrDefault(memoryAddress, null);
 
 			if (mapped == null) {
-				mappedObject.put(memoryAddress, objDestination);
+				mappedObject.put(memoryAddress, $destination);
 				return null;
 			}
 
@@ -161,17 +101,17 @@ public class Processor<S> implements IProcessor<S> {
 		};
 
 		// Sets a value to a field
-		final CallbackV2<Field, Object> fnSetDstValue = (field, value) -> {
+		final I2Action<Field, Object> fnSetDstValue = (field, value) -> {
 			try {
 				if (field == null) return;
                 field.setAccessible(true);
-				field.set(objDestination, value);
+				field.set($destination, value);
 			} catch (Exception e) {
 				$$.out("Error setting value '"+ value +"' to field: " + field.getName(), e);
 			}
 		};
 
-		final CallbackP2<Object, Field, Object> fnGetValue = (obj, field) -> {
+		final I2Fn<Object, Field, Object> fnGetValue = (obj, field) -> {
 			try {
 				if (field == null) return null;
                 field.setAccessible(true);
@@ -181,19 +121,19 @@ public class Processor<S> implements IProcessor<S> {
 			}
 		};
 		
-		final boolean hasDiffTypes = (objSource.getClass() != objDestination.getClass());
+		final boolean hasDiffTypes = ($source.getClass() != $destination.getClass());
 
 		if (hasDiffTypes && shared.USE_MAPPING_CONFIG) {
 			// Assigning the default values for the mapping process
-			Class<?> configClsSource = objSource.getClass();
-			Class<?> configClsDestination = clsObjDestination;
+			Class<?> configClsSource = $source.getClass();
+			Class<?> configClsDestination = fieldClassType;
 
 			final MappingConfig config = configurations.get(configClsSource.getName());
 
 			// Checking the configuration for this source
 			if (config == null) {
 				$$.err("No mapping configuration found to map: " + source.getClass().getName() + " to "
-					+ objDestination.getClass().getName());
+					+ $destination.getClass().getName());
 				return null;
 			}
 
@@ -202,31 +142,31 @@ public class Processor<S> implements IProcessor<S> {
 			configClsDestination = config.getDestination();
 
 			// If there isn't, just ignore the mapping
-			if ((configClsSource != objSource.getClass()) || (configClsDestination != clsObjDestination)) {
+			if ((configClsSource != $source.getClass()) || (configClsDestination != fieldClassType)) {
 				$$.err("No mapping configuration found to map: " + source.getClass().getName() + " to "
-					+ objDestination.getClass().getName());
+					+ $destination.getClass().getName());
 				return null;
 			}
 		}
 
 		{ // Generic Scope
 			// Testing Transformation Mapping
-			final Object $mutatedObject = this.mapTransform(objSource, objSource.getClass(), clsObjDestination);
+			final Object $mutatedObject = this.mapTransform($source, $source.getClass(), fieldClassType);
 			if ($mutatedObject != null)
 				return $mutatedObject;
 		}
 
 		// building the unique name 
-		final String mapActionUniqueName = objSource.getClass().getName() + ":" + clsObjDestination.getName();
+		final String mapActionUniqueName = $source.getClass().getName() + ":" + fieldClassType.getName();
 
 		// Retrieving the action for this field
 		final MappingObjectActions<Object, Object> createdMapActionOption = shared.globalActionOptions
 				.getOrDefault(mapActionUniqueName, null);
 
 		if (createdMapActionOption != null) // Performing BEFORE_MAP action
-			createdMapActionOption.emit(EMappingActions.BEFORE_MAP, objSource, null);
+			createdMapActionOption.emit(EMappingActions.BEFORE_MAP, $source, null);
 
-		final Object mappedObject = fnRegisterMappedObj.call(objSource);
+		final Object mappedObject = fnRegisterMappedObj.call($source);
 		if (mappedObject != null)
 			return mappedObject;
 
@@ -253,7 +193,7 @@ public class Processor<S> implements IProcessor<S> {
 			final FieldMemberMapping forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
 
 			if (forMemberMapping != null) {
-				final Object memberMappingResult = forMemberMapping.call(objSource, objDestination, this);
+				final Object memberMappingResult = forMemberMapping.call($source, $destination, this);
 				fnSetDstValue.call(fieldDestination, memberMappingResult);
 				return; // Breaking the process as the member is already mapped
 			}
@@ -264,8 +204,8 @@ public class Processor<S> implements IProcessor<S> {
 
 			final Class<?> fieldTypeSource = fieldSource.getType();
 			final String fieldSourceName = fieldSource.getName();
-			final Object fieldSourceValue = fnGetValue.call(objSource, fieldSource);
-			final Object fieldDestinationValue = fnGetValue.call(objDestination, fieldDestination);
+			final Object fieldSourceValue = fnGetValue.call($source, fieldSource);
+			final Object fieldDestinationValue = fnGetValue.call($destination, fieldDestination);
 
 
 			Object valueToSet = fieldSourceValue;
@@ -303,7 +243,7 @@ public class Processor<S> implements IProcessor<S> {
 					fieldSourceName, 
 					fieldSourceValue, 
 					getListType(fieldDestination), 
-					clsObjDestination, 
+					fieldClassType, 
 					collectionType
 				);
 			} else
@@ -314,7 +254,7 @@ public class Processor<S> implements IProcessor<S> {
 				final Object $objDestination = fieldDestinationValue != null ? fieldDestinationValue : create(
 					fieldTypeDestination,
 					fieldName, 
-					clsObjDestination
+					fieldClassType
 				);
 
 				// Mapping the object and assigning the value
@@ -339,25 +279,25 @@ public class Processor<S> implements IProcessor<S> {
 		);
 
 		for (SetterMemberMapping setterMemberMapping : setters) {
-			setterMemberMapping.call(objSource, objDestination, this);
+			setterMemberMapping.call($source, $destination, this);
 		}
 
 
 		if (createdMapActionOption != null) // Performing AFTER_MAP action
-			createdMapActionOption.emit(EMappingActions.AFTER_MAP, objSource, objDestination);
+			createdMapActionOption.emit(EMappingActions.AFTER_MAP, $source, $destination);
 
 
 		// If all the fields are null, nullify the destination object
 		if (allMatch(fieldsDestination.values().stream().collect(Collectors.toList()), (x) -> {
 			try {
-				return x.get(objDestination) == null;
+				return x.get($destination) == null;
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				return true;
 			}
 		}) == true)
 			return null;
 
-		return objDestination;
+		return $destination;
 	}
 
 	/**
@@ -365,24 +305,24 @@ public class Processor<S> implements IProcessor<S> {
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
-	 * @param valueSource          	the source value
-	 * @param fieldTypeDestination 	the destination type
-	 * @param clsDestination       	the class of the destination
+	 * @param $source          	the source value
+	 * @param fieldListType 	the destination type
+	 * @param fieldParentType       	the class of the destination
 	 * @param collectionType  		the type of the destination list
 	 * @return the mapped list
 	 */
 	private Object mapList(
 		String fieldName,
-		Object valueSource,
-		Class<?> fieldTypeDestination,		
-		Class<?> clsDestination,
+		Object $source,
+		Class<?> fieldListType,		
+		Class<?> fieldParentType,
 		ECollectionType collectionType
 	) {
 		return this.mapList(
 			fieldName, 
-			valueSource, 
-			fieldTypeDestination, 
-			clsDestination, 
+			$source, 
+			fieldListType, 
+			fieldParentType, 
 			collectionType, 
 			(_0, _1) -> {},
 			(_0, _1) -> {}
@@ -394,9 +334,9 @@ public class Processor<S> implements IProcessor<S> {
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
-	 * @param valueSource          	the source value
-	 * @param fieldTypeDestination 	the destination type
-	 * @param clsDestination       	the class of the destination
+	 * @param $source          	the source value
+	 * @param fieldListType 	the destination type
+	 * @param fieldParentType       	the class of the destination
 	 * @param collectionType  	   	the type of the destination list
 	 * @param localBeforeEachMap   	the local before map callback
 	 * @param localAfterEachMap    	the local after map callback
@@ -404,12 +344,12 @@ public class Processor<S> implements IProcessor<S> {
 	 */
 	private Object mapList(
 		String fieldName,
-		Object valueSource,
-		Class<?> fieldTypeDestination,		
-		Class<?> clsDestination,
+		Object $source,
+		Class<?> fieldListType,		
+		Class<?> fieldParentType,
 		ECollectionType collectionType,
-		CallbackV2<Object, Object> localBeforeEachMap,
-		CallbackV2<Object, Object> localAfterEachMap
+		I2Action<Object, Object> localBeforeEachMap,
+		I2Action<Object, Object> localAfterEachMap
 	) {
 		// Creating a new instance of a generic list
 		final ArrayList<Object> mappedList = new ArrayList<Object>();
@@ -418,7 +358,7 @@ public class Processor<S> implements IProcessor<S> {
 		/**
 		 * NOTE: this cast to Iterable<T> can throw an exception
 		 */
-		for (final Object sourceItem : (Iterable<Object>) valueSource) {
+		for (final Object sourceItem : (Iterable<Object>) $source) {
 			// If the item is a primitive, just add, do not map
 			if (PRIMITIVES.contains(sourceItem.getClass())) {
 				// Calling beforeEachMap
@@ -445,11 +385,11 @@ public class Processor<S> implements IProcessor<S> {
 			} else {
 				dstItem = this.mapObject(
 					sourceItem, 
-					fieldTypeDestination, 
+					fieldListType, 
 					create(
-						fieldTypeDestination,
+						fieldListType,
 						fieldName, 
-						clsDestination
+						fieldParentType
 					)
 				);
 			}
@@ -478,13 +418,13 @@ public class Processor<S> implements IProcessor<S> {
 	 * and retrieves the corresponding transformation callback from shared transformations.
 	 * If a callback exists, it applies the transformation to the source value.
 	 * 
-	 * @param valueSource the source value to be transformed
+	 * @param $source the source value to be transformed
 	 * @param fieldTypeSource the class type of the source field
 	 * @param fieldTypeDestination the class type of the destination field
 	 * @return the transformed value, or null if no transformation callback is found
 	 */
 	private Object mapTransform(
-		Object valueSource,
+		Object $source,
 		Class<?> fieldTypeSource,
 		Class<?> fieldTypeDestination
 	) {
@@ -492,33 +432,33 @@ public class Processor<S> implements IProcessor<S> {
 		final String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
 
 		// Getting the transformation callback for this mapping
-		final CallbackP1<Object, Object> transform = shared.tranformations
+		final I1Fn<Object, Object> transform = shared.tranformations
 				.getOrDefault(name, null);
 
 		// Checking if there is a transformation for these two properties
 		if (transform == null)
 			return null;
 
-		return transform.call(valueSource);
+		return transform.call($source);
 	}
 	
 	/**
 	 * Maps the source object to the destination object, this method is called
 	 * internally by the framework.
 	 * 
-	 * @param objSource the source object to be mapped
+	 * @param $source the source object to be mapped
 	 * @param clsDestination the class of the destination
-	 * @param objDestination the destination object
+	 * @param $destination the destination object
 	 * @return the mapped object
 	 */
-	private <D> Object mapper(Object objSource, Class<?> clsDestination, Object objDestination) {
+	private <D> Object mapper(Object $source, Class<?> clsDestination, Object $destination) {
 
-		if (objSource == null || objDestination == null)
+		if ($source == null || $destination == null)
 			return null;
 
 		// 1. List Mapping...
-		if (isArray(objSource)) {
-			final ECollectionType listType = objSource.getClass().getComponentType() == null 
+		if (isArray($source)) {
+			final ECollectionType listType = $source.getClass().getComponentType() == null 
 				? ECollectionType.COLLECTION
 				: ECollectionType.ARRAY;
 
@@ -529,7 +469,7 @@ public class Processor<S> implements IProcessor<S> {
 			// So we can perfom the calling of beforeEach and afterEach
 			return this.mapList(
 				null, 
-				objSource, 
+				$source, 
 				clsDestination, 
 				clsDestination, 
 				listType, 
@@ -540,9 +480,9 @@ public class Processor<S> implements IProcessor<S> {
 
 		// 2. Object Mapping...
 		return this.mapObject(
-			objSource, 
+			$source, 
 			clsDestination, 
-			objDestination
+			$destination
 		);
 	}
 	
@@ -572,9 +512,9 @@ public class Processor<S> implements IProcessor<S> {
 			return $destination;
 		} catch (Exception e) {
 			$$.err(
-					"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
-					"Error details: " + e.getMessage(),
-					e);
+				"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
+				"Error details: " + e.getMessage(), e
+			);
 			return null;
 		}
 	}
@@ -586,15 +526,15 @@ public class Processor<S> implements IProcessor<S> {
 	 * It triggers BEFORE_MAP and AFTER_MAP actions if modifiers are set.
 	 * 
 	 * @param <D> the type of the destination object
-	 * @param destination the destination object from which values are mapped to the source
+	 * @param $source the destination object from which values are mapped to the source
 	 * @return the source object with values mapped from the destination, or null if the source is null
 	 */
-	public <D> Object fromDestination(D destination) {
+	public <D> Object fromDestination(D $source) {
 		if (this.source == null)
 			return null;
 
 		// Swapped the roles of each object
-		final Object _source = destination;
+		final Object _source = $source;
 		final Object _destination = source;
 
 		try {
