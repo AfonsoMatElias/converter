@@ -254,7 +254,7 @@ public class Projector<S> extends BaseCore<S> {
 
 			if (isArray(sourceItem)) {
 				$$.out(
-					"Converter detected that items of the field  '" + 
+					"Converter detected that the item of the field  '" + 
 					sourceItem.getClass().getName() +"->"+ fieldName + 
 					"' is also an Collection type. Prefere using forMember to map this field."
 				);

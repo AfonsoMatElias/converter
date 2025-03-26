@@ -372,7 +372,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 			if (isArray(sourceItem)) {
 				$$.out(
-					"Converter detected that items of the field  '" + 
+					"Converter detected that the item of the field  '" + 
 					sourceItem.getClass().getName() +"->"+ fieldName + 
 					"' is also an Collection type. Prefere using forMember to map this field."
 				);
@@ -538,9 +538,9 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return _destination;
 		} catch (Exception e) {
 			$$.err(
-					"Error whiling mapping the from '" + _source.getClass().getName() + "' to '" + _destination.getClass().getName() + "'",
-					"Error details: " + e.getMessage(), 
-					e);
+				"Error whiling mapping the from '" + _source.getClass().getName() + "' to '" + _destination.getClass().getName() + "'",
+				"Error details: " + e.getMessage(), e
+			);
 			return null;
 		}
 	}
@@ -561,9 +561,9 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return (D) this.toDestination(entry.getClass());
 		} catch (Exception e) {
 			$$.err(
-					"Error whiling making a copy of '" + entry.getClass().getName(),
-					"Error details: " + e.getMessage(),
-					e);
+				"Error whiling making a copy of '" + entry.getClass().getName(),
+				"Error details: " + e.getMessage(),	e
+			);
 			return null;
 		}
 	}
