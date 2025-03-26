@@ -10,46 +10,45 @@ import io.github.afonsomatelias.Core.Projectors.Interfaces.IObjectProjector;
 
 public interface IConverter {
 	/**
-	 * Creates Mapping Processor for the {@link S} Object
+	 * Creates Mapping Processor for the {@link Entry} Object
 	 * 
-	 * @param <S>    the {@link S} Type
-	 * @param source the {@link S} Object to be mapped
+	 * @param <Entry>    	the {@link Entry} Type
+	 * @param entry 		the {@link Entry} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	<S> IObjectMapper<S> map(S source);
+	<Entry> IObjectMapper<Entry> map(Entry entry);
 
 	/**
-	 * Creates Mapping Processor for the {@link S} Object
+	 * Creates Mapping Processor for the {@link Entry} Object
 	 * 
-	 * @param <S>    the {@link S} Type
-	 * @param source the {@link S} Object to be mapped
+	 * @param <Entry>    	the {@link Entry} Type
+	 * @param entry 		the {@link Entry} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	<S> IListMapper<S> map(List<S> source);
+	<Entry> IListMapper<Entry> map(List<Entry> entry);
 
 	/**
 	 * Creates Mapping Projector for the {@link MapObject} Object, where the source must be
 	 * a {@link Map} and the destination must also be a {@link Map}.
 	 * 
-	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link Map}
-	 * @param source the {@link MapObject} Object to be mapped
+	 * @param <MapObject>    	the {@link MapObject} Type which must be a {@link Map}
+	 * @param entry 			the {@link MapObject} Object to be mapped
 	 * @return the Projector the where having all the all the different methods to
 	 *         perform
 	 */
-	<MapObject extends Map<String, ? extends Object>> IObjectProjector<MapObject> project(MapObject source);
+	<MapObject extends Map<String, ? extends Object>> IObjectProjector<MapObject> project(MapObject entry);
 
 	/**
 	 * Creates Mapping Projector for the {@link MapObject} Object, where the source must be
 	 * a {@link List} of {@link Map} and the destination must also be a
 	 * {@link List} of {@link Map}.
 	 * 
-	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link List} of
-	 *                       {@link Map}
-	 * @param source the {@link MapObject} Object to be mapped
+	 * @param <MapObject>    	the {@link MapObject} Type which must be a {@link List} of {@link Map}
+	 * @param entry 			the {@link MapObject} Object to be mapped
 	 * @return the Projector the where having all the all the different methods to
 	 *         perform
 	 */
-	<MapObject extends List<Map<String, ? extends Object>>> IListProjector<MapObject> project(List<MapObject> source);
+	<MapObject extends List<Map<String, ? extends Object>>> IListProjector<MapObject> project(List<MapObject> entry);
 }

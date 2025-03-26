@@ -29,15 +29,15 @@ import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 
 @SuppressWarnings("unchecked")
-public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
+public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
-	 * @param source the {@link S} object
+	 * @param entry the {@link Entry} object
 	 */
-	public Mapper(ConverterShared shared, S source) {
-		super(shared, source);
+	public Mapper(ConverterShared shared, Entry entry) {
+		super(shared, entry);
 		this.mappedObject = new HashMap<>();
 	}
 
@@ -45,10 +45,10 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	 * Inheritance Constructor
 	 * 
 	 * @param parent the parent processor 
-	 * @param source the source object
+	 * @param entry the source object
 	 */
-	public Mapper(Mapper<?> parent, S source) {
-		super(parent.shared, source, parent.localActionOptions);
+	public Mapper(Mapper<?> parent, Entry entry) {
+		super(parent.shared, entry, parent.localActionOptions);
 		this.mappedObject = parent.mappedObject;
 	}
 
@@ -132,7 +132,7 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 
 			// Checking the configuration for this source
 			if (config == null) {
-				$$.err("No mapping configuration found to map: " + source.getClass().getName() + " to "
+				$$.err("No mapping configuration found to map: " + entry.getClass().getName() + " to "
 					+ $destination.getClass().getName());
 				return null;
 			}
@@ -143,7 +143,7 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 
 			// If there isn't, just ignore the mapping
 			if ((configClsSource != $source.getClass()) || (configClsDestination != fieldClassType)) {
-				$$.err("No mapping configuration found to map: " + source.getClass().getName() + " to "
+				$$.err("No mapping configuration found to map: " + entry.getClass().getName() + " to "
 					+ $destination.getClass().getName());
 				return null;
 			}
@@ -301,7 +301,7 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	}
 
 	/**
-	 * Maps the list of {@link S} objects to the list of destination class
+	 * Maps the list of {@link Entry} objects to the list of destination class
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
@@ -330,7 +330,7 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	};
 
 	/**
-	 * Maps the list of {@link S} objects to the list of destination class
+	 * Maps the list of {@link Entry} objects to the list of destination class
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
@@ -491,28 +491,28 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	 * 
 	 * @param <D>   the {@link D} object type
 	 * @param clazz the {@link D} class type
-	 * @return the {@link D} instance mapped from the {@link S}
+	 * @return the {@link D} instance mapped from the {@link Entry}
 	 *         instance
 	 */
 	public <D> Object toDestination(Class<?> clazz) {
-		if (this.source == null)
+		if (this.entry == null)
 			return null;
 
 		try {
 			Object $destination = create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.BEFORE_MAP, source, null);
+			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
 
-			$destination = this.mapper(this.source, clazz, $destination);
+			$destination = this.mapper(this.entry, clazz, $destination);
 
 			// Performs the AFTER_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.AFTER_MAP, source, $destination);
+			localActionOptions.emit(EMappingActions.AFTER_MAP, entry, $destination);
 
 			return $destination;
 		} catch (Exception e) {
 			$$.err(
-				"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
+				"Error whiling mapping the from '" + entry.getClass().getName() + "' to '" + clazz.getName() + "'",
 				"Error details: " + e.getMessage(), e
 			);
 			return null;
@@ -530,12 +530,12 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	 * @return the source object with values mapped from the destination, or null if the source is null
 	 */
 	public <D> Object fromDestination(D $source) {
-		if (this.source == null)
+		if (this.entry == null)
 			return null;
 
 		// Swapped the roles of each object
 		final Object _source = $source;
-		final Object _destination = source;
+		final Object _destination = entry;
 
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set
@@ -563,15 +563,15 @@ public class Mapper<S>  extends BaseCore<S> implements IMapper<S> {
 	 * @return a new instance of the source object, or null if the source is null
 	 */
 	@Override
-	public <D extends S> D to() {
-		if (this.source == null)
+	public <D extends Entry> D to() {
+		if (this.entry == null)
 			return null;
 
 		try {
-			return (D) this.toDestination(source.getClass());
+			return (D) this.toDestination(entry.getClass());
 		} catch (Exception e) {
 			$$.err(
-					"Error whiling making a copy of '" + source.getClass().getName(),
+					"Error whiling making a copy of '" + entry.getClass().getName(),
 					"Error details: " + e.getMessage(),
 					e);
 			return null;

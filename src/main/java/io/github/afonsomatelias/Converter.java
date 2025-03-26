@@ -28,26 +28,26 @@ public abstract class Converter implements IConverter {
 	/**
 	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <S>    the {@link S} Type
-	 * @param source the {@link S} Object to be mapped
+	 * @param <S>    	the {@link S} Type
+	 * @param entry 	the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
-	public <S> IObjectMapper<S> map(S source) {
-		return new ObjectMapper<>(shared, source);
+	public <S> IObjectMapper<S> map(S entry) {
+		return new ObjectMapper<>(shared, entry);
 	}
 
 	/**
 	 * Creates Mapping Processor for the {@link S} Object
 	 * 
-	 * @param <S>    the {@link S} Type
-	 * @param source the {@link S} Object to be mapped
+	 * @param <S>    	the {@link S} Type
+	 * @param entry 	the {@link S} Object to be mapped
 	 * @return the Processor the where having all the all the different methods to
 	 *         perform
 	 */
 	@Override
-	public <S> IListMapper<S> map(List<S> source) {
-		return new ListMapper<>(shared, source);
+	public <S> IListMapper<S> map(List<S> entry) {
+		return new ListMapper<>(shared, entry);
 	}
 
 	/**
@@ -55,13 +55,13 @@ public abstract class Converter implements IConverter {
 	 * a {@link Map} and the destination must also be a {@link Map}.
 	 * 
 	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link Map}
-	 * @param source the {@link MapObject} Object to be mapped
+	 * @param entry the {@link MapObject} Object to be mapped
 	 * @return the Projector the where having all the all the different methods to
 	 *         perform
 	 */
 	@Override
-	public <MapObject extends Map<String, ? extends Object>> IObjectProjector<MapObject> project(MapObject source) {
-		return new ObjectProjector<>(shared, source);
+	public <MapObject extends Map<String, ? extends Object>> IObjectProjector<MapObject> project(MapObject entry) {
+		return new ObjectProjector<>(shared, entry);
 	}
 	
 	/**
@@ -69,14 +69,13 @@ public abstract class Converter implements IConverter {
 	 * a {@link List} of {@link Map} and the destination must also be a
 	 * {@link List} of {@link Map}.
 	 * 
-	 * @param <MapObject>    the {@link MapObject} Type which must be a {@link List} of
-	 *                       {@link Map}
-	 * @param source the {@link MapObject} Object to be mapped
+	 * @param <MapObject>    	the {@link MapObject} Type which must be a {@link List} of {@link Map}
+	 * @param entry 			the {@link MapObject} Object to be mapped
 	 * @return the Projector the where having all the all the different methods to
 	 *         perform
 	 */
 	@Override
-	public <MapObject extends List<Map<String, ? extends Object>>> IListProjector<MapObject> project(List<MapObject> source) {
-		return new ListProjector<>(shared, source);
+	public <MapObject extends List<Map<String, ? extends Object>>> IListProjector<MapObject> project(List<MapObject> entry) {
+		return new ListProjector<>(shared, entry);
 	}
 }

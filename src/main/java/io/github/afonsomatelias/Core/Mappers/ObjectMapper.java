@@ -8,9 +8,9 @@ import io.github.afonsomatelias.Options.MappingObjectActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
 @SuppressWarnings("unchecked")
-public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
-	public ObjectMapper(ConverterShared shared, Object source) {
-		super(shared, (S) source);
+public class ObjectMapper<Entry> extends Mapper<Entry> implements IObjectMapper<Entry> {
+	public ObjectMapper(ConverterShared shared, Object entry) {
+		super(shared, (Entry) entry);
 	}
 
 	/**
@@ -30,7 +30,7 @@ public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
 	}
 	
 	/**
-	 * Maps the {@link S} object to the destination class provided with a mapper modifier
+	 * Maps the {@link Entry} object to the destination class provided with a mapper modifier
 	 * 
 	 * @param <D>     	the {@link D} object type
 	 * @param clazz    	the {@link D} class type
@@ -38,10 +38,10 @@ public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
 	 * @return the object Converted
 	 */
 	@Override
-	public <D> D to(Class<D> clazz, I1Action<IMappingObjectActions<S, D>> modifier) {
+	public <D> D to(Class<D> clazz, I1Action<IMappingObjectActions<Entry, D>> modifier) {
 		try {
 			if (modifier != null) {
-				MappingObjectActions<S, D> actions = new MappingObjectActions<>();
+				MappingObjectActions<Entry, D> actions = new MappingObjectActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 			return (D) super.toDestination(clazz);
@@ -54,19 +54,19 @@ public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
      * Creates a new instance of the source object with a different memory address,
      * applying mapping options if a modifier is provided.
      *
-     * @param <D>     	the {@link D} object type which extends {@link S}
+     * @param <D>     	the {@link D} object type which extends {@link Entry}
      * @param modifier	mapping options that will be applied on map
      * @return new object instance or null in case of an exception
      */
 	@Override
-	public <D extends S> S to(I1Action<IMappingObjectActions<S, D>> modifier) {
+	public <D extends Entry> Entry to(I1Action<IMappingObjectActions<Entry, D>> modifier) {
 		try {
 			if (modifier != null) {
-				MappingObjectActions<S, D> actions = new MappingObjectActions<>();
+				MappingObjectActions<Entry, D> actions = new MappingObjectActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 
-			return (S) this.toDestination(source.getClass());
+			return (Entry) this.toDestination(entry.getClass());
 		} catch (Exception e) {
 			return null;
 		}
@@ -82,14 +82,14 @@ public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
 	 * @return the source object with values mapped from the destination, or null if the destination is null
 	 */
 	@Override
-	public <D> S from(D $source) {
+	public <D> Entry from(D $source) {
 		if ($source == null) {
 			$$.out("Invalid destination object, it cannot be null.");
 			return null;
 		}
 
 		try {
-			return (S) super.fromDestination($source);
+			return (Entry) super.fromDestination($source);
 		} catch (Exception e) {
 			return null;
 		}
@@ -109,7 +109,7 @@ public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
 	 * @return the source object with values mapped from the destination, or null if the destination is null
 	 */
 	@Override
-	public <D> S from(D $source, I1Action<IMappingObjectActions<D, S>> modifier) {
+	public <D> Entry from(D $source, I1Action<IMappingObjectActions<D, Entry>> modifier) {
 		if ($source == null) {
 			$$.out("Invalid destination object, it cannot be null.");
 			return null;
@@ -117,10 +117,10 @@ public class ObjectMapper<S> extends Mapper<S> implements IObjectMapper<S> {
 
 		try {
 			if (modifier != null) {
-				MappingObjectActions<D, S> actions = new MappingObjectActions<>();
+				MappingObjectActions<D, Entry> actions = new MappingObjectActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
-			return (S) super.fromDestination($source);
+			return (Entry) super.fromDestination($source);
 		} catch (Exception e) {
 			return null;
 		}

@@ -320,24 +320,24 @@ public class Projector<S> extends BaseCore<S> {
 	 *         instance
 	 */
 	public <D> Object toDestination(Class<?> clazz) {
-		if (this.source == null)
+		if (this.entry == null)
 			return null;
 
 		try {
 			Object $destination = create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.BEFORE_MAP, source, null);
+			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
 
-			$destination = this.mapper(this.source, clazz, $destination);
+			$destination = this.mapper(this.entry, clazz, $destination);
 
 			// Performs the AFTER_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.AFTER_MAP, source, $destination);
+			localActionOptions.emit(EMappingActions.AFTER_MAP, entry, $destination);
 
 			return $destination;
 		} catch (Exception e) {
 			$$.err(
-				"Error whiling mapping the from '" + source.getClass().getName() + "' to '" + clazz.getName() + "'",
+				"Error whiling mapping the from '" + entry.getClass().getName() + "' to '" + clazz.getName() + "'",
 				"Error details: " + e.getMessage(), e
 			);
 			return null;

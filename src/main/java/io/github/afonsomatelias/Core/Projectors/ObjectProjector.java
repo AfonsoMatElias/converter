@@ -9,9 +9,9 @@ import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 import io.github.afonsomatelias.Core.Projectors.Interfaces.IObjectProjector;
 
 @SuppressWarnings("unchecked")
-public class ObjectProjector<S extends Map<String, ? extends Object>> extends Projector<S> implements IObjectProjector<S> {
-	public ObjectProjector(ConverterShared shared, S source) {
-		super(shared, (S) source);
+public class ObjectProjector<Entry extends Map<String, ? extends Object>> extends Projector<Entry> implements IObjectProjector<Entry> {
+	public ObjectProjector(ConverterShared shared, Entry entry) {
+		super(shared, (Entry) entry);
 	}
 
 	/**
@@ -31,7 +31,7 @@ public class ObjectProjector<S extends Map<String, ? extends Object>> extends Pr
 	}
 	
 	/**
-	 * Maps the {@link S} object to the destination class provided with a mapper modifier
+	 * Maps the {@link Entry} object to the destination class provided with a mapper modifier
 	 * 
 	 * @param <D>      the {@link D} object type
 	 * @param clazz    the {@link D} class type
@@ -39,10 +39,10 @@ public class ObjectProjector<S extends Map<String, ? extends Object>> extends Pr
 	 * @return the object Converted
 	 */
 	@Override
-	public <D> D to(Class<D> clazz, I1Action<IMappingObjectActions<S, D>> modifier) {
+	public <D> D to(Class<D> clazz, I1Action<IMappingObjectActions<Entry, D>> modifier) {
 		try {
 			if (modifier != null) {
-				MappingObjectActions<S, D> actions = new MappingObjectActions<>();
+				MappingObjectActions<Entry, D> actions = new MappingObjectActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 			return (D) super.toDestination(clazz);

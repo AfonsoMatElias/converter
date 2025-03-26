@@ -11,14 +11,14 @@ import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 import io.github.afonsomatelias.Core.Projectors.Interfaces.IListProjector;
 
 @SuppressWarnings("unchecked")
-public class ListProjector<S extends List<Map<String, ? extends Object>>> extends Projector<S> implements IListProjector<S> {
+public class ListProjector<Entry extends List<Map<String, ? extends Object>>> extends Projector<Entry> implements IListProjector<Entry> {
 
-	public ListProjector(ConverterShared shared, Object source) {
-		super(shared, (S) source);
+	public ListProjector(ConverterShared shared, Object entry) {
+		super(shared, (Entry) entry);
 	}
 	
 	/**
-	 * Projects the list of {@link S} objects to the list of destination class
+	 * Projects the list of {@link Entry} objects to the list of destination class
 	 * provided
 	 * 
 	 * @param <D>   the {@link D} object type
@@ -35,7 +35,7 @@ public class ListProjector<S extends List<Map<String, ? extends Object>>> extend
 	}
 
 	/**
-	 * Projects the list of {@link S} objects to the list of destination class
+	 * Projects the list of {@link Entry} objects to the list of destination class
 	 * provided with a mapper modifier
 	 * 
 	 * @param <D>      the {@link D} object type
@@ -44,10 +44,10 @@ public class ListProjector<S extends List<Map<String, ? extends Object>>> extend
 	 * @return the object Converted
 	 */
 	@Override
-	public <D> List<D> to(Class<D> clazz, I1Action<IMappingListActions<S, D>> modifier) {
+	public <D> List<D> to(Class<D> clazz, I1Action<IMappingListActions<Entry, D>> modifier) {
 		try {
 			if (modifier != null) {
-				MappingListActions<S, D> actions = new MappingListActions<>();
+				MappingListActions<Entry, D> actions = new MappingListActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 

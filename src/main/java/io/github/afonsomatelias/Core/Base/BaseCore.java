@@ -7,16 +7,16 @@ import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Options.MappingActions;
 
-public abstract class BaseCore<S> {
+public abstract class BaseCore<Entry> {
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
-	 * @param source the {@link S} object
+	 * @param entry the {@link Entry} object
 	 */
-	public BaseCore(ConverterShared shared, S source) {
+	public BaseCore(ConverterShared shared, Entry entry) {
 		this.shared = shared;
-		this.source = source;
+		this.entry = entry;
 		this.localActionOptions = new MappingActions();
 	}
 
@@ -24,11 +24,11 @@ public abstract class BaseCore<S> {
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
-	 * @param source the {@link S} object
+	 * @param entry the {@link Entry} object
 	 */
-	public BaseCore(ConverterShared shared, S source, MappingActions localActionOptions) {
+	public BaseCore(ConverterShared shared, Entry entry, MappingActions localActionOptions) {
 		this.shared = shared;
-		this.source = source;
+		this.entry = entry;
 		this.localActionOptions = localActionOptions;
 	}
 
@@ -38,8 +38,9 @@ public abstract class BaseCore<S> {
 	protected final ConverterShared shared;
 
 	/** The Source Object */
-	protected final S source;
+	protected final Entry entry;
 
+	
 	/** Action Controller for this Processor */
 	protected final MappingActions localActionOptions;
 

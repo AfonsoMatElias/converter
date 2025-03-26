@@ -10,14 +10,14 @@ import io.github.afonsomatelias.Options.MappingListActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
 @SuppressWarnings("unchecked")
-public class ListMapper<S> extends Mapper<S> implements IListMapper<S> {
+public class ListMapper<Entry> extends Mapper<Entry> implements IListMapper<Entry> {
 
-	public ListMapper(ConverterShared shared, Object source) {
-		super(shared, (S) source);
+	public ListMapper(ConverterShared shared, Object entry) {
+		super(shared, (Entry) entry);
 	}
 
 	/**
-	 * Maps the list of {@link S} objects to the list of destination class
+	 * Maps the list of {@link Entry} objects to the list of destination class
 	 * provided
 	 * 
 	 * @param <D>   the {@link D} object type
@@ -34,7 +34,7 @@ public class ListMapper<S> extends Mapper<S> implements IListMapper<S> {
 	}
 
 	/**
-	 * Maps the list of {@link S} objects to the list of destination class
+	 * Maps the list of {@link Entry} objects to the list of destination class
 	 * provided with a mapper modifier
 	 * 
 	 * @param <D>      the {@link D} object type
@@ -43,10 +43,10 @@ public class ListMapper<S> extends Mapper<S> implements IListMapper<S> {
 	 * @return the object Converted
 	 */
 	@Override
-	public <D> List<D> to(Class<D> clazz, I1Action<IMappingListActions<S, D>> modifier) {
+	public <D> List<D> to(Class<D> clazz, I1Action<IMappingListActions<Entry, D>> modifier) {
 		try {
 			if (modifier != null) {
-				MappingListActions<S, D> actions = new MappingListActions<>();
+				MappingListActions<Entry, D> actions = new MappingListActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 
@@ -61,19 +61,19 @@ public class ListMapper<S> extends Mapper<S> implements IListMapper<S> {
 	 * Creates a new instance of the object provided, just like copy and paste with
 	 * a different memory address, applying mapping options if a modifier is provided.
 	 *
-	 * @param <D>      the {@link D} object type which extends {@link S}
+	 * @param <D>      the {@link D} object type which extends {@link Entry}
 	 * @param modifier mapping options that will be applied on map
 	 * @return new object instance or null in case of an exception
 	 */
 	@Override
-	public <D extends S> S to(I1Action<IMappingListActions<S, D>> modifier) {
+	public <D extends Entry> Entry to(I1Action<IMappingListActions<Entry, D>> modifier) {
 		try {
 			if (modifier != null) {
-				MappingListActions<S, D> actions = new MappingListActions<>();
+				MappingListActions<Entry, D> actions = new MappingListActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 
-			return (S) this.toDestination(source.getClass());
+			return (Entry) this.toDestination(entry.getClass());
 		} catch (Exception e) {
 			return null;
 		}
