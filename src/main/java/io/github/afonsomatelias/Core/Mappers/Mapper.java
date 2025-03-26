@@ -372,7 +372,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 			if (isArray(sourceItem)) {
 				$$.out(
-					"Converter detected that the item of the field  '" + 
+					"Converter detected that the item of the Collection Type field '" + 
 					sourceItem.getClass().getName() +"->"+ fieldName + 
 					"' is also an Collection type. Prefere using forMember to map this field."
 				);
