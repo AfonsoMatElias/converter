@@ -1,10 +1,13 @@
 package io.github.afonsomatelias.Models;
 
+import java.time.LocalDate;
+
 public class User {
 
     private String name = "Afonso Matumona";
     private String username = "AfonsoMatElias";
     private String password = "Abc.123";
+    private LocalDate bithdate = LocalDate.of(1989, 10, 15);
     private String[] roles = { "ADMIN" };
 
     public String getName() {
@@ -24,6 +27,12 @@ public class User {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+    public LocalDate getBithdate() {
+        return bithdate;
+    }
+    public void setBithdate(LocalDate bithdate) {
+        this.bithdate = bithdate;
     }
     public String[] getRoles() {
         return roles;

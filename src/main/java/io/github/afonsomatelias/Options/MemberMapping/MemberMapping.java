@@ -2,12 +2,12 @@ package io.github.afonsomatelias.Options.MemberMapping;
 
 import java.util.List;
 
-import io.github.afonsomatelias.Mapper.Processor;
+import io.github.afonsomatelias.Core.Mappers.Mapper;
 
 public class MemberMapping {
-	Processor<?> processor;
+	Mapper<?> processor;
 
-	public MemberMapping(Processor<?> processor) {
+	public MemberMapping(Mapper<?> processor) {
 		this.processor = processor;
 	}
 
@@ -19,7 +19,7 @@ public class MemberMapping {
 	 * @return a mapping processor for the source object
 	 */
 	public <S> MemberObjectMapping map(S source) {
-		return new MemberObjectMapping(new Processor<S>(processor, source));
+		return new MemberObjectMapping(new Mapper<S>(processor, source));
 	}
 
 	/**
@@ -30,6 +30,6 @@ public class MemberMapping {
 	 * @return a mapping processor for the list of source objects
 	 */
 	public <S> MemberListMapping map(List<S> source) {
-		return new MemberListMapping(new Processor<List<S>>(processor, source));
+		return new MemberListMapping(new Mapper<List<S>>(processor, source));
 	}
 }

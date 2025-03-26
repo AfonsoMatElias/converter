@@ -1,6 +1,6 @@
 package io.github.afonsomatelias.Options;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Enums.EMappingActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
@@ -13,8 +13,8 @@ public class MappingObjectActions<S, D> extends MappingActions implements IMappi
 	 * @implNote The destination argument will be null
 	 * @param modifier the delegate having the modification
 	 */
-	public void beforeMap(CallbackV2<S, D> modifier) {
-		super.on(EMappingActions.BEFORE_MAP, (CallbackV2<Object, Object>) modifier);
+	public void beforeMap(I2Action<S, D> modifier) {
+		super.on(EMappingActions.BEFORE_MAP, (I2Action<Object, Object>) modifier);
 	}
 
 	/**
@@ -22,7 +22,7 @@ public class MappingObjectActions<S, D> extends MappingActions implements IMappi
 	 * 
 	 * @param modifier the delegate having the modification
 	 */
-	public void afterMap(CallbackV2<S, D> modifier) {
-		super.on(EMappingActions.AFTER_MAP, (CallbackV2<Object, Object>) modifier);
+	public void afterMap(I2Action<S, D> modifier) {
+		super.on(EMappingActions.AFTER_MAP, (I2Action<Object, Object>) modifier);
 	}
 }

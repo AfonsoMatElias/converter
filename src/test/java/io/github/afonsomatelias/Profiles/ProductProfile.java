@@ -8,5 +8,6 @@ public class ProductProfile extends Profile {
 	@Override
 	public void init() {
 		createMap(Product.class, ProductDto.class);
+		
 	}
 }

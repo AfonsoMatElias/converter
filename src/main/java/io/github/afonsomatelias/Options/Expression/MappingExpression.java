@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
 import io.github.afonsomatelias.Enums.EMemberType;
@@ -47,7 +47,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 */
 	public MappingExpression<S, D> forMember(
 		String destinationMember, 
-		CallbackP1<S, Object> transform
+		I1Fn<S, Object> transform
 	) {
 		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
@@ -72,7 +72,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 */
 	public MappingExpression<S, D> forMember(
 		String destinationMember, 
-		CallbackP2<S, MemberMapping, Object> transform
+		I2Fn<S, MemberMapping, Object> transform
 	) {
 		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
@@ -96,7 +96,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 */
 	public <U> MappingExpression<S, D> forMember(
 		ISetterFunction<D, U> setterPropertyMember,
-		CallbackP1<S, Object> transform
+		I1Fn<S, Object> transform
 	) {
 
 		// Building the unique name of the action
@@ -117,7 +117,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 */
 	public <U> MappingExpression<S, D> forMember(
 		ISetterFunction<D, U> setterPropertyMember,
-		CallbackP2<S, MemberMapping, Object> transform
+		I2Fn<S, MemberMapping, Object> transform
 	) {
 		// Building the unique name of the action
 		final String key = this.getMappingName();
@@ -142,7 +142,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 			return this;
 		}
 
-		CallbackP1<Object, Object> fnVoid = (o) -> null;
+		I1Fn<Object, Object> fnVoid = (o) -> null;
 		shared.forMemberMapping.put(field,
 				new FieldMemberMapping(destinationMember, fnVoid, EMemberType.SINGLE_CALLBACK));
 
@@ -156,8 +156,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link MappingExpression} for chaining
 	 */
-	public MappingExpression<S, D> beforeMap(CallbackV2<S, D> mappingAction) {
-		this.getMapperActions().beforeMap((CallbackV2<Object, Object>) mappingAction);
+	public MappingExpression<S, D> beforeMap(I2Action<S, D> mappingAction) {
+		this.getMapperActions().beforeMap((I2Action<Object, Object>) mappingAction);
 		return this;
 	}
 
@@ -168,8 +168,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link MappingExpression} for chaining
 	 */
-	public MappingExpression<S, D> afterMap(CallbackV2<S, D> mappingAction) {
-		this.getMapperActions().afterMap((CallbackV2<Object, Object>) mappingAction);
+	public MappingExpression<S, D> afterMap(I2Action<S, D> mappingAction) {
+		this.getMapperActions().afterMap((I2Action<Object, Object>) mappingAction);
 		return this;
 	}
 

@@ -1,12 +1,12 @@
 package io.github.afonsomatelias.Options.MemberMapping;
 
-import io.github.afonsomatelias.Mapper.Processor;
+import io.github.afonsomatelias.Core.Mappers.Mapper;
 
 @SuppressWarnings("unchecked")
 public class MemberListMapping {
-	private final Processor<?> processor;
+	private final Mapper<?> processor;
 
-	public MemberListMapping(Processor<?> processor) {
+	public MemberListMapping(Mapper<?> processor) {
 		this.processor = processor;
 	}
 

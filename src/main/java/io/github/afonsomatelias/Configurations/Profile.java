@@ -1,11 +1,13 @@
 package io.github.afonsomatelias.Configurations;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV1;
+
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Options.Expression.IMappingExpression;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
-public abstract class Profile {
+
+public abstract class Profile implements IProfile {
 	protected ConverterConfiguration $super;
 
 	/**
@@ -34,7 +36,7 @@ public abstract class Profile {
 	public <S, D> IMappingExpression<S, D> createMap(
 		Class<S> source,
 		Class<D> destination,
-		CallbackV1<IMappingObjectActions<S, D>> modifier
+		I1Action<IMappingObjectActions<S, D>> modifier
 	) {
 		return $super.createMap(source, destination, modifier);
 	}
@@ -53,10 +55,8 @@ public abstract class Profile {
 	public <TypeSource, TypeDestination> void addTransform(
 		Class<TypeSource> from, 
 		Class<TypeDestination> to,
-		CallbackP1<TypeSource, TypeDestination> behavior
+		I1Fn<TypeSource, TypeDestination> behavior
 	) {
 		$super.addTransform(from, to, behavior);
 	}
-
-	public void init() {}
 }

@@ -1,8 +1,8 @@
 package io.github.afonsomatelias.Options.Expression;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP1;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackP2;
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
 import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
 
@@ -13,7 +13,7 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	IMappingExpression<S, D> forMember(String destinationMember, CallbackP1<S, Object> transform);
+	IMappingExpression<S, D> forMember(String destinationMember, I1Fn<S, Object> transform);
 
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
@@ -21,7 +21,7 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	IMappingExpression<S, D> forMember(String destinationMember, CallbackP2<S, MemberMapping, Object> transform);
+	IMappingExpression<S, D> forMember(String destinationMember, I2Fn<S, MemberMapping, Object> transform);
 
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
@@ -29,7 +29,7 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, CallbackP2<S, MemberMapping, Object> transform);
+	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, I2Fn<S, MemberMapping, Object> transform);
 	
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
@@ -37,7 +37,7 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, CallbackP1<S, Object> transform);
+	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, I1Fn<S, Object> transform);
 	
 
 	/**
@@ -54,7 +54,7 @@ public interface IMappingExpression<S, D> {
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link IMappingExpression} for chaining
 	 */
-	IMappingExpression<S, D> beforeMap(CallbackV2<S, D> mappingAction);
+	IMappingExpression<S, D> beforeMap(I2Action<S, D> mappingAction);
 
 	/**
 	 * Subscribes a after map action for this {@link S} and {@link D}
@@ -63,7 +63,7 @@ public interface IMappingExpression<S, D> {
 	 * @param mappingAction the expression that will be performed
 	 * @return {@link IMappingExpression} for chaining
 	 */
-	IMappingExpression<S, D> afterMap(CallbackV2<S, D> mappingAction);
+	IMappingExpression<S, D> afterMap(I2Action<S, D> mappingAction);
 
 	/**
 	 * Used to recreate the same mapping but in reverse order

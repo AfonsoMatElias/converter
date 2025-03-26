@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Enums.EMappingActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
 
 public class MappingActions implements IMappingActions {
 	// Stores all the actions according to the type
-	protected Map<EMappingActions, List<CallbackV2<Object, Object>>> actions = new HashMap<>();
+	protected Map<EMappingActions, List<I2Action<Object, Object>>> actions = new HashMap<>();
 
 	// Stores all the actions according to the type
 	protected Map<String, Field> inlineSkippingMembers = new HashMap<>();
@@ -31,9 +31,9 @@ public class MappingActions implements IMappingActions {
 	 * @param action       the action that need to be performed when the target
 	 *                     matches
 	 */
-	public void on(EMappingActions targetAction, CallbackV2<Object, Object> action) {
+	public void on(EMappingActions targetAction, I2Action<Object, Object> action) {
 		// Defining the default List of Actions
-		List<CallbackV2<Object, Object>> mActions = new ArrayList<>();
+		List<I2Action<Object, Object>> mActions = new ArrayList<>();
 
 		if (!actions.containsKey(targetAction))
 			actions.put(targetAction, mActions);
@@ -54,7 +54,7 @@ public class MappingActions implements IMappingActions {
 	 */
 	public void emit(EMappingActions targetAction, Object src, Object dst) {
 		// Defining the default List of Actions
-		final List<CallbackV2<Object, Object>> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
+		final List<I2Action<Object, Object>> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
 
 		// Setting the actual list of action
 		for (int i = 0; i < targetActions.size(); i++) {
@@ -146,7 +146,7 @@ public class MappingActions implements IMappingActions {
 	public void merge(MappingActions mappingActions) {
 		mappingActions.actions.forEach((key, value) -> {
 			if (!this.actions.containsKey(key))
-				this.actions.put(key, new ArrayList<CallbackV2<Object, Object>>());
+				this.actions.put(key, new ArrayList<I2Action<Object, Object>>());
 
 			this.actions.get(key).addAll(value);
 		});

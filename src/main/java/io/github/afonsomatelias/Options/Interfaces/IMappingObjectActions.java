@@ -1,6 +1,6 @@
 package io.github.afonsomatelias.Options.Interfaces;
 
-import io.github.afonsomatelias.Callback.ICallbacks.CallbackV2;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Enums.EMappingActions;
 
 public interface IMappingObjectActions<S, D> extends IMappingActions {
@@ -10,12 +10,12 @@ public interface IMappingObjectActions<S, D> extends IMappingActions {
 	 * 
      * @param modifier the delegate having the modification
      */
-    void beforeMap(CallbackV2<S, D> modifier);
+    void beforeMap(I2Action<S, D> modifier);
     
     /**
      * Subscribes {@link EMappingActions.AFTER_MAP} action
 	 * 
      * @param modifier the delegate having the modification
      */
-    void afterMap(CallbackV2<S, D> modifier);
+    void afterMap(I2Action<S, D> modifier);
 }
