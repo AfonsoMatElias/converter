@@ -1,6 +1,6 @@
 package io.github.afonsomatelias.Helpers;
 
-// Hiden printer to controller the what to print in the converter 
+// Hidden printer to controller the what to print in the converter 
 public class $$ {
     public static boolean isSilent = false;
 

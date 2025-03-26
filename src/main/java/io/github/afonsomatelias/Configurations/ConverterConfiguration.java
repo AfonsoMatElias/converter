@@ -69,7 +69,6 @@ public class ConverterConfiguration extends Converter {
 	 */
 	@SafeVarargs
 	public final void use(Class<? extends TypeResolver>... types) {
-
 		// Initializing all the profiles
 		for (Class<? extends TypeResolver> clsResolver : types) {
 			try {
@@ -79,7 +78,7 @@ public class ConverterConfiguration extends Converter {
 				// Applying the type resolver
 				shared.typeResolvers.put(typeResolver.type, (value) -> typeResolver.resolve(value));
 			} catch (Exception e) {
-				$$.err("Profile: " + clsResolver.getName() + "not initialized");
+				$$.err("TypeResolver: " + clsResolver.getName() + "not initialized");
 			}
 		}
 	}
