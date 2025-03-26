@@ -37,7 +37,7 @@ class Log {
      */
     public void printMultipleMessages(
             final PrintStream methodSource,
-            final String source,
+            final String type,
             final Object[] contents) {
         // Looping all the contents provided
         for (final Object content : contents) {
@@ -52,7 +52,7 @@ class Log {
             final Boolean isExceptionObject = (content instanceof Exception);
 
             if (isObject && !isExceptionObject) {
-                methodSource.print(prefix());
+                methodSource.print(prefix(type));
                 methodSource.print(content);
                 methodSource.print("\n");
                 continue;
@@ -70,11 +70,11 @@ class Log {
             message = accentReplacer(message); // Helpers
 
             // If the source wasn't provided, build the without it
-            if (source == null)
+            if (type == null)
                 methodSource.println(prefix() + message);
             else
                 // Otherwise, apply the source
-                methodSource.println(prefix(source) + message);
+                methodSource.println(prefix(type) + message);
 
             // Print the StackTrace if it's an Exception
             if (isExceptionObject)
@@ -83,11 +83,11 @@ class Log {
     }
 
     public void out(Object... contents) {
-        printMultipleMessages(System.out, appName, contents);
+        printMultipleMessages(System.out, "Log", contents);
     }
 
     public void err(Object... contents) {
-        printMultipleMessages(System.err, appName, contents);
+        printMultipleMessages(System.err, "Error", contents);
     }
 }
 
