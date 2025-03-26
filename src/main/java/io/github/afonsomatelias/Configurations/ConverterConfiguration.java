@@ -31,6 +31,7 @@ public class ConverterConfiguration extends Converter {
 		configOptions.call(this);
 	}
 
+	@FunctionalInterface
 	public interface IOptions<Config> { void call(Config config);}
 
 	@SafeVarargs

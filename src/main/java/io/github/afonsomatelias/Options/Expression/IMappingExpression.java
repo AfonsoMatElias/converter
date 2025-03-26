@@ -2,8 +2,8 @@ package io.github.afonsomatelias.Options.Expression;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.ISetterFunction;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
-import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
 import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
 
 public interface IMappingExpression<S, D> {

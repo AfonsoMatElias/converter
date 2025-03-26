@@ -4,8 +4,8 @@ import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 
 public abstract class TypeResolver implements ITypeResolver {
 	/** Default constructor */
-	public TypeResolver(Class<?> propertyClassType) {
-		this.type = propertyClassType;
+	public TypeResolver(Class<?> classType) {
+		this.type = classType;
 	}
 
 	/** The type to be resolved */

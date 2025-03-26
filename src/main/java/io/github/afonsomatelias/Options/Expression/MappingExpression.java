@@ -7,6 +7,7 @@ import java.util.Map;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.ISetterFunction;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
@@ -14,7 +15,6 @@ import io.github.afonsomatelias.Enums.EMemberType;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Helpers.FieldHelper;
 import io.github.afonsomatelias.Options.MappingObjectActions;
-import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
 import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;

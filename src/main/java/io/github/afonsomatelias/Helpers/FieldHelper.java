@@ -12,10 +12,12 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class FieldHelper {
 
+    @FunctionalInterface
     public interface IFieldkeyValue<TKey, TValue> {
         void run(TKey key, TValue value, Class<?> type);
     }
-    
+
+    @FunctionalInterface
     public interface IFieldOptionCallback<TKey, TValue> {
         void run(TKey key, TValue value, Field field, Class<?> type);
     }

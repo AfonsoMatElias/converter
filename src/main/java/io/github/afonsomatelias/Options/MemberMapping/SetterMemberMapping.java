@@ -2,9 +2,9 @@ package io.github.afonsomatelias.Options.MemberMapping;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.ISetterFunction;
 import io.github.afonsomatelias.Core.Mappers.Mapper;
 import io.github.afonsomatelias.Enums.EMemberType;
-import io.github.afonsomatelias.Options.Interfaces.ISetterFunction;
 
 @SuppressWarnings("unchecked")
 public class SetterMemberMapping {
