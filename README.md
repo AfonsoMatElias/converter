@@ -135,10 +135,10 @@ You can also make a copy of an object. **Note**: the returned object should have
 ```
 Note: We can also apply modifiers, like: ``.to((options) -> { })``
 
-## Creating Mapping for each class type
+## Creating Map Configuration
 
-We can also create mapping configuration for each class type, and add global options if needed.
-The options can be added on **Mapping Configuration Creation** or after, it depends to you.
+We can also create mapping configuration for each class type, and add it to global configuration if needed.
+Options can also be added on **Mapping Configuration**.
 
 ### Global Configuration
 
@@ -170,7 +170,7 @@ After the mapping configuration is created, we can also add fields modification 
   });
 ```
 
-In case of mapping both ways, we can use the *reverseMap* method to swap the types, instead of creating a new mapping. **Note**: but you need to also define it own configurations.
+In case of mapping both ways, we can use the ``reverseMap`` method to swap the types, instead of creating a new mapping. **Note**: but you need to also define it own configurations.
 
 ### Reverse Mapping
 ```java
@@ -187,7 +187,8 @@ In case of mapping both ways, we can use the *reverseMap* method to swap the typ
   });
 ```
 
-We can also mutate or transform a value types... Whenever the Converter finds the mapping of the source type to the destination type, it will call the *mutate* the value.
+We can also mutate or transform a value type... Whenever the Converter finds the mapping of the source type to the destination type, 
+it will mutate the value according to the callback provided.
 
 ### Transformations
 ```java
@@ -206,7 +207,7 @@ We can also mutate or transform a value types... Whenever the Converter finds th
   });
 ```
 
-Using ``forMember`` method we can target a member and modify it value on mapping process. It can be chained.
+Using ``forMember`` method you can target a member and modify it value on mapping process. It can be chained.
 
 ### Using forMember
 ```java
@@ -253,7 +254,7 @@ You can also restrict the mapping by setting ``useMappingConfig`` to ``true``, t
   });
 ```
 
-By default the Converter logs all the warnings, like the *fields that could not be instantiated*, but if you want to avoid it, you can use the ``setSilentLogs`` method in the configuration. We **RECOMMEND** setting it to ``true`` in production.
+By default, the Converter logs all the warnings, like the *fields that could not be instantiated*, but if you want to suppress it, you can use the ``setSilentLogs`` method in the configuration. We **RECOMMEND** setting it to ``true`` in production.
 
 ### Silent Logs
 ```java
@@ -264,28 +265,31 @@ By default the Converter logs all the warnings, like the *fields that could not 
 
 ## Mapping Profiles
 
-You can separete the configuration of each class type, and the global configuration, to achieve this we can use the ``Profile`` class.
+You can separete the configuration of each class type, and add to the global configuration, to achieve this we can use the ``Profile`` class.
 
-You just need to create a class that extends the ``Profile`` class, use the ``@Override`` **init** method to create the configuration and add the profile class to the ConverterConfiguration.
+You just need to create a class that extends the ``Profile`` class, ``@Override init()``  method to create the configurations, 
+and add it to the ConverterConfiguration.
 
 ### Profiles
 ```java
   public class UserProfile extends Profile {
     @Override
     public void init() {
-      createMap(User.class, UserDto.class);
+      createMap(User.class, UserResponseDto.class);
+      createMap(UserRequestDto.class, User.class);
     }
   }
   
   public class ProductProfile extends Profile {
     @Override
     public void init() {
-      createMap(Product.class, ProductDto.class);
+      createMap(Product.class, ProductResponseDto.class);
+      createMap(ProductRequestDto.class, Product.class);
     }
   }
 ```
 
-And then add the profiles to the ConverterConfiguration
+And then, add the profiles to the ConverterConfiguration
 
 ### Adding Profiles
 ```java
@@ -323,7 +327,9 @@ Converter can also extract values from another object, as long as the object has
   Boolean isEquals = dbModel == dbModelMapped;  
 ```
 
-* Members can be skipped while extracting values from another object using mapping actions
+Members can be skipped while extracting values from another object using mapping actions.
+
+## Applying Options
 ```java
   ConverterConfiguration config = new ConverterConfiguration();
   IConverter converter = config.createConverter();
@@ -368,7 +374,8 @@ Converter can also project a ``HashMap`` types to a ``Model``, as long as the ob
   UserDto dto = converter.project(user).to(UserDto.class);
 ```
 
-Like ``converter.map(...)`.to(...)``, ``converter.project(...)`.to(...)`` also provides the same options, ``beforeMap``, ``afterMap``, etc.
+Like ``converter.map(...)`.to(...)``, using project you can also provides the same options on projecting, 
+``beforeMap``, ``afterMap``, etc.
 
 ### Projecting with Options
 ```java
@@ -386,9 +393,9 @@ Like ``converter.map(...)`.to(...)``, ``converter.project(...)`.to(...)`` also p
   });
 ```
 
-Members and Type can be also skipped while projecting the values, just like using the ``converter.map(...)``
+Members and Types can also be skipped while projecting the values, just like using the ``converter.map(...)``.
 
-### Skipping Members and/or Types while Projecting
+### Skipping Members and Types while Projecting
 ```java
   ConverterConfiguration config = new ConverterConfiguration();
   IConverter converter = config.createConverter();
@@ -405,8 +412,8 @@ Members and Type can be also skipped while projecting the values, just like usin
   });
 ```
 
-In cases of types that could not be projected, you can provide a custom type resolver using the options the method ``use(...)`` in 
-the ``ConverterConfiguration``
+In cases of types that could not be projected, you can provide a custom type resolver using the method ``use(...)`` in 
+the ``ConverterConfiguration``.
 
 ### Using Type Resolvers
 ```java
@@ -433,8 +440,10 @@ the ``ConverterConfiguration``
   });
 ```
 
-Or, you can use a CustomTypeResolver class to maintain you configuration nice and clean, you just need to create a Class 
-that extends ``TypeResolver``, providing the type you want to resolve in the ``super`` *constructor*, implement the method ``resolve(...)``, and add it to the ConverterConfiguration
+Or, you can use a *CustomTypeResolver* class to maintain you ConverterConfiguration nice and clean.
+
+To achieve that, you just need to create a Class that extends ``TypeResolver``, providing the type you want to resolve 
+in the *constructor* ``super(Type.class)``, implement the ``@Override resolve(...)`` method, and add it to the ConverterConfiguration.
 
 ### Using Type Resolvers (Class)
 ```java	
@@ -459,13 +468,7 @@ that extends ``TypeResolver``, providing the type you want to resolve in the ``s
 
 ```java
   ConverterConfiguration config = new ConverterConfiguration((options) -> {
-
-    options.use(LocalDate.class, (value) -> {
-        if (!(value instanceof String)) return null;
-        
-        final String str = value.toString();
-        return LocalDate.parse(str.split("T")[0]);
-    });
+    options.use(LocalDateTypeResolver.class);
   });
   IConverter converter = config.createConverter();
 
@@ -483,7 +486,7 @@ that extends ``TypeResolver``, providing the type you want to resolve in the ``s
 
 ## Using Spring Boot
 
-If you use SpringBoot and want to use Dependency Injection, you can create a converter config class 
+If you are using SpringBoot and want to use Dependency Injection, you can create a converter config class 
 extending ``ConverterConfiguration`` and assign it as ``@Component`` annotation:
 
 ```java
