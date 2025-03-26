@@ -21,7 +21,7 @@ public abstract class BaseCore<Entry> {
 	}
 
 	/**
-	 * The Default Constructor
+	 * Inheritance Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
 	 * @param entry the {@link Entry} object
@@ -40,7 +40,6 @@ public abstract class BaseCore<Entry> {
 	/** The Source Object */
 	protected final Entry entry;
 
-	
 	/** Action Controller for this Processor */
 	protected final MappingActions localActionOptions;
 

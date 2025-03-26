@@ -10,6 +10,12 @@ import io.github.afonsomatelias.Core.Projectors.Interfaces.IObjectProjector;
 
 @SuppressWarnings("unchecked")
 public class ObjectProjector<Entry extends Map<String, ? extends Object>> extends Projector<Entry> implements IObjectProjector<Entry> {
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param entry the {@link Entry} object
+	 */
 	public ObjectProjector(ConverterShared shared, Entry entry) {
 		super(shared, (Entry) entry);
 	}

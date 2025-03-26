@@ -9,6 +9,12 @@ import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
 @SuppressWarnings("unchecked")
 public class ObjectMapper<Entry> extends Mapper<Entry> implements IObjectMapper<Entry> {
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param entry the {@link Entry} object
+	 */
 	public ObjectMapper(ConverterShared shared, Object entry) {
 		super(shared, (Entry) entry);
 	}

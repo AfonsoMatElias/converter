@@ -11,7 +11,12 @@ import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
 @SuppressWarnings("unchecked")
 public class ListMapper<Entry> extends Mapper<Entry> implements IListMapper<Entry> {
-
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param entry the {@link Entry} object
+	 */
 	public ListMapper(ConverterShared shared, Object entry) {
 		super(shared, (Entry) entry);
 	}

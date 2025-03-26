@@ -12,7 +12,12 @@ import io.github.afonsomatelias.Core.Projectors.Interfaces.IListProjector;
 
 @SuppressWarnings("unchecked")
 public class ListProjector<Entry extends List<Map<String, ? extends Object>>> extends Projector<Entry> implements IListProjector<Entry> {
-
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param entry the {@link Entry} object
+	 */
 	public ListProjector(ConverterShared shared, Object entry) {
 		super(shared, (Entry) entry);
 	}

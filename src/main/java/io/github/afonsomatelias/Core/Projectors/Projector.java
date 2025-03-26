@@ -33,6 +33,21 @@ public class Projector<S> extends BaseCore<S> {
 		super(shared, source);
 	}
 
+	/**
+	 * Maps properties from the source map to the destination object.
+	 * 
+	 * This function handles both primitive and non-primitive fields, including
+	 * arrays and maps, by checking their types and performing necessary
+	 * transformations. It also considers mapping configurations and actions,
+	 * such as skipping fields or types, and resolving values using type resolvers
+	 * when necessary.
+	 * 
+	 * @param $source          		the source map with field names and values to be mapped
+	 * @param fieldClassType   		the class type of the destination object
+	 * @param $destination     		the destination object to which the properties
+	 *                         		are to be mapped
+	 * @return the mapped destination object, or null if mapping is not possible
+	 */
 	private Object mapObject(
 		Map<String, ? extends Object> $source,
 		Class<?> fieldClassType,
@@ -105,7 +120,7 @@ public class Projector<S> extends BaseCore<S> {
 					valueToSet = this.mapObject(
 						(Map<String, ? extends Object>) fieldValue,
 						fieldTypeDestination, 
-						create(fieldTypeDestination, fieldName, fieldTypeDestination)
+						super.create(fieldTypeDestination, fieldName, fieldTypeDestination)
 					);
 				}
 			}
@@ -165,9 +180,9 @@ public class Projector<S> extends BaseCore<S> {
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
-	 * @param $source          	the source value
-	 * @param fieldListType 	the destination type
-	 * @param fieldParentType       	the class of the destination
+	 * @param $source          		the source value
+	 * @param fieldListType 		the destination type
+	 * @param fieldParentType       the class of the destination
 	 * @param collectionType  		the type of the destination list
 	 * @return the mapped list
 	 */
@@ -178,14 +193,15 @@ public class Projector<S> extends BaseCore<S> {
 		Class<?> fieldParentType,
 		ECollectionType collectionType
 	) {
+		final I2Action<Object, Object> fnEmpty = (_0, _1) -> {}; 
 		return this.mapList(
 			fieldName, 
 			$source, 
 			fieldListType, 
 			fieldParentType, 
 			collectionType, 
-			(_0, _1) -> {},
-			(_0, _1) -> {}
+			fnEmpty,
+			fnEmpty
 		);
 	};
 
@@ -194,9 +210,9 @@ public class Projector<S> extends BaseCore<S> {
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
-	 * @param $source          	the source value
-	 * @param fieldListType 	the destination type
-	 * @param fieldParentType       	the class of the destination
+	 * @param $source          		the source value
+	 * @param fieldListType 		the destination type
+	 * @param fieldParentType       the class of the destination
 	 * @param collectionType  	   	the type of the destination list
 	 * @param localBeforeEachMap   	the local before map callback
 	 * @param localAfterEachMap    	the local after map callback
@@ -246,7 +262,7 @@ public class Projector<S> extends BaseCore<S> {
 				dstItem = this.mapObject(
 					(Map<String, ? extends Object>) sourceItem, 
 					fieldListType, 
-					create(fieldListType, fieldName, fieldParentType)
+					super.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -271,9 +287,9 @@ public class Projector<S> extends BaseCore<S> {
 	 * Maps the source object to the destination object, this method is called
 	 * internally by the framework.
 	 * 
-	 * @param $source the source object to be mapped
-	 * @param clsDestination the class of the destination
-	 * @param $destination the destination object
+	 * @param $source 			the source object to be mapped
+	 * @param clsDestination 	the class of the destination
+	 * @param $destination 		the destination object
 	 * @return the mapped object
 	 */
 	private <D> Object mapper(Object $source, Class<?> clsDestination, Object $destination) {
@@ -324,7 +340,7 @@ public class Projector<S> extends BaseCore<S> {
 			return null;
 
 		try {
-			Object $destination = create(clazz);
+			Object $destination = super.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);

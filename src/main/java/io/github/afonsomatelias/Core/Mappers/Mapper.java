@@ -251,18 +251,12 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			// Checking object types
 			if (fieldTypeDestination != fieldTypeSource) {
 				// if there is already an instance of the destination field, use it
-				final Object $objDestination = fieldDestinationValue != null ? fieldDestinationValue : create(
-					fieldTypeDestination,
-					fieldName, 
-					fieldClassType
-				);
+				final Object $objDestination = fieldDestinationValue != null 
+					? fieldDestinationValue 
+					: super.create(fieldTypeDestination, fieldName, fieldClassType);
 
 				// Mapping the object and assigning the value
-				valueToSet = this.mapObject(
-					fieldSourceValue, 
-					fieldTypeDestination, 
-					$objDestination
-				);
+				valueToSet = this.mapObject(fieldSourceValue, fieldTypeDestination, $objDestination);
 			}
 
 			if (valueToSet == null) return;
@@ -386,11 +380,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				dstItem = this.mapObject(
 					sourceItem, 
 					fieldListType, 
-					create(
-						fieldListType,
-						fieldName, 
-						fieldParentType
-					)
+					super.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -499,7 +489,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return null;
 
 		try {
-			Object $destination = create(clazz);
+			Object $destination = super.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
