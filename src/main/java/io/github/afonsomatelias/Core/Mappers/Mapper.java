@@ -11,6 +11,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +58,10 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * Stores all the times that an object was mapped for to avoid mapping and object already mapped
 	 */
 	private final Map<String, Object> mappedObject;
+
+	private HashSet<String> DEFAULT_SKIP_TYPE_NAME = new HashSet<>(Arrays.asList(
+		"PersistentBag"
+	));
 
 	/**
 	 * Maps properties from the source object to the destination object.
@@ -216,11 +221,11 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			final Object $mutatedObject = this.mapTransform(valueToSet, fieldTypeSource, fieldTypeDestination);
 
 
-			// # if the fields are equals (same types), just set it, but skip `PersistentBag`
+			// # if the fields are equals (same types), just set it, but skip it if matches DEFAULT_SKIP_TYPE_NAME
 			if (
 				(fieldTypeDestination == fieldTypeSource) && 
 				(valueToSet != null) && 
-				!(valueToSet.getClass().getSimpleName().equals("PersistentBag"))
+				!(DEFAULT_SKIP_TYPE_NAME.contains(valueToSet.getClass().getSimpleName()))
 			) {
 				fnSetDstValue.call(fieldDestination, ($mutatedObject != null ? $mutatedObject : valueToSet));
 				return;
