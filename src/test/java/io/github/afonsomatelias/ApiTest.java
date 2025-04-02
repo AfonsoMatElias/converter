@@ -19,6 +19,7 @@ import io.github.afonsomatelias.Configurations.ConverterConfiguration;
 import io.github.afonsomatelias.Helpers.MethodCallCounter;
 import io.github.afonsomatelias.Models.Product;
 import io.github.afonsomatelias.Models.ProductDto;
+import io.github.afonsomatelias.Models.ProductProjection;
 import io.github.afonsomatelias.Models.User;
 import io.github.afonsomatelias.Models.UserDto;
 import io.github.afonsomatelias.Profiles.ProductProfile;
@@ -863,5 +864,101 @@ public class ApiTest {
         
         assertNull(dto.getPassword());
         assertNull(dto.getBithdate());
+    }
+
+    @Test
+    public void shouldProjectAnInterfaceToDto() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        ProductProjection productProjection = new ProductProjection() {
+            @Override
+            public String getName() { return "Coca Cola"; }
+            @Override
+            public Float getPrice() { return 0.5f; }
+
+            @Override
+            public String[] getCategories() { return new String[]{ "Liquid", "Refrigerator" }; }
+            @Override
+            public Integer getQuantity() { return 15; }
+        };
+
+        ProductDto dto = converter.project(productProjection).to(ProductDto.class);
+
+        assertNotNull(dto);
+        assertNotNull(dto.getName());
+    }
+    
+    @Test
+    public void shouldProjectListInterfaceToDto() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        ProductProjection productProjection1 = new ProductProjection() {
+            @Override
+            public String getName() { return "Coca Cola"; }
+            @Override
+            public Float getPrice() { return 0.5f; }
+
+            @Override
+            public String[] getCategories() { return new String[]{ "Liquid", "Refrigerator" }; }
+            @Override
+            public Integer getQuantity() { return 15; }
+        };
+
+        ProductProjection productProjection2 = new ProductProjection() {
+            @Override
+            public String getName() { return "Beer"; }
+            @Override
+            public Float getPrice() { return 0.6f; }
+
+            @Override
+            public String[] getCategories() { return new String[]{ "Liquid", "Alcoholic" }; }
+            @Override
+            public Integer getQuantity() { return 25; }
+        };
+
+        List<ProductDto> dtos = converter.project(Arrays.asList(productProjection1, productProjection2)).to(ProductDto.class);
+
+        assertNotNull(dtos);
+
+        assertSame(dtos.get(0).getName(), productProjection1.getName());
+        assertSame(dtos.get(1).getName(), productProjection2.getName());
+    }
+
+    @Test
+    public void shouldProjectAnInterfaceToDtoWithModifiers() {
+        final ConverterConfiguration config = new ConverterConfiguration();
+        final IConverter converter = config.createConverter();
+
+        ProductProjection productProjection = new ProductProjection() {
+            @Override
+            public String getName() { return "Coca Cola"; }
+            @Override
+            public Float getPrice() { return 0.5f; }
+
+            @Override
+            public String[] getCategories() { return new String[]{ "Liquid", "Refrigerator" }; }
+            @Override
+            public Integer getQuantity() { return 15; }
+        };
+
+        ProductDto dto = converter.project(productProjection).to(ProductDto.class, (options) -> {
+            options.skipMembers("setName");
+            options.skipTypes(Integer.class);
+
+            options.beforeMap((src, dst) -> {
+                method.call();
+            });
+
+            options.afterMap((src, dst) -> {
+                method.call();
+            });
+        });
+
+        assertNotNull(dto);
+        assertNull(dto.getName());
+        assertNull(dto.getQuantity());
+        method.assertMethodCalled(2);
     }
 }

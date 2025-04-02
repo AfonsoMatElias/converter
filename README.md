@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.5.0
+# Converter v1.5.1
 
 ## What is Converter?
 
@@ -20,11 +20,22 @@ In case of restricting the object conversion, you can set it to always use mappe
   // Creating the Converter
   IConverter converter = config.createConverter();
 
+  // #1 Mapping An Object
+
   // Entities
   Product model = new Product();
 
-  // Mapping
   ProductDto dto = converter.map(model).to(ProductDto.class);
+
+  // #2 Mapping A List
+
+  // Entities
+  Product model1 = new Product();
+  Product model2 = new Product();
+
+  List<Product> models = Arrays.asList(model1, model2);
+
+  List<ProductDto> dtos = converter.map(models).to(ProductDto.class);
 ```
 
 You can use the ``beforeMap`` and ``afterMap`` methods to modify the input and/or output.
@@ -353,11 +364,11 @@ Members can be skipped while extracting values from another object using mapping
   });
 ```
 
-## Projecting HashMap to Model
+## Projecting
 
 Converter can also project a ``HashMap`` types to a ``Model``, as long as the object has the same structure.
 
-### Projecting
+### Projecting HashMap
 ```java
   ConverterConfiguration config = new ConverterConfiguration();
   IConverter converter = config.createConverter();
@@ -483,6 +494,49 @@ in the *constructor* ``super(Type.class)``, implement the ``@Override resolve(..
     options.skipMembers("password");
   });
 ```
+
+Beside that, it can also project an ``Interface`` types to a ``Model``, as long as the object has the same structure.
+
+### Projecting Interface (Projection)
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Map
+  ProductProjection projection = new ProductProjection() {
+    @Override
+    public String getName() { return "Coca Cola"; }
+    @Override
+    public Float getPrice() { return 0.5f; }
+    @Override
+    public String[] getCategories() { 
+      return new String[]{ "Liquid", "SoftDrink" };
+    }
+    @Override
+    public Integer getQuantity() { return 15; }
+  };
+
+  ProductDto dto = converter.project(projection).to(ProductDto.class);
+```
+
+Projecting a List follows the same logic...
+
+### Projecting List of Interface (Projections)
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Map
+  ProductProjection projection1 = new ProductProjection() { /* ... */ };
+  ProductProjection projection2 = new ProductProjection() { /* ... */ };
+
+  List<ProductProjection> projections = Arrays.asList(projection1, projection2);
+
+  List<ProductDto> dtos = converter.project(projections).to(ProductDto.class);
+```
+
+  **Note**: Interface projections follows exactly the same logic as the ``HashMap`` projections, you can add options while mapping, 
+  apply ``skips``, ``beforeMap``, ``afterMap``, and also use ``CustomTypeResolvers``.
 
 ## Using Spring Boot
 

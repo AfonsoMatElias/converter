@@ -5,11 +5,13 @@ import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
 import static io.github.afonsomatelias.Helpers.Global.allMatch;
 import static io.github.afonsomatelias.Helpers.Global.getListType;
 import static io.github.afonsomatelias.Helpers.Global.isArray;
+import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -56,6 +58,10 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * Stores all the times that an object was mapped for to avoid mapping and object already mapped
 	 */
 	private final Map<String, Object> mappedObject;
+
+	private HashSet<String> DEFAULT_SKIP_TYPE_NAME = new HashSet<>(Arrays.asList(
+		"PersistentBag"
+	));
 
 	/**
 	 * Maps properties from the source object to the destination object.
@@ -215,11 +221,11 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			final Object $mutatedObject = this.mapTransform(valueToSet, fieldTypeSource, fieldTypeDestination);
 
 
-			// # if the fields are equals (same types), just set it, but skip `PersistentBag`
+			// # if the fields are equals (same types), just set it, but skip it if matches DEFAULT_SKIP_TYPE_NAME
 			if (
 				(fieldTypeDestination == fieldTypeSource) && 
 				(valueToSet != null) && 
-				!(valueToSet.getClass().getSimpleName().equals("PersistentBag"))
+				!(DEFAULT_SKIP_TYPE_NAME.contains(valueToSet.getClass().getSimpleName()))
 			) {
 				fnSetDstValue.call(fieldDestination, ($mutatedObject != null ? $mutatedObject : valueToSet));
 				return;
@@ -235,16 +241,12 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			
 			// Checking if the value is an array
 			if (isArray(valueToSet)) {
-				final ECollectionType collectionType = fieldDestination.getClass().getComponentType() == null
-						? ECollectionType.COLLECTION
-						: ECollectionType.ARRAY;
-
 				valueToSet = this.mapList(
 					fieldSourceName, 
 					fieldSourceValue, 
 					getListType(fieldDestination), 
 					fieldClassType, 
-					collectionType
+					getListEnumType(fieldDestination.getClass())
 				);
 			} else
 
@@ -448,10 +450,6 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 		// 1. List Mapping...
 		if (isArray($source)) {
-			final ECollectionType listType = $source.getClass().getComponentType() == null 
-				? ECollectionType.COLLECTION
-				: ECollectionType.ARRAY;
-
 			// # Running the root object as Array/List
 			// Note: this code is only executed when the mapper is called with an array,
 			// 	There is not any other scenerio that this code is executed.
@@ -462,7 +460,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				$source, 
 				clsDestination, 
 				clsDestination, 
-				listType, 
+				getListEnumType($source.getClass()), 
 				(src, dst) -> localActionOptions.emit(EMappingActions.BEFORE_EACH_MAP, src, dst),
 				(src, dst) -> localActionOptions.emit(EMappingActions.AFTER_EACH_MAP, src, dst)
 			);

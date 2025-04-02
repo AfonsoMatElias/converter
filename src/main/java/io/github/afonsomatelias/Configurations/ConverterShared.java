@@ -16,6 +16,7 @@ import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
 public final class ConverterShared {
 	public boolean SILENT_LOGS = false;
 	public boolean USE_MAPPING_CONFIG = false;
+	// public boolean USE_FIELD_FALLBACK_IN_IPROJECTION = false;
 	
 	public final Map<String, MappingConfig> configurations = new HashMap<>();
 	public final Map<String, I1Fn<Object, Object>> tranformations = new HashMap<>();
