@@ -1,6 +1,4 @@
-package io.github.afonsomatelias.Core.Projectors;
-
-import java.util.Map;
+package io.github.afonsomatelias.Core.Projectors.Object;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
@@ -9,7 +7,7 @@ import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 import io.github.afonsomatelias.Core.Projectors.Interfaces.IObjectProjector;
 
 @SuppressWarnings("unchecked")
-public class ObjectProjector<Entry extends Map<String, ? extends Object>> extends Projector<Entry> implements IObjectProjector<Entry> {
+public class ObjectProjector<Entry> extends Projector<Entry> implements IObjectProjector<Entry> {
 	/**
 	 * The Default Constructor
 	 * 

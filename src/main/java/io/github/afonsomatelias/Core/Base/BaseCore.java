@@ -74,8 +74,8 @@ public abstract class BaseCore<Entry> {
 			final String clsFieldType = clazz.getSimpleName();
 			final String path = String.join(":", Arrays.asList(cls, "[" + clsFieldType + "]", clsFieldName ));
 
-			$$.out("Error creating the destination type for " + path + ", try to use .addTransform(...) or .forMember(...) "
-					+ "to intercept the member mapping, or .skip(...) in mapping options to ignore the field mapping. "+
+			$$.out("Error creating the destination type for " + path + ", try to intercept it or .skip(...) "+
+					"in mapping options to ignore the field mapping. "+
 					"\nException Details: " + e.getMessage() + "\n");
 		}
 

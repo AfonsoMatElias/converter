@@ -1,7 +1,6 @@
-package io.github.afonsomatelias.Core.Projectors;
+package io.github.afonsomatelias.Core.Projectors.Map;
 
 import java.util.List;
-import java.util.Map;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
@@ -11,14 +10,14 @@ import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 import io.github.afonsomatelias.Core.Projectors.Interfaces.IListProjector;
 
 @SuppressWarnings("unchecked")
-public class ListProjector<Entry extends List<Map<String, ? extends Object>>> extends Projector<Entry> implements IListProjector<Entry> {
+public class MapListProjector<Entry> extends MapProjector<Entry> implements IListProjector<Entry> {
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
 	 * @param entry the {@link Entry} object
 	 */
-	public ListProjector(ConverterShared shared, Object entry) {
+	public MapListProjector(ConverterShared shared, Object entry) {
 		super(shared, (Entry) entry);
 	}
 	

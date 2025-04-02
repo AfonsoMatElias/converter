@@ -5,6 +5,7 @@ import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
 import static io.github.afonsomatelias.Helpers.Global.allMatch;
 import static io.github.afonsomatelias.Helpers.Global.getListType;
 import static io.github.afonsomatelias.Helpers.Global.isArray;
+import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -235,16 +236,12 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			
 			// Checking if the value is an array
 			if (isArray(valueToSet)) {
-				final ECollectionType collectionType = fieldDestination.getClass().getComponentType() == null
-						? ECollectionType.COLLECTION
-						: ECollectionType.ARRAY;
-
 				valueToSet = this.mapList(
 					fieldSourceName, 
 					fieldSourceValue, 
 					getListType(fieldDestination), 
 					fieldClassType, 
-					collectionType
+					getListEnumType(fieldDestination.getClass())
 				);
 			} else
 
@@ -448,10 +445,6 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 		// 1. List Mapping...
 		if (isArray($source)) {
-			final ECollectionType listType = $source.getClass().getComponentType() == null 
-				? ECollectionType.COLLECTION
-				: ECollectionType.ARRAY;
-
 			// # Running the root object as Array/List
 			// Note: this code is only executed when the mapper is called with an array,
 			// 	There is not any other scenerio that this code is executed.
@@ -462,7 +455,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				$source, 
 				clsDestination, 
 				clsDestination, 
-				listType, 
+				getListEnumType($source.getClass()), 
 				(src, dst) -> localActionOptions.emit(EMappingActions.BEFORE_EACH_MAP, src, dst),
 				(src, dst) -> localActionOptions.emit(EMappingActions.AFTER_EACH_MAP, src, dst)
 			);

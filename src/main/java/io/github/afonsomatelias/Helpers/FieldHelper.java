@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.afonsomatelias.Callback.ICallbacks.I3Action;
+
 @SuppressWarnings("unchecked")
 public class FieldHelper {
 
@@ -53,6 +55,25 @@ public class FieldHelper {
 
                 if (forEachField != null)
                     forEachField.run(field.getName(), field, field.getType());
+            }
+        }};
+
+    }
+
+    public static Map<String, Method> toMappedMethods(Class<?> clazz) {
+        return toMappedMethods(clazz, null);
+    }
+
+    public static Map<String, Method> toMappedMethods(Class<?> clazz, I3Action<String, Method, Class<?>> forEachField) {
+        return new HashMap<String, Method>() {{
+
+            Method[] methods = clazz.getDeclaredMethods();
+            
+            for(Method method : methods) {
+                put(method.getName(), method);
+
+                if (forEachField != null)
+                    forEachField.call(method.getName().substring(3), method, clazz);
             }
         }};
 
