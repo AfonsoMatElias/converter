@@ -22,7 +22,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
 import io.github.afonsomatelias.Core.Base.BaseCore;
-import io.github.afonsomatelias.Core.Base.ClassFactory;
+import io.github.afonsomatelias.Core.Base.TypeFactory;
 import io.github.afonsomatelias.Core.Mappers.Interfaces.IMapper;
 import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
@@ -256,7 +256,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				// if there is already an instance of the destination field, use it
 				Object $objDestination = fieldDestinationValue != null 
 					? fieldDestinationValue 
-					: ClassFactory.create(fieldTypeDestination, fieldName, fieldClassType);
+					: TypeFactory.create(fieldTypeDestination, fieldName, fieldClassType);
 
 				// Mapping the object and assigning the value
 				valueToSet = this.mapObject(fieldSourceValue, fieldTypeDestination, $objDestination);
@@ -383,7 +383,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				dstItem = this.mapObject(
 					sourceItem, 
 					fieldListType, 
-					ClassFactory.create(fieldListType, fieldName, fieldParentType)
+					TypeFactory.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -488,7 +488,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return null;
 
 		try {
-			Object $destination = ClassFactory.create(clazz);
+			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);

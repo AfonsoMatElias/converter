@@ -19,7 +19,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Core.Base.BaseCore;
-import io.github.afonsomatelias.Core.Base.ClassFactory;
+import io.github.afonsomatelias.Core.Base.TypeFactory;
 import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
 import io.github.afonsomatelias.Helpers.$$;
@@ -140,7 +140,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 					valueToSet = this.mapObject(
 						getMethodValue,
 						setMethodParamType, 
-						ClassFactory.create(
+						TypeFactory.create(
 							setMethodParamType, 
 							getMethodName, 
 							$source.getClass()
@@ -284,7 +284,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 				dstItem = this.mapObject(
 					sourceItem, 
 					fieldListType, 
-					ClassFactory.create(fieldListType, fieldName, fieldParentType)
+					TypeFactory.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -358,7 +358,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 			return null;
 
 		try {
-			Object $destination = ClassFactory.create(clazz);
+			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
