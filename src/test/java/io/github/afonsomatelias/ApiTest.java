@@ -45,8 +45,8 @@ public class ApiTest {
 
     @Test
     public void shouldConvertFromModelToDto() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -64,8 +64,8 @@ public class ApiTest {
 
     @Test
     public void shouldConvertFromListModelToListDto() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -80,9 +80,61 @@ public class ApiTest {
     }
 
     @Test
+    @SuppressWarnings("unused")
+    public void shouldConvertFromVirtualModelToDto() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
+
+        class ProductInnerClass extends Product {
+
+            public Float VAT;
+
+            public ProductInnerClass() { super(); }
+
+            public Float getVAT() {
+                return VAT;
+            }
+
+            public void setVAT(Float VAT) {
+                this.VAT = VAT;
+            }
+        }
+
+        class ProductInnerClassDto extends ProductDto {
+
+            public Float VAT;
+
+            public ProductInnerClassDto() {
+                super();
+            }
+
+            public Float getVAT() {
+                return VAT;
+            }
+
+            public void setVAT(Float VAT) {
+                this.VAT = VAT;
+            }
+        }
+
+        // Entities
+        ProductInnerClass model = new ProductInnerClass();
+        model.setParent(model);
+
+        // Mapping
+        ProductInnerClassDto dto = converter.map(model).to(ProductInnerClassDto.class);
+
+        assertTrue(dto != null);
+        assertTrue(dto.getParent() == dto);
+        assertEquals(dto.getName(), model.getName());
+
+        assertNotEquals(dto.getClass(), model.getClass());
+    }
+
+    @Test
     public void shouldCopyAndPasteModel() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model1 = new Product();
@@ -97,7 +149,7 @@ public class ApiTest {
 
     @Test
     public void shouldTransformeValue() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         // Addin a type stransformation
         config.addTransform(String.class, String[].class, (source) -> {
@@ -107,7 +159,7 @@ public class ApiTest {
             return arrayOfStringValue;
         });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -121,14 +173,14 @@ public class ApiTest {
 
     @Test
     public void shouldChangeMemberValueAccordingForMemberValue() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         config.createMap(Product.class, ProductDto.class)
                 .forMember("name", (src) -> {
                     return "Wine";
                 });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -142,14 +194,14 @@ public class ApiTest {
 
     @Test
     public void shouldChangeSetterMemberValueAccording() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         config.createMap(Product.class, ProductDto.class)
                 .forMember(ProductDto::setName, (src) -> {
                     return "Wine";
                 });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -163,14 +215,14 @@ public class ApiTest {
 
     @Test
     public void shouldMapFieldUsingForMemberMapInstance() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         config.createMap(Product.class, ProductDto.class)
                 .forMember(ProductDto::setForMemberMapTestChild, (src, cvtr) -> {
                     return cvtr.map(src).to(ProductDto.class);
                 });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -186,12 +238,12 @@ public class ApiTest {
 
     @Test
     public void shouldSkipMemberMapping() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         config.createMap(Product.class, ProductDto.class)
                 .skipMember("name");
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -204,13 +256,13 @@ public class ApiTest {
 
     @Test
     public void shouldSkipMemberMappingIfAllMembersAreNullReturnNull() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         config.createMap(Product.class, ProductDto.class)
                 .skipMember("name")
                 .skipMember("price");
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -223,8 +275,8 @@ public class ApiTest {
 
     @Test
     public void shouldCallBeforeMapActionWithSourceValueAndDestination() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -245,8 +297,8 @@ public class ApiTest {
 
     @Test
     public void shouldCallAfterMapActionWithSourceValueAndDestination() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -269,7 +321,7 @@ public class ApiTest {
 
     @Test
     public void shouldCallGlobalBeforeMapAndAfterMapActions() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
         
         config.createMap(Product.class, ProductDto.class, (options) -> {
 
@@ -289,7 +341,7 @@ public class ApiTest {
 
         });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -303,8 +355,8 @@ public class ApiTest {
 
     @Test
     public void shouldHaveTheSameReferencesOnMappingTheSameObject() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -320,12 +372,12 @@ public class ApiTest {
 
     @Test
     public void shouldNotMapIfSetToUseConfigAlways() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
 
         config.setUseMapConfiguration(true);
 
         // Converter Instance
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -339,8 +391,8 @@ public class ApiTest {
 
     @Test
     public void shouldCallBeforeEachMapActionWithSourceValueAndDestination() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -374,8 +426,8 @@ public class ApiTest {
     
     @Test
     public void shouldCallAllTheMappingActionsAccordingToTheActionAndNumberItems() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -423,8 +475,8 @@ public class ApiTest {
 
     @Test
     public void shouldCallAfterEachMapActionWithSourceValueAndDestination() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Mapping
         List<ProductDto> dto = converter.map(Arrays.asList(new Product(), new Product())).to(ProductDto.class, (options) -> {
@@ -446,8 +498,8 @@ public class ApiTest {
 
     @Test
     public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddress() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -469,8 +521,8 @@ public class ApiTest {
 
     @Test
     public void shouldExtractValueFromPropertiesOfAnotherObjectHavingTheSameNameAndMustBeHaveSameMemoryAddressApplyingOptions() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -492,8 +544,8 @@ public class ApiTest {
 
     @Test
     public void shouldSkipMemberOnExtractionUsingStringMember() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -517,8 +569,8 @@ public class ApiTest {
 
     @Test
     public void shouldSkipMemberOnExtractionUsingFieldMember() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -546,11 +598,11 @@ public class ApiTest {
 
     @Test
     public void shouldSkipTypeMappingAccordingGlobalConfigAsClassType() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
         
         config.skipTypes(Float.class);
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -565,10 +617,10 @@ public class ApiTest {
 
     @Test
     public void shouldSkipTypeMappingAccordingGlobalConfigAsStringName() {
-        final ConverterConfiguration config = new ConverterConfiguration();
+        ConverterConfiguration config = new ConverterConfiguration();
         config.skipTypes("Float");
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -583,8 +635,8 @@ public class ApiTest {
 
     @Test
     public void shouldSkipTypeMappingAccordingToMappingOptions() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product model = new Product();
@@ -605,7 +657,7 @@ public class ApiTest {
 
     @Test
     public void shouldAddTheProfilesAndUseTheConfiguration() {
-        final ConverterConfiguration config = new ConverterConfiguration((options) -> {
+        ConverterConfiguration config = new ConverterConfiguration((options) -> {
             
             options.setUseMapConfiguration(true);
             options.addProfile(
@@ -615,7 +667,7 @@ public class ApiTest {
 
         });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product product = new Product();
@@ -633,11 +685,11 @@ public class ApiTest {
     
     @Test
     public void shouldNotMapAnyTypeWithNoConfigAndUseMapConfigAsTrue() {
-        final ConverterConfiguration config = new ConverterConfiguration((options) -> {
+        ConverterConfiguration config = new ConverterConfiguration((options) -> {
             options.setUseMapConfiguration(true);
         });
 
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         // Entities
         Product product = new Product();
@@ -656,8 +708,8 @@ public class ApiTest {
     @Test
     public void shouldProjectLinkedHashMapToTheProvidedClass() {
 
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
             put("name", "Sprite");
@@ -673,8 +725,8 @@ public class ApiTest {
     @Test
     public void shouldProjectAndResolveDefaultTypesIfSourceFieldIsString() {
 
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
             put("name", "Sprite");
@@ -690,8 +742,8 @@ public class ApiTest {
     @Test
     public void shouldProjectLinkedHashMapWithNestedLinkedHashMap() {
 
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
             put("name", "Sprite");
@@ -727,8 +779,8 @@ public class ApiTest {
     @Test
     public void shouldProjectLinkedHashMapFromStringToLocalDate() {
 
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
             put("name", "John Doe");
@@ -746,8 +798,8 @@ public class ApiTest {
     @Test
     public void shouldNotProjectLinkedHashMapItemIfSourceValueCanNotBeResolved() {
 
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
             put("name", "John Doe");
@@ -766,18 +818,18 @@ public class ApiTest {
     @Test
     public void shouldProjectLinkedHashMapAndUseFunctionResolver() {
 
-        final ConverterConfiguration config = new ConverterConfiguration(options -> {
+        ConverterConfiguration config = new ConverterConfiguration(options -> {
 
             // Resolve the LocalDate type using function
             options.use(LocalDate.class, (value) -> {
                 if (!(value instanceof String)) return null;
                 
-                final String str = value.toString();
+                String str = value.toString();
                 return LocalDate.parse(str.split("T")[0]);
             });
 
         });
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
             put("name", "John Doe");
@@ -796,11 +848,11 @@ public class ApiTest {
     @Test
     public void shouldProjectLinkedHashMapAndUseClassTypeResolver() {
 
-        final ConverterConfiguration config = new ConverterConfiguration(options -> {
+        ConverterConfiguration config = new ConverterConfiguration(options -> {
             // Resolve the LocalDate type using ClassType
             options.use(LocalDateTypeResolver.class);
         });
-        final IConverter converter = config.createConverter();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
             put("name", "John Doe");
@@ -819,8 +871,8 @@ public class ApiTest {
     @Test
     public void shouldProjectLinkedHashMapAndCallTheModifiers() {
 
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
             put("name", "John Doe");
@@ -846,8 +898,8 @@ public class ApiTest {
 
     @Test
     public void shouldProjectLinkedHashMapAndSkipMembersAndTypes() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
             put("name", "John Doe");
@@ -868,8 +920,8 @@ public class ApiTest {
 
     @Test
     public void shouldProjectAnInterfaceToDto() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         ProductProjection productProjection = new ProductProjection() {
             @Override
@@ -891,8 +943,8 @@ public class ApiTest {
     
     @Test
     public void shouldProjectListInterfaceToDto() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         ProductProjection productProjection1 = new ProductProjection() {
             @Override
@@ -928,8 +980,8 @@ public class ApiTest {
 
     @Test
     public void shouldProjectAnInterfaceToDtoWithModifiers() {
-        final ConverterConfiguration config = new ConverterConfiguration();
-        final IConverter converter = config.createConverter();
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
 
         ProductProjection productProjection = new ProductProjection() {
             @Override
