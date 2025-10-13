@@ -19,67 +19,64 @@ import io.github.afonsomatelias.Enums.ECollectionType;
 public class Global {
 
 	/** Primitive mapper */
-	public static final Map<Class<?>, Class<?>> PRIMITIVE_MAPPER = new HashMap<Class<?>, Class<?>>() {
-		{
-			put(Integer.class, int.class);
-			put(Byte.class, byte.class);
-			put(String.class, String.class);
-			put(Character.class, char.class);
-			put(Boolean.class, boolean.class);
-			put(Double.class, double.class);
-			put(Float.class, float.class);
-			put(Long.class, long.class);
-			put(Short.class, short.class);
-			put(Void.class, void.class);
-
-			put(int.class, Integer.class);
-			put(byte.class, Byte.class);
-			put(char.class, Character.class);
-			put(boolean.class, Boolean.class);
-			put(double.class, Double.class);
-			put(float.class, Float.class);
-			put(long.class, Long.class);
-			put(short.class, Short.class);
-			put(void.class, Void.class);
-		}
-	};
+	public static final Map<Class<?>, Class<?>> PRIMITIVE_MAPPER = new HashMap<>();
 
 	/** Primitives */
-	public static final Set<Class<?>> PRIMITIVES = new HashSet<Class<?>>() {
-		{
-			PRIMITIVE_MAPPER.forEach((key, value) -> add(value));
-		}
-	};
+	public static final Set<Class<?>> PRIMITIVES = new HashSet<>();
 
 	/** Default types resolver */
-	public static final Map<Class<?>, ITypeResolver> DEFAULT_TYPES_RESOLVER = new HashMap<Class<?>, ITypeResolver>() {
-		{
-			// keywords types
-			put(int.class, (Object v) -> Integer.parseInt((String) v));
-			put(byte.class, (Object v) -> Byte.parseByte((String) v));
-			put(char.class, (Object v) -> v.toString().charAt(0));
-			put(boolean.class, (Object v) -> Boolean.parseBoolean((String) v));
-			put(double.class, (Object v) -> Double.parseDouble((String) v));
-			put(float.class, (Object v) -> Float.parseFloat((String) v));
-			put(long.class, (Object v) -> Long.parseLong((String) v));
-			put(short.class, (Object v) -> Short.parseShort((String) v));
+	public static final Map<Class<?>, ITypeResolver> DEFAULT_TYPES_RESOLVER = new HashMap<>();
 
-			// class types
-			put(Integer.class, (Object v) -> Integer.parseInt((String) v));
-			put(BigDecimal.class, (Object v) -> new BigDecimal((String) v));
-			put(Byte.class, (Object v) -> Byte.parseByte((String) v));
-			put(Character.class, (Object v) -> v.toString().charAt(0));
-			put(Boolean.class, (Object v) -> Boolean.parseBoolean((String) v));
-			put(Double.class, (Object v) -> Double.parseDouble((String) v));
-			put(Float.class, (Object v) -> Float.parseFloat((String) v));
-			put(Long.class, (Object v) -> Long.parseLong((String) v));
-			put(Short.class, (Object v) -> Short.parseShort((String) v));
+	static {
+		PRIMITIVE_MAPPER.put(Integer.class, int.class);
+		PRIMITIVE_MAPPER.put(Byte.class, byte.class);
+		PRIMITIVE_MAPPER.put(String.class, String.class);
+		PRIMITIVE_MAPPER.put(Character.class, char.class);
+		PRIMITIVE_MAPPER.put(Boolean.class, boolean.class);
+		PRIMITIVE_MAPPER.put(Double.class, double.class);
+		PRIMITIVE_MAPPER.put(Float.class, float.class);
+		PRIMITIVE_MAPPER.put(Long.class, long.class);
+		PRIMITIVE_MAPPER.put(Short.class, short.class);
+		PRIMITIVE_MAPPER.put(Void.class, void.class);
 
-			// Extra
-			put(LocalDate.class, (Object v) -> LocalDate.parse((String) v));
-			put(LocalDateTime.class, (Object v) -> LocalDateTime.parse((String) v));
-		}
-	};
+		PRIMITIVE_MAPPER.put(int.class, Integer.class);
+		PRIMITIVE_MAPPER.put(byte.class, Byte.class);
+		PRIMITIVE_MAPPER.put(char.class, Character.class);
+		PRIMITIVE_MAPPER.put(boolean.class, Boolean.class);
+		PRIMITIVE_MAPPER.put(double.class, Double.class);
+		PRIMITIVE_MAPPER.put(float.class, Float.class);
+		PRIMITIVE_MAPPER.put(long.class, Long.class);
+		PRIMITIVE_MAPPER.put(short.class, Short.class);
+		PRIMITIVE_MAPPER.put(void.class, Void.class);
+
+		// keywords types
+		DEFAULT_TYPES_RESOLVER.put(int.class, (Object v) -> Integer.parseInt((String) v));
+		DEFAULT_TYPES_RESOLVER.put(byte.class, (Object v) -> Byte.parseByte((String) v));
+		DEFAULT_TYPES_RESOLVER.put(char.class, (Object v) -> v.toString().charAt(0));
+		DEFAULT_TYPES_RESOLVER.put(boolean.class, (Object v) -> Boolean.parseBoolean((String) v));
+		DEFAULT_TYPES_RESOLVER.put(double.class, (Object v) -> Double.parseDouble((String) v));
+		DEFAULT_TYPES_RESOLVER.put(float.class, (Object v) -> Float.parseFloat((String) v));
+		DEFAULT_TYPES_RESOLVER.put(long.class, (Object v) -> Long.parseLong((String) v));
+		DEFAULT_TYPES_RESOLVER.put(short.class, (Object v) -> Short.parseShort((String) v));
+
+		// class types
+		DEFAULT_TYPES_RESOLVER.put(Integer.class, (Object v) -> Integer.parseInt((String) v));
+		DEFAULT_TYPES_RESOLVER.put(BigDecimal.class, (Object v) -> new BigDecimal((String) v));
+		DEFAULT_TYPES_RESOLVER.put(Byte.class, (Object v) -> Byte.parseByte((String) v));
+		DEFAULT_TYPES_RESOLVER.put(Character.class, (Object v) -> v.toString().charAt(0));
+		DEFAULT_TYPES_RESOLVER.put(Boolean.class, (Object v) -> Boolean.parseBoolean((String) v));
+		DEFAULT_TYPES_RESOLVER.put(Double.class, (Object v) -> Double.parseDouble((String) v));
+		DEFAULT_TYPES_RESOLVER.put(Float.class, (Object v) -> Float.parseFloat((String) v));
+		DEFAULT_TYPES_RESOLVER.put(Long.class, (Object v) -> Long.parseLong((String) v));
+		DEFAULT_TYPES_RESOLVER.put(Short.class, (Object v) -> Short.parseShort((String) v));
+
+		// Extra
+		DEFAULT_TYPES_RESOLVER.put(LocalDate.class, (Object v) -> LocalDate.parse((String) v));
+		DEFAULT_TYPES_RESOLVER.put(LocalDateTime.class, (Object v) -> LocalDateTime.parse((String) v));
+
+
+		PRIMITIVE_MAPPER.forEach((key, value) -> PRIMITIVES.add(value));
+	}
 
 	/**
 	 * Verifies if the provided object is an array or an instance of {@link List}.
@@ -102,20 +99,20 @@ public class Global {
 	 * @return true if all elements satisfy the condition, false otherwise. Returns
 	 *         true if the source is null.
 	 */
-	public static <T> Boolean allMatch(
+	public static <T> boolean allMatch(
 			List<T> source,
 			I1Fn<T, Boolean> callback) {
 		// If the source is null, return true
 		if (source == null)
 			return true;
 
-		final List<Boolean> allMatching = new ArrayList<>();
+		List<Boolean> allMatching = new ArrayList<>();
 
 		for (T t : source)
 			allMatching.add(callback.call(t));
 
-		return allMatching.isEmpty() ? false : allMatching.stream().allMatch(x -> x);
-	};
+		return !allMatching.isEmpty() && allMatching.stream().allMatch(x -> x);
+	}
 
 	/**
 	 * Retrieves the type of elements within a List or array field.
@@ -131,7 +128,7 @@ public class Global {
 					.getActualTypeArguments()[0];
 
 		return type;
-	};
+	}
 
 	public static ECollectionType getListEnumType(Class<?> cls) {
 		return cls.getClass().getComponentType() == null ? ECollectionType.COLLECTION : ECollectionType.ARRAY;
