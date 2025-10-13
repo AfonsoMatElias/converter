@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.5.1
+# Converter v1.5.2
 
 ## What is Converter?
 
@@ -433,7 +433,7 @@ the ``ConverterConfiguration``.
     options.use(LocalDate.class, (value) -> {
         if (!(value instanceof String)) return null;
         
-        final String str = value.toString();
+        String str = value.toString();
         return LocalDate.parse(str.split("T")[0]);
     });
   });
@@ -471,7 +471,7 @@ in the *constructor* ``super(Type.class)``, implement the ``@Override resolve(..
       if (!(value instanceof String))
         return null;
 
-      final String str = value.toString();
+      String str = value.toString();
       return LocalDate.parse(str.split("T")[0]);
     } 
   }
