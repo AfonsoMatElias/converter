@@ -7,6 +7,7 @@ public class ProductDto {
     private Float price;
     private Integer quantity;
     private String[] categories;
+    private Float VAT;
 
     private ProductDto parent;
     private List<ProductDto> products;
@@ -67,5 +68,13 @@ public class ProductDto {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public Float getVAT() {
+        return VAT;
+    }
+
+    public void setVAT(Float VAT) {
+        this.VAT = VAT;
     }
 }
