@@ -15,7 +15,7 @@ public class LocalDateTypeResolver extends TypeResolver {
 		if (!(value instanceof String))
 			return null;
 
-		final String str = value.toString();
+		String str = value.toString();
 		return LocalDate.parse(str.split("T")[0]);
 	}
 	

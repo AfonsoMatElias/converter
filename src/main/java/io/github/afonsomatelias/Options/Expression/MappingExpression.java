@@ -49,7 +49,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		String destinationMember, 
 		I1Fn<S, Object> transform
 	) {
-		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
 			$$.err("Field '" + destinationMember + "' does not exists");
@@ -74,7 +74,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		String destinationMember, 
 		I2Fn<S, MemberMapping, Object> transform
 	) {
-		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
 			$$.err("Field '" + destinationMember + "' does not exists");
@@ -100,8 +100,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	) {
 
 		// Building the unique name of the action
-		final String key = this.getMappingName();
-		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping
+		String key = this.getMappingName();
+		List<SetterMemberMapping> setters = shared.forSetterMemberMapping
 			.getOrDefault(key, new ArrayList<SetterMemberMapping>());
 
 		setters.add(new SetterMemberMapping(setterPropertyMember, transform, EMemberType.SINGLE_CALLBACK));
@@ -120,8 +120,8 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		I2Fn<S, MemberMapping, Object> transform
 	) {
 		// Building the unique name of the action
-		final String key = this.getMappingName();
-		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
+		String key = this.getMappingName();
+		List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
 				new ArrayList<SetterMemberMapping>());
 
 		setters.add(new SetterMemberMapping(setterPropertyMember, transform, EMemberType.DOUBLE_CALLBACK));
@@ -135,7 +135,7 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 */
 	public MappingExpression<S, D> skipMember(String destinationMember) {
-		final Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
+		Field field = FieldHelper.toMappedFields(destinationClass).getOrDefault(destinationMember, null);
 
 		if (field == null) {
 			$$.err("Field '" + destinationMember + "' does not exists");
@@ -187,10 +187,10 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	 * Gets the mapper actions for the {@link S} and {@link D} Types
 	 */
 	private MappingObjectActions<Object, Object> getMapperActions() {
-		final Map<String, MappingObjectActions<Object, Object>> globalActionOptions = shared.globalActionOptions;
+		Map<String, MappingObjectActions<Object, Object>> globalActionOptions = shared.globalActionOptions;
 
 		// Building the unique name of the action
-		final String fieldActionOptionName = this.getMappingName();
+		String fieldActionOptionName = this.getMappingName();
 
 		MappingObjectActions<Object, Object> mappingActions = globalActionOptions.getOrDefault(fieldActionOptionName, null);
 

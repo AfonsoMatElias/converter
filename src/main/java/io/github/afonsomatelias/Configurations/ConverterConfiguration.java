@@ -1,5 +1,7 @@
 package io.github.afonsomatelias.Configurations;
 
+import static io.github.afonsomatelias.Helpers.Global.DEFAULT_TYPES_RESOLVER;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,8 +15,6 @@ import io.github.afonsomatelias.Options.MappingObjectActions;
 import io.github.afonsomatelias.Options.Expression.IMappingExpression;
 import io.github.afonsomatelias.Options.Expression.MappingExpression;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
-
-import static io.github.afonsomatelias.Helpers.Global.DEFAULT_TYPES_RESOLVER;
 
 @SuppressWarnings("unchecked")
 public class ConverterConfiguration extends Converter {
@@ -40,7 +40,7 @@ public class ConverterConfiguration extends Converter {
 		for (Class<? extends Profile> clsProfile : profiles) {
 			try {
 				// Initializing the profile
-				final Profile profile = clsProfile.newInstance();
+				Profile profile = clsProfile.newInstance();
 
 				// adding the Converter instance
 				profile.$super = this;
@@ -74,7 +74,7 @@ public class ConverterConfiguration extends Converter {
 		for (Class<? extends TypeResolver> clsResolver : types) {
 			try {
 				// Initializing the profile
-				final TypeResolver typeResolver = clsResolver.newInstance();
+				TypeResolver typeResolver = clsResolver.newInstance();
 
 				// Applying the type resolver
 				shared.typeResolvers.put(typeResolver.type, (value) -> typeResolver.resolve(value));
@@ -113,19 +113,19 @@ public class ConverterConfiguration extends Converter {
 		Class<D> destination,
 		I1Action<IMappingObjectActions<S, D>> modifier
 	) {
-		final IMappingExpression<S, D> mappingExpression = this.createMap(source, destination);
+		IMappingExpression<S, D> mappingExpression = this.createMap(source, destination);
 
 		if (modifier != null) {
 			// Building the unique name of the action
-			final String fieldActionOptionName = source.getName() + ":" + destination.getName();
+			String fieldActionOptionName = source.getName() + ":" + destination.getName();
 
 			// Registering the action
-			final MappingObjectActions<Object, Object> actionOptions = new MappingObjectActions<>();
+			MappingObjectActions<Object, Object> actionOptions = new MappingObjectActions<>();
 
 			shared.globalActionOptions.put(fieldActionOptionName, actionOptions);
 
 			// Assing to object to be able to trick the compiler
-			final Object modifierAsObject = actionOptions;
+			Object modifierAsObject = actionOptions;
 
 			modifier.call((MappingObjectActions<S, D>) modifierAsObject);
 		}
@@ -148,7 +148,7 @@ public class ConverterConfiguration extends Converter {
 		Class<TypeDestination> to,
 		I1Fn<TypeSource, TypeDestination> behavior
 	) {
-		final String uniqueName = from.getName() + ":" + to.getName();
+		String uniqueName = from.getName() + ":" + to.getName();
 		shared.tranformations.put(uniqueName, (I1Fn<Object, Object>) behavior);
 	}
 

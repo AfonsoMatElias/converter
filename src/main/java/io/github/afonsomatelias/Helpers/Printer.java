@@ -36,20 +36,20 @@ class Log {
      * @param contents the content to be printed
      */
     public void printMultipleMessages(
-            final PrintStream methodSource,
-            final String type,
-            final Object[] contents) {
+            PrintStream methodSource,
+            String type,
+            Object[] contents) {
         // Looping all the contents provided
-        for (final Object content : contents) {
+        for (Object content : contents) {
 
             if (content == null)
                 continue;
 
             // Checking if it's an Object type
-            final Boolean isObject = (content instanceof Object);
+            boolean isObject = (content instanceof Object);
 
             // Checking if it's an Exception Object type
-            final Boolean isExceptionObject = (content instanceof Exception);
+            boolean isExceptionObject = (content instanceof Exception);
 
             if (isObject && !isExceptionObject) {
                 methodSource.print(prefix(type));

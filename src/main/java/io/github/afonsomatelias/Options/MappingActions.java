@@ -54,7 +54,7 @@ public class MappingActions implements IMappingActions {
 	 */
 	public void emit(EMappingActions targetAction, Object src, Object dst) {
 		// Defining the default List of Actions
-		final List<I2Action<Object, Object>> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
+		List<I2Action<Object, Object>> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
 
 		// Setting the actual list of action
 		for (int i = 0; i < targetActions.size(); i++) {

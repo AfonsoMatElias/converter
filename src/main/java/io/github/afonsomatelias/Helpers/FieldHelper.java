@@ -28,15 +28,15 @@ public class FieldHelper {
         if (clazz == null)
             return new Field[0];
 
-        final List<Field> fields = new ArrayList<>();
+        List<Field> fields = new ArrayList<>();
         fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
 
-        final Class<?> superClass = clazz.getSuperclass();
+        Class<?> superClass = clazz.getSuperclass();
 
         if (superClass == null || superClass.getName().equals("java.lang.Object"))
             return fields.toArray(new Field[fields.size()]);
 
-        final Field[] superClassFields = toFields(superClass);
+        Field[] superClassFields = toFields(superClass);
         fields.addAll(Arrays.asList(superClassFields));
 
         return fields.toArray(new Field[fields.size()]);
@@ -48,8 +48,8 @@ public class FieldHelper {
 
     public static Map<String, Field> toMappedFields(Class<?> clazz, IFieldkeyValue<String, Field> forEachField) {
         return new HashMap<String, Field>() {{
-            final Field[] fields = toFields(clazz);
-            for (final Field field : fields) {
+            Field[] fields = toFields(clazz);
+            for (Field field : fields) {
                 field.setAccessible(true);
                 put(field.getName(), field);
 
@@ -87,8 +87,8 @@ public class FieldHelper {
         for (int i = 0; i < fieldNames.size(); i++) {
             String fieldName = fieldNames.get(i);
             try {
-                final String mFieldName = (fieldName.charAt(0) + "").toUpperCase() + fieldName.substring(1, fieldName.length());
-                final Field field = fields.getOrDefault(mFieldName, null);
+                String mFieldName = (fieldName.charAt(0) + "").toUpperCase() + fieldName.substring(1, fieldName.length());
+                Field field = fields.getOrDefault(mFieldName, null);
 
                 if (field == null)
                     continue;
