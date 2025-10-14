@@ -168,13 +168,16 @@ public class Projector<Entry> extends BaseCore<Entry> {
 					valueToSet = resolver.resolve(valueToSet);
 				} catch (Exception e) {
 					// Can not set java.time.LocalDate field io.github.afonsomatelias.Models.UserDto.bithdate to java.lang.String
-					$$.out("Error parsing value '" + valueToSet + "' to method '" + 
-					String.join(":", Arrays.asList(
-						fieldClassType.getName(),
-						setMethodParamType.getSimpleName(),
-						setMethodName
-					)), "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					String msg = new StringBuilder()
+						.append("Cant not set value '" + valueToSet + "' to method '")
+						.append(fieldClassType.getName())
+						.append("->")
+						.append(setMethodParamType.getSimpleName())
+						.append(" ")
+						.append(setMethodName)
+						.toString();
 
+					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
 					return;
 				}
 			}

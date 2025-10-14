@@ -144,13 +144,16 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 					valueToSet = resolver.resolve(valueToSet);
 				} catch (Exception e) {
 					// Can not set java.time.LocalDate field io.github.afonsomatelias.Models.UserDto.bithdate to java.lang.String
-					$$.out("Error parsing value '" + valueToSet + "' to field '" + 
-					String.join(":", Arrays.asList(
-						fieldClassType.getName(),
-						fieldTypeDestination.getSimpleName(),
-						fieldName
-					)), "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					String msg = new StringBuilder()
+						.append("Can not set value '" + valueToSet + "' to field '")
+						.append(fieldClassType.getName())
+						.append("->")
+						.append(fieldTypeDestination.getSimpleName())
+						.append(" ")
+						.append(fieldName)
+						.toString();
 
+					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
 					return;
 				}
 			}

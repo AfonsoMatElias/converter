@@ -4,7 +4,6 @@ import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.github.afonsomatelias.Helpers.$$;
@@ -14,7 +13,7 @@ public abstract class TypeFactory {
 	public static Object create(
 		Class<?> clazz
 	) {
-		return create(clazz, clazz.getName(), clazz);
+		return create(clazz, null, null);
 	}
 
 	/**
@@ -33,17 +32,20 @@ public abstract class TypeFactory {
 		try {
 			return handleClassCreation(clazz);
 		} catch (Exception e) {
+			String path = clazz.getSimpleName();
 
-			final String cls = fieldParentType == null ? "[Class]" : fieldParentType.getName();
-			final String clsFieldName = fieldName == null ? "[Field]" : fieldName;
-			final String clsFieldType = clazz.getSimpleName();
-			final String path = String.join(":", Arrays.asList(cls, "[" + clsFieldType + "]", clsFieldName ));
+			if (fieldName == null || fieldParentType == null) {
+				path = describe(clazz);
+			} else {
+				path = String.format("\n| class %s { \n| 👉 %s %s;\n| }", describe(fieldParentType), describe(clazz), fieldName);
+			}
 
-			$$.out("Error creating the destination type for " + path + ", try to intercept it or .skip(...) "+
+			$$.out("Error creating the destination path '"+ ( fieldName == null ? "unknown" : fieldName ) +"':" 
+				+ path + "\nYou can try to intercept it or .skip(...) "+
 				"in mapping options to ignore the field mapping. "+
-				"\nException Details: " + e.getMessage() + "\n");
+				"\nException Message: " + e.getMessage() + "\n");
 		}
-		return null;			
+		return null;
 	}
 
 	private static Object handleClassCreation(Class<?> clazz) throws Exception {
@@ -77,13 +79,30 @@ public abstract class TypeFactory {
 				break;
 		}
 
-		// If any error, throw it
-		if (!exceptions.isEmpty()) {
-			throw new Exception(
-					String.join(";\n", exceptions).trim());
+		// 2. Could not create a new instance with the constructor
+		if (newInstace == null) {
+			try {
+				// Use traditional way
+				newInstace = clazz.newInstance();
+			} catch (Exception e) {
+				exceptions.add(e.getMessage());
+			}
 		}
 
-		// 2. Future Impl: Creating an unknown object with all the fields of the class
+		if (!exceptions.isEmpty()) throw new Exception(String.join("\n", exceptions).trim());
+		// 3. Future Impl: Creating an unknown object with all the fields of the class
+
 		return newInstace;
+	}
+
+	static String describe(Class<?> type) {
+		if (type == null) return "Type";
+	    try {
+			return type.isArray()
+				? type.getComponentType().getSimpleName() + "[]"
+				: type.getSimpleName();
+		} catch (Exception e) {
+			return type.getSimpleName();
+		}
 	}
 }
