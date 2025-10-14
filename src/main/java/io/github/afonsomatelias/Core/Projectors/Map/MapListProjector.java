@@ -4,10 +4,10 @@ import java.util.List;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
-import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Options.MappingListActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 import io.github.afonsomatelias.Core.Projectors.Interfaces.IListProjector;
+import io.github.afonsomatelias.Helpers.Printer;
 
 @SuppressWarnings("unchecked")
 public class MapListProjector<Entry> extends MapProjector<Entry> implements IListProjector<Entry> {

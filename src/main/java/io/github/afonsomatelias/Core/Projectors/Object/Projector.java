@@ -10,7 +10,6 @@ import static io.github.afonsomatelias.Helpers.Global.isArray;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -19,6 +18,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Base.TypeFactory;
 import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
 import io.github.afonsomatelias.Helpers.$$;
@@ -59,13 +59,13 @@ public class Projector<Entry> extends BaseCore<Entry> {
 			return null;
 
 		// Beginning Mapping Process
-		final Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
-		final Map<String, Method> methodsDestination = toMappedMethods($destination.getClass());
+		Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
+		Map<String, Method> methodsDestination = toMappedMethods($destination.getClass());
 
-		final Map<String, Method> methodsSource = toMappedMethods($source.getClass());
+		Map<String, Method> methodsSource = toMappedMethods($source.getClass());
 
 		// Gets a value to a field
-		final I1Fn<Method, Object> fnGetSrcValue = (method) -> {
+		I1Fn<Method, Object> fnGetSrcValue = (method) -> {
 			try {
 				if (method == null) return null;
 				method.setAccessible(true);
@@ -77,7 +77,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 		};
 
 		// Sets a value to a field
-		final I2Action<Method, Object> fnSetDstValue = (method, value) -> {
+		I2Action<Method, Object> fnSetDstValue = (method, value) -> {
 			try {
 				if (method == null) return;
 				method.setAccessible(true);
@@ -88,19 +88,19 @@ public class Projector<Entry> extends BaseCore<Entry> {
 		};
 
 		methodsSource.forEach((getMethodName, getMethod) -> {
-			final String methodName = getMethodName.substring(3);
+			String methodName = getMethodName.substring(3);
 
 			// Getting the destination 'set' method
-			final Method setMethod = methodsDestination.getOrDefault( "set" + methodName, null);
+			Method setMethod = methodsDestination.getOrDefault( "set" + methodName, null);
 
 			// if there is no destination 'set' method, just skip
 			if (setMethod == null) return;
 
 			// Getting the name of the destination 'set' method
-			final String setMethodName = setMethod.getName();
+			String setMethodName = setMethod.getName();
 
 			// Getting the parameter type: set<fieldName>(<paramType>)
-			final Class<?> setMethodParamType = setMethod.getParameterTypes().length > 0 
+			Class<?> setMethodParamType = setMethod.getParameterTypes().length > 0 
 				? setMethod.getParameterTypes()[0] 
 				: null;
 
@@ -120,11 +120,11 @@ public class Projector<Entry> extends BaseCore<Entry> {
 				return;
 
 			// Getting value from source method | projection
-			final Object getMethodValue = fnGetSrcValue.call(getMethod);
+			Object getMethodValue = fnGetSrcValue.call(getMethod);
 			if (getMethodValue == null) return;
 
 			// Getting the return type of the 
-			final Class<?> getMethodReturnType = getMethod.getReturnType();
+			Class<?> getMethodReturnType = getMethod.getReturnType();
 			
 			// Assigning default the value
 			Object valueToSet = getMethodValue;
@@ -139,7 +139,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 					valueToSet = this.mapObject(
 						getMethodValue,
 						setMethodParamType, 
-						super.create(
+						TypeFactory.create(
 							setMethodParamType, 
 							getMethodName, 
 							$source.getClass()
@@ -154,7 +154,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 			// Checking if the value to set is not assignable to the destination field and the destination field is a String
 			if (!setMethodParamType.isAssignableFrom(getMethodReturnType)) {
 				// Getting the field type resolver
-				final ITypeResolver resolver =  shared.typeResolvers.getOrDefault(setMethodParamType, null);
+				ITypeResolver resolver =  shared.typeResolvers.getOrDefault(setMethodParamType, null);
 
 				// if there isn't a resolver, alert and return
 				if (resolver == null) {
@@ -167,13 +167,16 @@ public class Projector<Entry> extends BaseCore<Entry> {
 					valueToSet = resolver.resolve(valueToSet);
 				} catch (Exception e) {
 					// Can not set java.time.LocalDate field io.github.afonsomatelias.Models.UserDto.bithdate to java.lang.String
-					$$.out("Error parsing value '" + valueToSet + "' to method '" + 
-					String.join(":", Arrays.asList(
-						fieldClassType.getName(),
-						setMethodParamType.getSimpleName(),
-						setMethodName
-					)), "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					String msg = new StringBuilder()
+						.append("Cant not set value '" + valueToSet + "' to method '")
+						.append(fieldClassType.getName())
+						.append("->")
+						.append(setMethodParamType.getSimpleName())
+						.append(" ")
+						.append(setMethodName)
+						.toString();
 
+					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
 					return;
 				}
 			}
@@ -214,7 +217,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 		Class<?> fieldParentType,
 		ECollectionType collectionType
 	) {
-		final I2Action<Object, Object> fnEmpty = (_0, _1) -> {}; 
+		I2Action<Object, Object> fnEmpty = (_0, _1) -> {}; 
 		return this.mapList(
 			fieldName, 
 			$source, 
@@ -249,13 +252,13 @@ public class Projector<Entry> extends BaseCore<Entry> {
 		I2Action<Object, Object> localAfterEachMap
 	) {
 		// Creating a new instance of a generic list
-		final ArrayList<Object> mappedList = new ArrayList<Object>();
+		ArrayList<Object> mappedList = new ArrayList<Object>();
 
 		// Looping them
 		/**
 		 * NOTE: this cast to Iterable<T> can throw an exception
 		 */
-		for (final Object sourceItem : (Iterable<Object>) $source) {
+		for (Object sourceItem : (Iterable<Object>) $source) {
 			// If the item is a primitive, just add, do not map
 			if (PRIMITIVES.contains(sourceItem.getClass())) {
 				// Calling beforeEachMap
@@ -283,7 +286,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 				dstItem = this.mapObject(
 					sourceItem, 
 					fieldListType, 
-					super.create(fieldListType, fieldName, fieldParentType)
+					TypeFactory.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -357,7 +360,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 			return null;
 
 		try {
-			Object $destination = super.create(clazz);
+			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);

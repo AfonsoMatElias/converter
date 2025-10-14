@@ -3,9 +3,9 @@ package io.github.afonsomatelias.Core.Mappers;
 import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
 import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
 import static io.github.afonsomatelias.Helpers.Global.allMatch;
+import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
 import static io.github.afonsomatelias.Helpers.Global.getListType;
 import static io.github.afonsomatelias.Helpers.Global.isArray;
-import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
 import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Base.TypeFactory;
 import io.github.afonsomatelias.Core.Mappers.Interfaces.IMapper;
 import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
@@ -85,17 +86,17 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return null;
 
 		// Beginning Mapping Process
-		final Map<String, Field> fieldsSource = toMappedFields($source.getClass());
-		final Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
-		final Map<String, MappingConfig> configurations = this.shared.configurations;
+		Map<String, Field> fieldsSource = toMappedFields($source.getClass());
+		Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
+		Map<String, MappingConfig> configurations = this.shared.configurations;
 
 		// Helper Function to register Mapped Object
-		final I1Fn<Object, Object> fnRegisterMappedObj = (obj) -> {
-			final String memoryAddress = obj.getClass().getSimpleName() 
+		I1Fn<Object, Object> fnRegisterMappedObj = (obj) -> {
+			String memoryAddress = obj.getClass().getSimpleName() 
 					+ ":" + Integer.toHexString(System.identityHashCode(obj));
 
 			// Getting the number of times that this object was mapped
-			final Object mapped = mappedObject.getOrDefault(memoryAddress, null);
+			Object mapped = mappedObject.getOrDefault(memoryAddress, null);
 
 			if (mapped == null) {
 				mappedObject.put(memoryAddress, $destination);
@@ -107,7 +108,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 		};
 
 		// Sets a value to a field
-		final I2Action<Field, Object> fnSetDstValue = (field, value) -> {
+		I2Action<Field, Object> fnSetDstValue = (field, value) -> {
 			try {
 				if (field == null) return;
                 field.setAccessible(true);
@@ -117,7 +118,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			}
 		};
 
-		final I2Fn<Object, Field, Object> fnGetValue = (obj, field) -> {
+		I2Fn<Object, Field, Object> fnGetValue = (obj, field) -> {
 			try {
 				if (field == null) return null;
                 field.setAccessible(true);
@@ -127,14 +128,14 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			}
 		};
 		
-		final boolean hasDiffTypes = ($source.getClass() != $destination.getClass());
+		boolean hasDiffTypes = ($source.getClass() != $destination.getClass());
 
 		if (hasDiffTypes && shared.USE_MAPPING_CONFIG) {
 			// Assigning the default values for the mapping process
 			Class<?> configClsSource = $source.getClass();
 			Class<?> configClsDestination = fieldClassType;
 
-			final MappingConfig config = configurations.get(configClsSource.getName());
+			MappingConfig config = configurations.get(configClsSource.getName());
 
 			// Checking the configuration for this source
 			if (config == null) {
@@ -157,27 +158,27 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 		{ // Generic Scope
 			// Testing Transformation Mapping
-			final Object $mutatedObject = this.mapTransform($source, $source.getClass(), fieldClassType);
+			Object $mutatedObject = this.mapTransform($source, $source.getClass(), fieldClassType);
 			if ($mutatedObject != null)
 				return $mutatedObject;
 		}
 
 		// building the unique name 
-		final String mapActionUniqueName = $source.getClass().getName() + ":" + fieldClassType.getName();
+		String mapActionUniqueName = $source.getClass().getName() + ":" + fieldClassType.getName();
 
 		// Retrieving the action for this field
-		final MappingObjectActions<Object, Object> createdMapActionOption = shared.globalActionOptions
+		MappingObjectActions<Object, Object> createdMapActionOption = shared.globalActionOptions
 				.getOrDefault(mapActionUniqueName, null);
 
 		if (createdMapActionOption != null) // Performing BEFORE_MAP action
 			createdMapActionOption.emit(EMappingActions.BEFORE_MAP, $source, null);
 
-		final Object mappedObject = fnRegisterMappedObj.call($source);
+		Object mappedObject = fnRegisterMappedObj.call($source);
 		if (mappedObject != null)
 			return mappedObject;
 
 		fieldsDestination.forEach((fieldName, fieldDestination) -> {
-			final Class<?> fieldTypeDestination = fieldDestination.getType();
+			Class<?> fieldTypeDestination = fieldDestination.getType();
 			
 			// # Ignore this field if it was marked to be skipped
 			if (localActionOptions.isSkipMember(fieldDestination) || localActionOptions.isSkipMember(fieldName))
@@ -185,10 +186,10 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			
 
 			// # Skip if the type needs to me ignored
-			final Boolean isSkipTypeGlobal = shared.classTypesToIgnore.contains(fieldTypeDestination.getName()) ||
+			boolean isSkipTypeGlobal = shared.classTypesToIgnore.contains(fieldTypeDestination.getName()) ||
 					shared.classTypesToIgnore.contains(fieldTypeDestination.getSimpleName());
 
-			final Boolean isSkipTypeInline = localActionOptions.isSkipType(fieldTypeDestination.getSimpleName()) ||
+			boolean isSkipTypeInline = localActionOptions.isSkipType(fieldTypeDestination.getSimpleName()) ||
 					localActionOptions.isSkipType(fieldTypeDestination);
 
 			if (isSkipTypeGlobal || isSkipTypeInline)
@@ -196,29 +197,29 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 
 			// Try to get for member mapping for this field
-			final FieldMemberMapping forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
+			FieldMemberMapping forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
 
 			if (forMemberMapping != null) {
-				final Object memberMappingResult = forMemberMapping.call($source, $destination, this);
+				Object memberMappingResult = forMemberMapping.call($source, $destination, this);
 				fnSetDstValue.call(fieldDestination, memberMappingResult);
 				return; // Breaking the process as the member is already mapped
 			}
 
 
-			final Field fieldSource = fieldsSource.getOrDefault(fieldName, null);
+			Field fieldSource = fieldsSource.getOrDefault(fieldName, null);
 			if (fieldSource == null) return;
 
-			final Class<?> fieldTypeSource = fieldSource.getType();
-			final String fieldSourceName = fieldSource.getName();
-			final Object fieldSourceValue = fnGetValue.call($source, fieldSource);
-			final Object fieldDestinationValue = fnGetValue.call($destination, fieldDestination);
+			Class<?> fieldTypeSource = fieldSource.getType();
+			String fieldSourceName = fieldSource.getName();
+			Object fieldSourceValue = fnGetValue.call($source, fieldSource);
+			Object fieldDestinationValue = fnGetValue.call($destination, fieldDestination);
 
 
 			Object valueToSet = fieldSourceValue;
 
 
 			// # Applying field transformation
-			final Object $mutatedObject = this.mapTransform(valueToSet, fieldTypeSource, fieldTypeDestination);
+			Object $mutatedObject = this.mapTransform(valueToSet, fieldTypeSource, fieldTypeDestination);
 
 
 			// # if the fields are equals (same types), just set it, but skip it if matches DEFAULT_SKIP_TYPE_NAME
@@ -253,9 +254,9 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			// Checking object types
 			if (fieldTypeDestination != fieldTypeSource) {
 				// if there is already an instance of the destination field, use it
-				final Object $objDestination = fieldDestinationValue != null 
+				Object $objDestination = fieldDestinationValue != null 
 					? fieldDestinationValue 
-					: super.create(fieldTypeDestination, fieldName, fieldClassType);
+					: TypeFactory.create(fieldTypeDestination, fieldName, fieldClassType);
 
 				// Mapping the object and assigning the value
 				valueToSet = this.mapObject(fieldSourceValue, fieldTypeDestination, $objDestination);
@@ -269,7 +270,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 
 		// # Performing all the setter of this class
-		final List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(
+		List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(
 			mapActionUniqueName,
 			Arrays.asList()
 		);
@@ -348,13 +349,13 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 		I2Action<Object, Object> localAfterEachMap
 	) {
 		// Creating a new instance of a generic list
-		final ArrayList<Object> mappedList = new ArrayList<Object>();
+		ArrayList<Object> mappedList = new ArrayList<Object>();
 
 		// Looping them
 		/**
 		 * NOTE: this cast to Iterable<T> can throw an exception
 		 */
-		for (final Object sourceItem : (Iterable<Object>) $source) {
+		for (Object sourceItem : (Iterable<Object>) $source) {
 			// If the item is a primitive, just add, do not map
 			if (PRIMITIVES.contains(sourceItem.getClass())) {
 				// Calling beforeEachMap
@@ -382,7 +383,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				dstItem = this.mapObject(
 					sourceItem, 
 					fieldListType, 
-					super.create(fieldListType, fieldName, fieldParentType)
+					TypeFactory.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -421,10 +422,10 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 		Class<?> fieldTypeDestination
 	) {
 		// Building the transformationName
-		final String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
+		String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
 
 		// Getting the transformation callback for this mapping
-		final I1Fn<Object, Object> transform = shared.tranformations
+		I1Fn<Object, Object> transform = shared.tranformations
 				.getOrDefault(name, null);
 
 		// Checking if there is a transformation for these two properties
@@ -487,7 +488,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return null;
 
 		try {
-			Object $destination = super.create(clazz);
+			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
@@ -522,8 +523,8 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return null;
 
 		// Swapped the roles of each object
-		final Object _source = $source;
-		final Object _destination = entry;
+		Object _source = $source;
+		Object _destination = entry;
 
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set

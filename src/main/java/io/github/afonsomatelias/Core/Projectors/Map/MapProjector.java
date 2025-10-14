@@ -9,7 +9,6 @@ import static io.github.afonsomatelias.Helpers.Global.isArray;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +17,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Base.TypeFactory;
 import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
 import io.github.afonsomatelias.Helpers.$$;
@@ -58,10 +58,10 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 			return null;
 
 		// Beginning Mapping Process
-		final Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
+		Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
 
 		// Sets a value to a field
-		final I2Action<Field, Object> fnSetDstValue = (field, value) -> {
+		I2Action<Field, Object> fnSetDstValue = (field, value) -> {
 			try {
 				if (field == null) return;
                 field.setAccessible(true);
@@ -74,16 +74,16 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 		// Looping all the source fields
 		$source.forEach((fieldName, fieldValue) -> {
 
-			final Field fieldDestination = fieldsDestination.getOrDefault(fieldName, null);
+			Field fieldDestination = fieldsDestination.getOrDefault(fieldName, null);
 			if (fieldDestination == null) return;
-			final Class<?> fieldTypeDestination = fieldDestination.getType();
+			Class<?> fieldTypeDestination = fieldDestination.getType();
 
 			// # Ignore this field if it was marked to be skipped
 			if (localActionOptions.isSkipMember(fieldDestination) || localActionOptions.isSkipMember(fieldName))
 				return;
 
 			// # Skip if the type needs to me ignored
-			final Boolean isSkipTypeInline = localActionOptions.isSkipType(fieldTypeDestination.getSimpleName()) ||
+			boolean isSkipTypeInline = localActionOptions.isSkipType(fieldTypeDestination.getSimpleName()) ||
 					localActionOptions.isSkipType(fieldTypeDestination);
 
 			if (isSkipTypeInline)
@@ -116,7 +116,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 					valueToSet = this.mapObject(
 						(Map<String, ? extends Object>) fieldValue,
 						fieldTypeDestination, 
-						super.create(fieldTypeDestination, fieldName, fieldTypeDestination)
+						TypeFactory.create(fieldTypeDestination, fieldName, fieldTypeDestination)
 					);
 				}
 			}
@@ -125,12 +125,12 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 			if (valueToSet == null) return;
 
 			// Getting the value type
-			final Class<?> valueToSetType = valueToSet.getClass();
+			Class<?> valueToSetType = valueToSet.getClass();
 
 			// Checking if the value to set is not assignable to the destination field and the destination field is a String
 			if (!fieldTypeDestination.isAssignableFrom(valueToSetType)) {
 				// Getting the field type resolver
-				final ITypeResolver resolver =  shared.typeResolvers.getOrDefault(fieldTypeDestination, null);
+				ITypeResolver resolver =  shared.typeResolvers.getOrDefault(fieldTypeDestination, null);
 
 				// if there isn't a resolver, alert and return
 				if (resolver == null) {
@@ -143,13 +143,16 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 					valueToSet = resolver.resolve(valueToSet);
 				} catch (Exception e) {
 					// Can not set java.time.LocalDate field io.github.afonsomatelias.Models.UserDto.bithdate to java.lang.String
-					$$.out("Error parsing value '" + valueToSet + "' to field '" + 
-					String.join(":", Arrays.asList(
-						fieldClassType.getName(),
-						fieldTypeDestination.getSimpleName(),
-						fieldName
-					)), "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					String msg = new StringBuilder()
+						.append("Can not set value '" + valueToSet + "' to field '")
+						.append(fieldClassType.getName())
+						.append("->")
+						.append(fieldTypeDestination.getSimpleName())
+						.append(" ")
+						.append(fieldName)
+						.toString();
 
+					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
 					return;
 				}
 			}
@@ -189,7 +192,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 		Class<?> fieldParentType,
 		ECollectionType collectionType
 	) {
-		final I2Action<Object, Object> fnEmpty = (_0, _1) -> {}; 
+		I2Action<Object, Object> fnEmpty = (_0, _1) -> {}; 
 		return this.mapList(
 			fieldName, 
 			$source, 
@@ -224,13 +227,13 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 		I2Action<Object, Object> localAfterEachMap
 	) {
 		// Creating a new instance of a generic list
-		final ArrayList<Object> mappedList = new ArrayList<Object>();
+		ArrayList<Object> mappedList = new ArrayList<Object>();
 
 		// Looping them
 		/**
 		 * NOTE: this cast to Iterable<T> can throw an exception
 		 */
-		for (final Object sourceItem : (Iterable<Object>) $source) {
+		for (Object sourceItem : (Iterable<Object>) $source) {
 			// If the item is a primitive, just add, do not map
 			if (PRIMITIVES.contains(sourceItem.getClass())) {
 				// Calling beforeEachMap
@@ -258,7 +261,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 				dstItem = this.mapObject(
 					(Map<String, ?>) sourceItem, 
 					fieldListType, 
-					super.create(fieldListType, fieldName, fieldParentType)
+					TypeFactory.create(fieldListType, fieldName, fieldParentType)
 				);
 			}
 
@@ -332,7 +335,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 			return null;
 
 		try {
-			Object $destination = super.create(clazz);
+			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
 			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
