@@ -1,6 +1,7 @@
 package io.github.afonsomatelias.Helpers;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -133,4 +134,19 @@ public class Global {
 	public static ECollectionType getListEnumType(Class<?> cls) {
 		return cls.getClass().getComponentType() == null ? ECollectionType.COLLECTION : ECollectionType.ARRAY;
 	}
+
+	public static String getAndResolveMethodName(Method method) {
+		String methodName = method.getName();
+
+		// If it begins with 'get'
+		if (methodName.startsWith("get"))
+			return methodName.substring(3).toLowerCase();
+
+		// Otherwise, check it begins with 'is' and the return type is Boolean
+		if (methodName.startsWith("is") && Boolean.class.equals(method.getReturnType()))
+			return methodName.substring(2).toLowerCase();
+
+		// Return the full name
+		return methodName.toLowerCase();
+	};
 }

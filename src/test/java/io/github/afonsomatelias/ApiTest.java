@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -15,6 +16,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.github.afonsomatelias.Callback.ICallbacks.IGetterMethod;
 import io.github.afonsomatelias.Configurations.ConverterConfiguration;
 import io.github.afonsomatelias.Helpers.MethodCallCounter;
 import io.github.afonsomatelias.Models.Product;
@@ -1012,5 +1014,36 @@ public class ApiTest {
         assertNull(dto.getName());
         assertNull(dto.getQuantity());
         method.assertMethodCalled(2);
+    }
+    
+    @Test
+    public void shouldProjectDtoToInterface() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
+
+        ProductProjection dto = converter.project(new Product()).to(ProductProjection.class);
+
+        assertNotNull(dto);
+        assertNotNull(dto.getName());
+        assertNotNull(dto.getQuantity());
+    }
+    
+    @Test
+    public void shouldProjectDtoToInterfaceWithRegistered() {
+        ConverterConfiguration config = new ConverterConfiguration();
+
+        config.createMap(Product.class, ProductProjection.class)
+            .forMember(ProductProjection::getCategories, (src) -> {
+                String[] arrayOfStringValue = src.getCategories().split(";");
+                return arrayOfStringValue;
+            });
+
+        IConverter converter = config.createConverter();
+
+        ProductProjection dto = converter.project(new Product()).to(ProductProjection.class);
+
+        assertNotNull(dto);
+        assertNotNull(dto.getName());
+        assertNotNull(dto.getQuantity());
     }
 }

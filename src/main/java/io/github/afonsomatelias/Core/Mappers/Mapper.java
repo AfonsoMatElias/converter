@@ -114,7 +114,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
                 field.setAccessible(true);
 				field.set($destination, value);
 			} catch (Exception e) {
-				$$.out("Error setting value '"+ value +"' to field: " + field.getName(), e);
+				$$.err("Error setting value '"+ value +"' to field: " + field.getName(), e);
 			}
 		};
 

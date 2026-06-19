@@ -1,19 +1,25 @@
 package io.github.afonsomatelias.Options.Expression;
 
+import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
-import io.github.afonsomatelias.Callback.ICallbacks.ISetterFunction;
+import io.github.afonsomatelias.Callback.ICallbacks.IGetterMethod;
+import io.github.afonsomatelias.Callback.ICallbacks.ISetterMethod;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
 import io.github.afonsomatelias.Enums.EMemberType;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Helpers.FieldHelper;
+import io.github.afonsomatelias.Helpers.Printer;
 import io.github.afonsomatelias.Options.MappingObjectActions;
 import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
 import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
@@ -88,23 +94,115 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 		return this;
 	}
 
+	private <R> Method toGetterMethod(IGetterMethod<D, R> method) {
+		try {
+			// Force the lambda to serialize, which exposes its internal metadata
+			return this.getMethod(
+				method, method.getClass().getDeclaredMethod("writeReplace")
+			);
+		} catch (Exception e) {
+			Printer.err("Failed to extract the method for the proveded getter. Error: " + e.getMessage());
+			return null;
+		}
+	}
+
+	private <R> Method toSetterMethod(ISetterMethod<D, R> method) {
+		try {
+			// Force the lambda to serialize, which exposes its internal metadata
+			return this.getMethod(
+				method, method.getClass().getDeclaredMethod("writeReplace")
+			);
+		} catch (Exception e) {
+			Printer.err("Failed to extract the method for the proveded setter. Error: " + e.getMessage());
+			return null;
+		}
+	}
+
+	private Method getMethod(Object anounymous, Method writeReplace) 
+		throws IllegalAccessException, 
+				IllegalArgumentException, 
+				InvocationTargetException, 
+				NoSuchMethodException, 
+				SecurityException {
+		writeReplace.setAccessible(true);
+
+		SerializedLambda serializedLambda = (SerializedLambda) writeReplace.invoke(anounymous);
+		final String methodName = serializedLambda.getImplMethodName();
+		return destinationClass.getDeclaredMethod(methodName);
+	}
+
 	/**
-	 * Changes or Mutates the value that needs to be placed into a field
+	 * Changes or Mutates the value that needs to be returned from the method
+	 * 
+	 * @param getter 	the member that will be transformed
+	 * @param transform	the interception bahavior
+	 */
+	public <R> MappingExpression<S, D> forMember(
+		IGetterMethod<D, R> getter,
+		I1Fn<S, Object> transform
+	) {
+
+		for (Method m : getter.getClass().getDeclaredMethods()) {
+			System.out.println(m.getName() + " -> " + Arrays.toString(m.getParameterTypes()));
+		}
+
+		Method m = this.toGetterMethod(getter);
+
+		// // Building the unique name of the action
+		// String key = this.getMappingName();
+		// List<SetterMemberMapping> setters = shared.forSetterMemberMapping
+		// 	.getOrDefault(key, new ArrayList<SetterMemberMapping>());
+
+		// setters.add(new SetterMemberMapping(setterPropertyMember, transform, EMemberType.SINGLE_CALLBACK));
+		// shared.forSetterMemberMapping.put(key, setters);
+		return this;
+	}
+
+	/**
+	 * Changes or Mutates the value that needs needs to be returned from the method
 	 * 
 	 * @param setterPropertyMember the member that will be transformed
 	 * @param transform            the interception bahavior
 	 */
+	public <R> MappingExpression<S, D> forMember(
+		IGetterMethod<D, R> getter,
+		I2Fn<S, MemberMapping, Object> transform
+	) {
+		Method m = this.toGetterMethod(getter);
+
+		// // Building the unique name of the action
+		// String key = this.getMappingName();
+		// List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
+		// 		new ArrayList<SetterMemberMapping>());
+
+		// setters.add(new SetterMemberMapping(setterPropertyMember, transform, EMemberType.DOUBLE_CALLBACK));
+		// shared.forSetterMemberMapping.put(key, setters);
+		return this;
+	}
+	
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param setterMethod 	the member that will be transformed
+	 * @param transform	the interception bahavior
+	 */
 	public <U> MappingExpression<S, D> forMember(
-		ISetterFunction<D, U> setterPropertyMember,
+		ISetterMethod<D, U> setterMethod,
 		I1Fn<S, Object> transform
 	) {
+		Method method = this.toSetterMethod(setterMethod);
 
 		// Building the unique name of the action
 		String key = this.getMappingName();
 		List<SetterMemberMapping> setters = shared.forSetterMemberMapping
 			.getOrDefault(key, new ArrayList<SetterMemberMapping>());
 
-		setters.add(new SetterMemberMapping(setterPropertyMember, transform, EMemberType.SINGLE_CALLBACK));
+		setters.add(new SetterMemberMapping(
+			method, 
+			setterMethod, 
+			transform, 
+			EMemberType.SINGLE_CALLBACK
+		));
 		shared.forSetterMemberMapping.put(key, setters);
 		return this;
 	}
@@ -112,19 +210,21 @@ public class MappingExpression<S, D> implements IMappingExpression<S, D> {
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
-	 * @param setterPropertyMember the member that will be transformed
-	 * @param transform            the interception bahavior
+	 * @param setter 	the member that will be transformed
+	 * @param transform the interception bahavior
 	 */
 	public <U> MappingExpression<S, D> forMember(
-		ISetterFunction<D, U> setterPropertyMember,
+		ISetterMethod<D, U> setter,
 		I2Fn<S, MemberMapping, Object> transform
 	) {
+		Method method = this.toSetterMethod(setter);
+
 		// Building the unique name of the action
 		String key = this.getMappingName();
 		List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(key,
 				new ArrayList<SetterMemberMapping>());
 
-		setters.add(new SetterMemberMapping(setterPropertyMember, transform, EMemberType.DOUBLE_CALLBACK));
+		setters.add(new SetterMemberMapping(method, setter, transform, EMemberType.DOUBLE_CALLBACK));
 		shared.forSetterMemberMapping.put(key, setters);
 		return this;
 	}

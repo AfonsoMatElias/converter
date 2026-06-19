@@ -1,17 +1,12 @@
 package io.github.afonsomatelias.Helpers;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.github.afonsomatelias.Callback.ICallbacks.I3Action;
-
-@SuppressWarnings("unchecked")
 public class FieldHelper {
 
     @FunctionalInterface
@@ -60,100 +55,40 @@ public class FieldHelper {
 
     }
 
-    public static Map<String, Method> toMappedMethods(Class<?> clazz) {
-        return toMappedMethods(clazz, null);
-    }
-
-    public static Map<String, Method> toMappedMethods(Class<?> clazz, I3Action<String, Method, Class<?>> forEachField) {
-        return new HashMap<String, Method>() {{
-
-            Method[] methods = clazz.getDeclaredMethods();
-            
-            for(Method method : methods) {
-                put(method.getName(), method);
-
-                if (forEachField != null)
-                    forEachField.call(method.getName().substring(3), method, clazz);
-            }
-        }};
-
-    }
-
-    public static <T> Map<String, Field> fields(T obj, List<String> fieldNames, IFieldkeyValue<String, Object> action) {
-        Map<String, Field> fieldsToReturn = new HashMap<>();
-        Map<String, Field> fields = toMappedFields(obj.getClass());
-
-        // Looping all the fields
-        for (int i = 0; i < fieldNames.size(); i++) {
-            String fieldName = fieldNames.get(i);
-            try {
-                String mFieldName = (fieldName.charAt(0) + "").toUpperCase() + fieldName.substring(1, fieldName.length());
-                Field field = fields.getOrDefault(mFieldName, null);
-
-                if (field == null)
-                    continue;
-
-                field.setAccessible(true);
-
-                fieldsToReturn.put(fieldName, field);
-
-                // Running the action
-                action.run(fieldName, field.get(obj), field.getType());
-            } catch (IllegalAccessException | IllegalArgumentException e) {
-                $$.err(e);
-            }
-        }
-
-        return fieldsToReturn;
-    }
-
-    public static <T> Map<String, Field> fields(T obj, IFieldkeyValue<String, Object> forEachField) {
-        return toMappedFields(obj.getClass(), (name, field, type) -> {
-            try {
-                forEachField.run(name, field.get(obj), type);
-            } catch (IllegalAccessException | IllegalArgumentException e) {
-                $$.err(e);
-            }
-        });
-    }
-
-    public static <T> Map<String, Field> fields(T obj, IFieldOptionCallback<String, Object> forEachField) {
-        return toMappedFields(obj.getClass(), (name, field, type) -> {
-            try {
-                forEachField.run(name, field.get(obj), field, type);
-            } catch (IllegalAccessException | IllegalArgumentException e) {
-                $$.err(e);
-            }
-        });
-    }
-
-    public static <T> Object field(T obj, String field) {
-        Map<String, Field> objFields = toMappedFields(obj.getClass());
-        Field fieldObj = objFields.getOrDefault(field, null);
-
-        if (fieldObj == null)
-            return null;
-
+    public static Object getValue(Object obj, String fieldName) {
         try {
-            return fieldObj.get(obj);
+            if (obj == null)
+                return null;
+    
+            Field field = obj.getClass().getField(fieldName);
+    
+            if (field == null)
+                return null;
+    
+            field.setAccessible(true);
+    
+            return field.get(obj);
         } catch (Exception e) {
             return null;
         }
     }
-
-    public static <T> T call(Object obj, String field, Object... params) {
-
-        for (Method method : obj.getClass().getMethods()) {
-            try {
-                if (method.getName().equalsIgnoreCase(field)) {
-                    method.setAccessible(true);
-                    return (T) method.invoke(obj, params);
-                }
-            } catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
-                $$.err(e);
-            }
+    
+    public static boolean setValue(Object obj, String fieldName, Object value) {
+        try {
+            if (obj == null)
+                return false;
+    
+            Field field = obj.getClass().getField(fieldName);
+    
+            if (field == null)
+                return false;
+    
+            field.setAccessible(true);
+            field.set(obj, value);
+    
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-
-        return null;
     }
 }

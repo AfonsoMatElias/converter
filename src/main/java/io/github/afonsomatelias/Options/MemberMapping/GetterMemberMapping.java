@@ -1,29 +1,33 @@
 package io.github.afonsomatelias.Options.MemberMapping;
 
+import static io.github.afonsomatelias.Helpers.Global.getAndResolveMethodName;
+
 import java.lang.reflect.Method;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
-import io.github.afonsomatelias.Callback.ICallbacks.ISetterMethod;
+import io.github.afonsomatelias.Callback.ICallbacks.IGetterMethod;
 import io.github.afonsomatelias.Core.Mappers.Mapper;
 import io.github.afonsomatelias.Enums.EMemberType;
+import io.github.afonsomatelias.Helpers.FieldHelper;
 
-@SuppressWarnings({"unchecked", "unused"})
-public class SetterMemberMapping {
+@SuppressWarnings({"unused", "unchecked"})
+public class GetterMemberMapping {
 
 	private final Method method;
-	private final ISetterMethod<Object, Object> member;
+	private final IGetterMethod<Object, Object> member;
 	private final Object callback;
 	private final EMemberType type;
+	private EMemberType field;
 
-	public SetterMemberMapping(
+	public GetterMemberMapping(
 		Method method,
-		ISetterMethod<?, ?> setter,
+		IGetterMethod<?, ?> setter,
 		Object callback,
 		EMemberType type) {
 
 		this.method = method;
-		this.member = (ISetterMethod<Object, Object>) setter;
+		this.member = (IGetterMethod<Object, Object>) setter;
 		this.callback = callback;
 		this.type = type;
 	}
@@ -50,7 +54,29 @@ public class SetterMemberMapping {
 				break;
 		}
 
-		member.set(destination, memberMappingResult);
+		
+		// Try to find the field
+		final String equivalentPropOrMethodName = getAndResolveMethodName(method);
+
+		Boolean valueSuccessfullySet = FieldHelper.setValue(
+			destination, 
+			equivalentPropOrMethodName, 
+			memberMappingResult
+		);
+		
+		if (!valueSuccessfullySet) {
+
+		}
+
+		// Otherwise, the try to find the proxyInterface
+
+
+		// transform.
+
+		// No need to call the get method
+
+		// member.accept(destination, memberMappingResult);
+
 		return memberMappingResult;
 	}
 }

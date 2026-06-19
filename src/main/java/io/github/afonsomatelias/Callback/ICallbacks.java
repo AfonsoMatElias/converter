@@ -1,5 +1,7 @@
 package io.github.afonsomatelias.Callback;
 
+import java.io.Serializable;
+
 public interface ICallbacks {
 
 	// Functional Interface
@@ -38,10 +40,14 @@ public interface ICallbacks {
 	public interface ITypeResolver {
 		Object resolve(Object value);		
 	}
-
+	
 	@FunctionalInterface
-	public interface ISetterFunction<ModelType, SetterType> {
-		void accept(ModelType model, SetterType setterValue);
+	public interface IGetterMethod<ModelType, ReturnType> extends Serializable {
+		ReturnType get(ModelType model);
 	}
 
+	@FunctionalInterface
+	public interface ISetterMethod<ModelType, SetterType>  extends Serializable {
+		void set(ModelType model, SetterType setterValue);
+	}
 }

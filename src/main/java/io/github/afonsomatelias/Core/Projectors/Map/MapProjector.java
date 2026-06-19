@@ -67,7 +67,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
                 field.setAccessible(true);
 				field.set($destination, value);
 			} catch (Exception e) {
-				$$.out("Error setting value '"+ value +"' to field: " + field.getName(), e);
+				$$.err("Error setting value '"+ value +"' to field: " + field.getName(), e);
 			}
 		};
 
@@ -152,7 +152,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 						.append(fieldName)
 						.toString();
 
-					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					$$.err(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
 					return;
 				}
 			}

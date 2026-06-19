@@ -1,7 +1,7 @@
 package io.github.afonsomatelias.Core.Projectors.Object;
 
 import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
-import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedMethods;
+import static io.github.afonsomatelias.Helpers.MethodHelper.toMappedMethods;
 import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
 import static io.github.afonsomatelias.Helpers.Global.allMatch;
 import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
@@ -18,6 +18,7 @@ import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Base.ProxyInterface;
 import io.github.afonsomatelias.Core.Base.TypeFactory;
 import io.github.afonsomatelias.Enums.ECollectionType;
 import io.github.afonsomatelias.Enums.EMappingActions;
@@ -71,7 +72,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 				method.setAccessible(true);
 				return method.invoke($source, new Object[] {});
 			} catch (Exception e) {
-				$$.out("Error retrieving value from method: '"+ method.getName(), e);
+				$$.err("Error retrieving value from method: '"+ method.getName(), e);
 				return null;
 			}
 		};
@@ -83,7 +84,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 				method.setAccessible(true);
 				method.invoke($destination, new Object[] { value });
 			} catch (Exception e) {
-				$$.out("Error setting value '"+ value +"' to field: " + method.getName(), e);
+				$$.err("Error setting value '"+ value +"' to field: " + method.getName(), e);
 			}
 		};
 
@@ -176,7 +177,7 @@ public class Projector<Entry> extends BaseCore<Entry> {
 						.append(setMethodName)
 						.toString();
 
-					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					$$.err(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
 					return;
 				}
 			}
@@ -358,6 +359,11 @@ public class Projector<Entry> extends BaseCore<Entry> {
 	public <D> Object toDestination(Class<?> clazz) {
 		if (this.entry == null)
 			return null;
+
+		if (clazz.isInterface()) {
+			return new ProxyInterface<Entry>(shared, entry, clazz)
+				.build();
+		}
 
 		try {
 			Object $destination = TypeFactory.create(clazz);
