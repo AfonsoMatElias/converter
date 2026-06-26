@@ -1,4 +1,4 @@
-package io.github.afonsomatelias.Core.Projectors.Map;
+package io.github.afonsomatelias.Core.Mappers;
 
 import static io.github.afonsomatelias.Helpers.FieldHelper.toMappedFields;
 import static io.github.afonsomatelias.Helpers.Global.PRIMITIVES;
@@ -6,34 +6,49 @@ import static io.github.afonsomatelias.Helpers.Global.allMatch;
 import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
 import static io.github.afonsomatelias.Helpers.Global.getListType;
 import static io.github.afonsomatelias.Helpers.Global.isArray;
+import static io.github.afonsomatelias.Helpers.Global.toUpper1Char;
+import static io.github.afonsomatelias.Helpers.MethodHelper.toMappedMethods;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Configurations.ConverterShared;
-import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Mapper;
 import io.github.afonsomatelias.Core.Base.TypeFactory;
-import io.github.afonsomatelias.Enums.ECollectionType;
-import io.github.afonsomatelias.Enums.EMappingActions;
+import io.github.afonsomatelias.Enums.CollectionTypeEnum;
+import io.github.afonsomatelias.Enums.MappingActionsEnum;
 import io.github.afonsomatelias.Helpers.$$;
+import io.github.afonsomatelias.Options.Expression.MemberConfigExpression;
+import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
+import io.github.afonsomatelias.Options.MemberMapping.MethodMemberMapping;
 
 @SuppressWarnings("unchecked")
-public class MapProjector<Entry> extends BaseCore<Entry> {
+public class HashMapToModelMapper<Entry> extends Mapper<Entry> {
+	
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
 	 * @param source the {@link Entry} object
 	 */
-	public MapProjector(ConverterShared shared, Entry source) {
-		super(shared, source);
+	public HashMapToModelMapper(Mapper<Entry> mapper) {
+		super(
+			mapper.getConverter(),
+			mapper.getShared(), 
+			mapper.getEntry(), 
+			mapper.getLocalActionOptions(),
+			mapper.getMappedObject()
+		);
 	}
 
+	
 	/**
 	 * Maps properties from the source map to the destination object.
 	 * 
@@ -57,11 +72,15 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 		if ($source == null || $destination == null)
 			return null;
 
+		String mapActionUniqueName = $source.getClass().getName() + ":" + fieldClassType.getName();
+
 		// Beginning Mapping Process
 		Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
+		Map<String, Method> methodsDestination = toMappedMethods($destination.getClass());
+
 
 		// Sets a value to a field
-		I2Action<Field, Object> fnSetDstValue = (field, value) -> {
+		I2Action<Field, Object> fnSetFieldValue = (field, value) -> {
 			try {
 				if (field == null) return;
                 field.setAccessible(true);
@@ -70,6 +89,18 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 				$$.err("Error setting value '"+ value +"' to field: " + field.getName(), e);
 			}
 		};
+
+		// # Retrieve all the fields member mapping
+		Map<Field, FieldMemberMapping> fieldsMemberMapping = shared.forMemberFieldMapping.getOrDefault(
+			mapActionUniqueName,
+			new HashMap<>()
+		);
+
+		// # Retrieve all the methods member mapping
+		Map<Method, MethodMemberMapping> methodsMemberMapping = shared.forMemberMethodMapping.getOrDefault(
+			mapActionUniqueName,
+			new HashMap<>()
+		);
 
 		// Looping all the source fields
 		$source.forEach((fieldName, fieldValue) -> {
@@ -88,6 +119,43 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 
 			if (isSkipTypeInline)
 				return;
+		
+			// Try to get for member mapping for this field
+			FieldMemberMapping fieldMemberMapping = fieldsMemberMapping.getOrDefault(fieldDestination, null);
+			if (fieldMemberMapping != null) {
+				Object memberMappingResult = fieldMemberMapping.call(
+					$source, 
+					$destination, 
+					new MemberConfigExpression(this)
+				);
+				fnSetFieldValue.call(fieldDestination, memberMappingResult);
+				return; // Breaking the process as the member is already mapped
+			}
+
+			// Goal: name to Name
+			final String mFielName = toUpper1Char(fieldName);
+			Method methodDestination = 
+				// Try to find the set method
+				methodsDestination.getOrDefault("set" + mFielName, 
+					// Otherwise, find the get method
+					methodsDestination.getOrDefault("get" + mFielName, null)
+			);
+
+			if (methodDestination != null) {
+				MethodMemberMapping methodMemberMapping = methodsMemberMapping.getOrDefault(
+					methodDestination, null
+				);
+				if (methodMemberMapping != null) {
+					Object memberMappingResult = methodMemberMapping.call(
+						$source, 
+						$destination, 
+						new MemberConfigExpression(this)
+					);
+					fnSetFieldValue.call(fieldDestination, memberMappingResult);
+					return; // Breaking the process as the member is already mapped
+				}
+			}
+
 			
 			// Assigning default the value
 			Object valueToSet = fieldValue;
@@ -105,7 +173,9 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 							fieldValue, 
 							getListType(fieldDestination),
 							fieldTypeDestination,
-							getListEnumType(fieldDestination.getClass())
+							getListEnumType(fieldDestination.getClass()),
+							(_0, _1) -> {},
+							(_0, _1) -> {}
 						);
 					}
 				
@@ -158,7 +228,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 			}
 			
 			// Setting the value
-			fnSetDstValue.call(fieldDestination, valueToSet);
+			fnSetFieldValue.call(fieldDestination, valueToSet);
 		});
 
 		// If all the fields are null, nullify the destination object
@@ -182,36 +252,6 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 	 * @param $source          		the source value
 	 * @param fieldListType 		the destination type
 	 * @param fieldParentType       the class of the destination
-	 * @param collectionType  		the type of the destination list
-	 * @return the mapped list
-	 */
-	private Object mapList(
-		String fieldName,
-		Object $source,
-		Class<?> fieldListType,		
-		Class<?> fieldParentType,
-		ECollectionType collectionType
-	) {
-		I2Action<Object, Object> fnEmpty = (_0, _1) -> {}; 
-		return this.mapList(
-			fieldName, 
-			$source, 
-			fieldListType, 
-			fieldParentType, 
-			collectionType, 
-			fnEmpty,
-			fnEmpty
-		);
-	};
-
-	/**
-	 * Maps the list of {@link Entry} objects to the list of destination class
-	 * provided
-	 * 
-	 * @param fieldName            	the field name to be mapped
-	 * @param $source          		the source value
-	 * @param fieldListType 		the destination type
-	 * @param fieldParentType       the class of the destination
 	 * @param collectionType  	   	the type of the destination list
 	 * @param localBeforeEachMap   	the local before map callback
 	 * @param localAfterEachMap    	the local after map callback
@@ -222,7 +262,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 		Object $source,
 		Class<?> fieldListType,		
 		Class<?> fieldParentType,
-		ECollectionType collectionType,
+		CollectionTypeEnum collectionType,
 		I2Action<Object, Object> localBeforeEachMap,
 		I2Action<Object, Object> localAfterEachMap
 	) {
@@ -274,7 +314,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 			localAfterEachMap.call(sourceItem, dstItem);
 		}
 
-		if (ECollectionType.ARRAY == collectionType) {
+		if (CollectionTypeEnum.ARRAY == collectionType) {
 			return mappedList.toArray(new Object[mappedList.size()]);
 		}
 
@@ -291,7 +331,7 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 	 * @param $destination 		the destination object
 	 * @return the mapped object
 	 */
-	private <D> Object mapper(Object $source, Class<?> clsDestination, Object $destination) {
+	private <D> Object map(Object $source, Class<?> clsDestination, Object $destination) {
 
 		if ($source == null || $destination == null)
 			return null;
@@ -309,8 +349,8 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 				clsDestination, 
 				clsDestination, 
 				getListEnumType($source.getClass()), 
-				(src, dst) -> localActionOptions.emit(EMappingActions.BEFORE_EACH_MAP, src, dst),
-				(src, dst) -> localActionOptions.emit(EMappingActions.AFTER_EACH_MAP, src, dst)
+				(src, dst) -> localActionOptions.emit(MappingActionsEnum.BEFORE_EACH_MAP, src, dst),
+				(src, dst) -> localActionOptions.emit(MappingActionsEnum.AFTER_EACH_MAP, src, dst)
 			);
 		}
 
@@ -330,20 +370,17 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 	 * @return the {@link D} instance mapped from the {@link Entry}
 	 *         instance
 	 */
-	public <D> Object toDestination(Class<?> clazz) {
-		if (this.entry == null)
-			return null;
-
+	public <D> Object mapToDestination(Class<?> clazz) {
 		try {
 			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
+			localActionOptions.emit(MappingActionsEnum.BEFORE_MAP, entry, null);
 
-			$destination = this.mapper(this.entry, clazz, $destination);
+			$destination = this.map(this.entry, clazz, $destination);
 
 			// Performs the AFTER_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.AFTER_MAP, entry, $destination);
+			localActionOptions.emit(MappingActionsEnum.AFTER_MAP, entry, $destination);
 
 			return $destination;
 		} catch (Exception e) {
@@ -354,5 +391,4 @@ public class MapProjector<Entry> extends BaseCore<Entry> {
 			return null;
 		}
 	}
-	
 }

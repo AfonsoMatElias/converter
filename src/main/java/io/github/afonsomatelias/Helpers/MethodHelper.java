@@ -1,12 +1,8 @@
 package io.github.afonsomatelias.Helpers;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I3Action;
@@ -38,7 +34,7 @@ public class MethodHelper {
                 if (method.getName().equalsIgnoreCase(field)) {
                     method.setAccessible(true);
 
-                    if (!method.getReturnType().equals(Void.class))
+                    if (!method.getReturnType().equals(void.class) || !method.getReturnType().equals(Void.class))
                         return (T) method.invoke(obj, params);
                     
                     method.invoke(obj, params);

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -16,8 +15,8 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.afonsomatelias.Callback.ICallbacks.IGetterMethod;
 import io.github.afonsomatelias.Configurations.ConverterConfiguration;
+import io.github.afonsomatelias.Helpers.DummyData;
 import io.github.afonsomatelias.Helpers.MethodCallCounter;
 import io.github.afonsomatelias.Models.Product;
 import io.github.afonsomatelias.Models.ProductDto;
@@ -713,13 +712,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
-            put("name", "Sprite");
-            put("price", 1f);
-            put("quantity", 15);
-        }};
+        LinkedHashMap<String, Object> product = DummyData.generateProductLinkedHashMap();
 
-        ProductDto dto = converter.project(product).to(ProductDto.class);
+        ProductDto dto = converter.map(product).to(ProductDto.class);
 
         assertNotNull(dto);
     }
@@ -730,13 +725,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
-            put("name", "Sprite");
-            put("price", "1");
-            put("quantity", "15");
-        }};
+        LinkedHashMap<String, Object> product = DummyData.generateProductLinkedHashMapWithStringValue();
 
-        ProductDto dto = converter.project(product).to(ProductDto.class);
+        ProductDto dto = converter.map(product).to(ProductDto.class);
 
         assertNotNull(dto);
     }
@@ -747,32 +738,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> product = new LinkedHashMap<String, Object>() {{
-            put("name", "Sprite");
-            put("price", 1f);
-            put("quantity", 15);
+        LinkedHashMap<String, Object> product = DummyData.generateProductWithParentLinkedHashMap();
 
-            put("parent", new LinkedHashMap<String, Object>() {{
-                put("name", "Water");
-                put("price", 0.5f);
-                put("quantity", 35);
-            }});
-
-            put("products", Arrays.asList(
-                new LinkedHashMap<String, Object>() {{
-                    put("name", "Cola-Cola");
-                    put("price", 1f);
-                    put("quantity", 40);
-                }},
-                new LinkedHashMap<String, Object>() {{
-                    put("name", "Beer");
-                    put("price", 2f);
-                    put("quantity", 12);
-                }}
-            ));
-        }};
-
-        ProductDto dto = converter.project(product).to(ProductDto.class);
+        ProductDto dto = converter.map(product).to(ProductDto.class);
         
         assertNotNull(dto);
         assertNotNull(dto.getParent());
@@ -784,15 +752,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "1989-10-15");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
 
-        UserDto dto = converter.project(user).to(UserDto.class);
+        UserDto dto = converter.map(user).to(UserDto.class);
         
         assertNotNull(dto);
     }
@@ -803,18 +765,38 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "2025-03-25T22:44:17.605Z");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
 
-        UserDto dto = converter.project(user).to(UserDto.class);
+        UserDto dto = converter.map(user).to(UserDto.class);
         
         assertNotNull(dto);
         assertNull(dto.getBithdate());
+    }
+
+    @Test
+    public void shouldProjectLinkedHashMapItemAndInterceptWithMemberMapping() {
+
+        ConverterConfiguration config = new ConverterConfiguration();
+        config.createMap(LinkedHashMap.class, UserDto.class)
+            .forMember(UserDto::setBithdate, (src) -> {
+                
+                @SuppressWarnings("unchecked")
+                Object value = src.getOrDefault("bithdate", null);
+                
+                if (!(value instanceof String)) return null;
+
+                String str = value.toString();
+                return LocalDate.parse(str.split("T")[0]);
+            });
+
+        IConverter converter = config.createConverter();
+
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
+
+        UserDto dto = converter.map(user).to(UserDto.class);
+        
+        assertNotNull(dto);
+        assertNotNull(dto.getBithdate());
     }
 
     @Test
@@ -833,15 +815,9 @@ public class ApiTest {
         });
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "2025-03-25T22:44:17.605Z");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
 
-        UserDto dto = converter.project(user).to(UserDto.class);
+        UserDto dto = converter.map(user).to(UserDto.class);
         
         assertNotNull(dto);
         assertNotNull(dto.getBithdate());
@@ -856,15 +832,9 @@ public class ApiTest {
         });
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "2025-03-25T22:44:17.605Z");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
 
-        UserDto dto = converter.project(user).to(UserDto.class);
+        UserDto dto = converter.map(user).to(UserDto.class);
         
         assertNotNull(dto);
         assertNotNull(dto.getBithdate());
@@ -876,15 +846,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "1989-10-15");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
 
-        UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+        UserDto dto = converter.map(user).to(UserDto.class, (options) -> {
             options.beforeMap((src, dst) -> {
                 method.call();
             });
@@ -903,15 +867,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "2025-03-25T22:44:17.605Z");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+        LinkedHashMap<String, Object> user = DummyData.generateUserLinkedHashMap();
 
-        UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+        UserDto dto = converter.map(user).to(UserDto.class, (options) -> {
             options.skipTypes(LocalDate.class);
             options.skipMembers("password");
         });
@@ -925,19 +883,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        ProductProjection productProjection = new ProductProjection() {
-            @Override
-            public String getName() { return "Coca Cola"; }
-            @Override
-            public Float getPrice() { return 0.5f; }
+        ProductProjection productProjection = DummyData.generateProductProjection();
 
-            @Override
-            public String[] getCategories() { return new String[]{ "Liquid", "Refrigerator" }; }
-            @Override
-            public Integer getQuantity() { return 15; }
-        };
-
-        ProductDto dto = converter.project(productProjection).to(ProductDto.class);
+        ProductDto dto = converter.map(productProjection).to(ProductDto.class);
 
         assertNotNull(dto);
         assertNotNull(dto.getName());
@@ -948,31 +896,10 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        ProductProjection productProjection1 = new ProductProjection() {
-            @Override
-            public String getName() { return "Coca Cola"; }
-            @Override
-            public Float getPrice() { return 0.5f; }
+        ProductProjection productProjection1 = DummyData.generateProductProjection();
+        ProductProjection productProjection2 = DummyData.generateProductProjection();
 
-            @Override
-            public String[] getCategories() { return new String[]{ "Liquid", "Refrigerator" }; }
-            @Override
-            public Integer getQuantity() { return 15; }
-        };
-
-        ProductProjection productProjection2 = new ProductProjection() {
-            @Override
-            public String getName() { return "Beer"; }
-            @Override
-            public Float getPrice() { return 0.6f; }
-
-            @Override
-            public String[] getCategories() { return new String[]{ "Liquid", "Alcoholic" }; }
-            @Override
-            public Integer getQuantity() { return 25; }
-        };
-
-        List<ProductDto> dtos = converter.project(Arrays.asList(productProjection1, productProjection2)).to(ProductDto.class);
+        List<ProductDto> dtos = converter.map(Arrays.asList(productProjection1, productProjection2)).to(ProductDto.class);
 
         assertNotNull(dtos);
 
@@ -985,19 +912,9 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        ProductProjection productProjection = new ProductProjection() {
-            @Override
-            public String getName() { return "Coca Cola"; }
-            @Override
-            public Float getPrice() { return 0.5f; }
+        ProductProjection productProjection = DummyData.generateProductProjection();
 
-            @Override
-            public String[] getCategories() { return new String[]{ "Liquid", "Refrigerator" }; }
-            @Override
-            public Integer getQuantity() { return 15; }
-        };
-
-        ProductDto dto = converter.project(productProjection).to(ProductDto.class, (options) -> {
+        ProductDto dto = converter.map(productProjection).to(ProductDto.class, (options) -> {
             options.skipMembers("setName");
             options.skipTypes(Integer.class);
 
@@ -1021,11 +938,26 @@ public class ApiTest {
         ConverterConfiguration config = new ConverterConfiguration();
         IConverter converter = config.createConverter();
 
-        ProductProjection dto = converter.project(new Product()).to(ProductProjection.class);
+        ProductProjection projection = converter.map(new Product()).to(ProductProjection.class);
 
-        assertNotNull(dto);
-        assertNotNull(dto.getName());
-        assertNotNull(dto.getQuantity());
+        assertNotNull(projection);
+        assertNotNull(projection.getName());
+        assertNotNull(projection.getPrice());
+        assertNull(projection.getCategories());
+    }
+
+    @Test
+    public void shouldProjectDtosToInterfaces() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
+
+        List<ProductProjection> projections = converter.map(
+            Arrays.asList(new Product(), new Product()) 
+        ).to(ProductProjection.class);
+
+        assertTrue(projections.size() > 1);
+        assertNotNull(projections.get(0).getName());
+        assertNotNull(projections.get(1).getName());
     }
     
     @Test
@@ -1040,10 +972,12 @@ public class ApiTest {
 
         IConverter converter = config.createConverter();
 
-        ProductProjection dto = converter.project(new Product()).to(ProductProjection.class);
+        ProductProjection dto = converter.map(new Product()).to(ProductProjection.class);
 
         assertNotNull(dto);
         assertNotNull(dto.getName());
-        assertNotNull(dto.getQuantity());
+        assertNotNull(dto.getPrice());
+        assertNotNull(dto.getCategories());
+        assertTrue(dto.getCategories().length > 1);
     }
 }

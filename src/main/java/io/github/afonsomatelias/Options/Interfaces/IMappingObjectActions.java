@@ -1,19 +1,19 @@
 package io.github.afonsomatelias.Options.Interfaces;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
-import io.github.afonsomatelias.Enums.EMappingActions;
+import io.github.afonsomatelias.Enums.MappingActionsEnum;
 
 public interface IMappingObjectActions<S, D> extends IMappingActions {
 
 	/**
-     * Subscribes {@link EMappingActions.BEFORE_MAP} action
+     * Subscribes {@link MappingActionsEnum.BEFORE_MAP} action
 	 * 
      * @param modifier the delegate having the modification
      */
     void beforeMap(I2Action<S, D> modifier);
     
     /**
-     * Subscribes {@link EMappingActions.AFTER_MAP} action
+     * Subscribes {@link MappingActionsEnum.AFTER_MAP} action
 	 * 
      * @param modifier the delegate having the modification
      */

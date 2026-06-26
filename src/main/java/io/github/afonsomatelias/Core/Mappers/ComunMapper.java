@@ -6,59 +6,51 @@ import static io.github.afonsomatelias.Helpers.Global.allMatch;
 import static io.github.afonsomatelias.Helpers.Global.getListEnumType;
 import static io.github.afonsomatelias.Helpers.Global.getListType;
 import static io.github.afonsomatelias.Helpers.Global.isArray;
+import static io.github.afonsomatelias.Helpers.Global.toUpper1Char;
+import static io.github.afonsomatelias.Helpers.MethodHelper.toMappedMethods;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
-import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.I3Fn;
 import io.github.afonsomatelias.Configurations.ConverterShared;
 import io.github.afonsomatelias.Configurations.MappingConfig;
-import io.github.afonsomatelias.Core.Base.BaseCore;
+import io.github.afonsomatelias.Core.Mapper;
 import io.github.afonsomatelias.Core.Base.TypeFactory;
-import io.github.afonsomatelias.Core.Mappers.Interfaces.IMapper;
-import io.github.afonsomatelias.Enums.ECollectionType;
-import io.github.afonsomatelias.Enums.EMappingActions;
+import io.github.afonsomatelias.Enums.CollectionTypeEnum;
+import io.github.afonsomatelias.Enums.MappingActionsEnum;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Options.MappingObjectActions;
+import io.github.afonsomatelias.Options.Expression.MemberConfigExpression;
 import io.github.afonsomatelias.Options.MemberMapping.FieldMemberMapping;
-import io.github.afonsomatelias.Options.MemberMapping.SetterMemberMapping;
+import io.github.afonsomatelias.Options.MemberMapping.MethodMemberMapping;
 
 @SuppressWarnings("unchecked")
-public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
+public class ComunMapper<Entry> extends Mapper<Entry> {
 	/**
 	 * The Default Constructor
 	 * 
 	 * @param shared the {@link ConverterShared} instance
 	 * @param entry the {@link Entry} object
 	 */
-	public Mapper(ConverterShared shared, Entry entry) {
-		super(shared, entry);
-		this.mappedObject = new HashMap<>();
+	public ComunMapper(Mapper<Entry> mapper) {
+		super(
+			mapper.getConverter(), 
+			mapper.getShared(), 
+			mapper.getEntry(), 
+			mapper.getLocalActionOptions(),
+			mapper.getMappedObject()
+		);
 	}
-
-	/**
-	 * Inheritance Constructor
-	 * 
-	 * @param parent the parent processor 
-	 * @param entry the source object
-	 */
-	public Mapper(Mapper<?> parent, Entry entry) {
-		super(parent.shared, entry, parent.localActionOptions);
-		this.mappedObject = parent.mappedObject;
-	}
-
-	/**
-	 * Stores all the times that an object was mapped for to avoid mapping and object already mapped
-	 */
-	private final Map<String, Object> mappedObject;
 
 	private HashSet<String> DEFAULT_SKIP_TYPE_NAME = new HashSet<>(Arrays.asList(
 		"PersistentBag"
@@ -72,7 +64,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * 
 	 * @param $source       	 the source object from which the properties
 	 *                        	 are to be mapped
-	 * @param fieldClassType  the class type of the destination object
+	 * @param fieldClassType  	 the class type of the destination object
 	 * @param $destination  	 the destination object to which the properties
 	 * 							 are to be mapped
 	 * @return the mapped destination object, or null if mapping is not possible
@@ -88,6 +80,8 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 		// Beginning Mapping Process
 		Map<String, Field> fieldsSource = toMappedFields($source.getClass());
 		Map<String, Field> fieldsDestination = toMappedFields(fieldClassType);
+		Map<String, Method> methodsDestination = toMappedMethods($destination.getClass());
+
 		Map<String, MappingConfig> configurations = this.shared.configurations;
 
 		// Helper Function to register Mapped Object
@@ -107,8 +101,34 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return mapped;
 		};
 
+		/**
+		 * Transforms the source value to the destination type using a predefined transformation callback.
+		 * 
+		 * This method constructs a transformation key based on the source and destination types
+		 * and retrieves the corresponding transformation callback from shared transformations.
+		 * If a callback exists, it applies the transformation to the source value.
+		 */
+		I3Fn<Object, Class<?>, Class<?>, Object> fnMapTransform = (
+			Object _source,
+			Class<?> fieldTypeSource,
+			Class<?> fieldTypeDestination
+		) -> {
+			// Building the transformationName
+			String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
+
+			// Getting the transformation callback for this mapping
+			I1Fn<Object, Object> transform = shared.tranformations
+					.getOrDefault(name, null);
+
+			// Checking if there is a transformation for these two properties
+			if (transform == null)
+				return null;
+
+			return transform.call(_source);
+		};
+
 		// Sets a value to a field
-		I2Action<Field, Object> fnSetDstValue = (field, value) -> {
+		I2Action<Field, Object> fnSetFieldValue = (field, value) -> {
 			try {
 				if (field == null) return;
                 field.setAccessible(true);
@@ -118,7 +138,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			}
 		};
 
-		I2Fn<Object, Field, Object> fnGetValue = (obj, field) -> {
+		I2Fn<Object, Field, Object> fnGetFieldValue = (obj, field) -> {
 			try {
 				if (field == null) return null;
                 field.setAccessible(true);
@@ -158,7 +178,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 		{ // Generic Scope
 			// Testing Transformation Mapping
-			Object $mutatedObject = this.mapTransform($source, $source.getClass(), fieldClassType);
+			Object $mutatedObject = fnMapTransform.call($source, $source.getClass(), fieldClassType);
 			if ($mutatedObject != null)
 				return $mutatedObject;
 		}
@@ -166,12 +186,24 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 		// building the unique name 
 		String mapActionUniqueName = $source.getClass().getName() + ":" + fieldClassType.getName();
 
+		// # Retrieve all the fields member mapping
+		Map<Field, FieldMemberMapping> fieldsMemberMapping = shared.forMemberFieldMapping.getOrDefault(
+			mapActionUniqueName,
+			new HashMap<>()
+		);
+
+		// # Retrieve all the methods member mapping
+		Map<Method, MethodMemberMapping> methodsMemberMapping = shared.forMemberMethodMapping.getOrDefault(
+			mapActionUniqueName,
+			new HashMap<>()
+		);
+
 		// Retrieving the action for this field
 		MappingObjectActions<Object, Object> createdMapActionOption = shared.globalActionOptions
 				.getOrDefault(mapActionUniqueName, null);
 
 		if (createdMapActionOption != null) // Performing BEFORE_MAP action
-			createdMapActionOption.emit(EMappingActions.BEFORE_MAP, $source, null);
+			createdMapActionOption.emit(MappingActionsEnum.BEFORE_MAP, $source, null);
 
 		Object mappedObject = fnRegisterMappedObj.call($source);
 		if (mappedObject != null)
@@ -197,12 +229,39 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 
 			// Try to get for member mapping for this field
-			FieldMemberMapping forMemberMapping = shared.forMemberMapping.getOrDefault(fieldDestination, null);
-
+			FieldMemberMapping forMemberMapping = fieldsMemberMapping.getOrDefault(fieldDestination, null);
 			if (forMemberMapping != null) {
-				Object memberMappingResult = forMemberMapping.call($source, $destination, this);
-				fnSetDstValue.call(fieldDestination, memberMappingResult);
+				Object memberMappingResult = forMemberMapping.call(
+					$source, 
+					$destination, 
+					new MemberConfigExpression(this)
+				);
+				fnSetFieldValue.call(fieldDestination, memberMappingResult);
 				return; // Breaking the process as the member is already mapped
+			}
+
+			// Goal: name to Name
+			final String mFielName = toUpper1Char(fieldName);
+			Method methodDestination = 
+				// Try to find the set method
+				methodsDestination.getOrDefault("set" + mFielName, 
+					// Otherwise, find the get method
+					methodsDestination.getOrDefault("get" + mFielName, null)
+			);
+
+			if (methodDestination != null) {
+				MethodMemberMapping methodMemberMapping = methodsMemberMapping.getOrDefault(
+					methodDestination, null
+				);
+				if (methodMemberMapping != null) {
+					Object memberMappingResult = methodMemberMapping.call(
+						$source, 
+						$destination, 
+						new MemberConfigExpression(this)
+					);
+					fnSetFieldValue.call(fieldDestination, memberMappingResult);
+					return; // Breaking the process as the member is already mapped
+				}
 			}
 
 
@@ -211,15 +270,15 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 			Class<?> fieldTypeSource = fieldSource.getType();
 			String fieldSourceName = fieldSource.getName();
-			Object fieldSourceValue = fnGetValue.call($source, fieldSource);
-			Object fieldDestinationValue = fnGetValue.call($destination, fieldDestination);
+			Object fieldSourceValue = fnGetFieldValue.call($source, fieldSource);
+			Object fieldDestinationValue = fnGetFieldValue.call($destination, fieldDestination);
 
 
 			Object valueToSet = fieldSourceValue;
 
 
 			// # Applying field transformation
-			Object $mutatedObject = this.mapTransform(valueToSet, fieldTypeSource, fieldTypeDestination);
+			Object $mutatedObject = fnMapTransform.call(valueToSet, fieldTypeSource, fieldTypeDestination);
 
 
 			// # if the fields are equals (same types), just set it, but skip it if matches DEFAULT_SKIP_TYPE_NAME
@@ -228,7 +287,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				(valueToSet != null) && 
 				!(DEFAULT_SKIP_TYPE_NAME.contains(valueToSet.getClass().getSimpleName()))
 			) {
-				fnSetDstValue.call(fieldDestination, ($mutatedObject != null ? $mutatedObject : valueToSet));
+				fnSetFieldValue.call(fieldDestination, ($mutatedObject != null ? $mutatedObject : valueToSet));
 				return;
 			}
 
@@ -247,7 +306,9 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 					fieldSourceValue, 
 					getListType(fieldDestination), 
 					fieldClassType, 
-					getListEnumType(fieldDestination.getClass())
+					getListEnumType(fieldDestination.getClass()),
+					(_0, _1) -> {},
+					(_0, _1) -> {}
 				);
 			} else
 
@@ -265,23 +326,11 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			if (valueToSet == null) return;
 			
 			// Setting the value
-			fnSetDstValue.call(fieldDestination, valueToSet);
+			fnSetFieldValue.call(fieldDestination, valueToSet);
 		});
 
-
-		// # Performing all the setter of this class
-		List<SetterMemberMapping> setters = shared.forSetterMemberMapping.getOrDefault(
-			mapActionUniqueName,
-			Arrays.asList()
-		);
-
-		for (SetterMemberMapping setterMemberMapping : setters) {
-			setterMemberMapping.call($source, $destination, this);
-		}
-
-
 		if (createdMapActionOption != null) // Performing AFTER_MAP action
-			createdMapActionOption.emit(EMappingActions.AFTER_MAP, $source, $destination);
+			createdMapActionOption.emit(MappingActionsEnum.AFTER_MAP, $source, $destination);
 
 
 		// If all the fields are null, nullify the destination object
@@ -302,38 +351,9 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * provided
 	 * 
 	 * @param fieldName            	the field name to be mapped
-	 * @param $source          	the source value
-	 * @param fieldListType 	the destination type
-	 * @param fieldParentType       	the class of the destination
-	 * @param collectionType  		the type of the destination list
-	 * @return the mapped list
-	 */
-	private Object mapList(
-		String fieldName,
-		Object $source,
-		Class<?> fieldListType,		
-		Class<?> fieldParentType,
-		ECollectionType collectionType
-	) {
-		return this.mapList(
-			fieldName, 
-			$source, 
-			fieldListType, 
-			fieldParentType, 
-			collectionType, 
-			(_0, _1) -> {},
-			(_0, _1) -> {}
-		);
-	};
-
-	/**
-	 * Maps the list of {@link Entry} objects to the list of destination class
-	 * provided
-	 * 
-	 * @param fieldName            	the field name to be mapped
-	 * @param $source          	the source value
-	 * @param fieldListType 	the destination type
-	 * @param fieldParentType       	the class of the destination
+	 * @param $source          		the source value
+	 * @param fieldListType 		the destination type
+	 * @param fieldParentType       the class of the destination
 	 * @param collectionType  	   	the type of the destination list
 	 * @param localBeforeEachMap   	the local before map callback
 	 * @param localAfterEachMap    	the local after map callback
@@ -344,7 +364,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 		Object $source,
 		Class<?> fieldListType,		
 		Class<?> fieldParentType,
-		ECollectionType collectionType,
+		CollectionTypeEnum collectionType,
 		I2Action<Object, Object> localBeforeEachMap,
 		I2Action<Object, Object> localAfterEachMap
 	) {
@@ -396,43 +416,12 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			localAfterEachMap.call(sourceItem, dstItem);
 		}
 
-		if (ECollectionType.ARRAY == collectionType) {
+		if (CollectionTypeEnum.ARRAY == collectionType) {
 			return mappedList.toArray(new Object[mappedList.size()]);
 		}
 
 		// assigning the value to set in the property
 		return mappedList;
-	}
-
-	/**
-	 * Transforms the source value to the destination type using a predefined transformation callback.
-	 * 
-	 * This method constructs a transformation key based on the source and destination types
-	 * and retrieves the corresponding transformation callback from shared transformations.
-	 * If a callback exists, it applies the transformation to the source value.
-	 * 
-	 * @param $source the source value to be transformed
-	 * @param fieldTypeSource the class type of the source field
-	 * @param fieldTypeDestination the class type of the destination field
-	 * @return the transformed value, or null if no transformation callback is found
-	 */
-	private Object mapTransform(
-		Object $source,
-		Class<?> fieldTypeSource,
-		Class<?> fieldTypeDestination
-	) {
-		// Building the transformationName
-		String name = fieldTypeSource.getName() + ":" + fieldTypeDestination.getName();
-
-		// Getting the transformation callback for this mapping
-		I1Fn<Object, Object> transform = shared.tranformations
-				.getOrDefault(name, null);
-
-		// Checking if there is a transformation for these two properties
-		if (transform == null)
-			return null;
-
-		return transform.call($source);
 	}
 	
 	/**
@@ -444,7 +433,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * @param $destination the destination object
 	 * @return the mapped object
 	 */
-	private <D> Object mapper(Object $source, Class<?> clsDestination, Object $destination) {
+	private <D> Object map(Object $source, Class<?> clsDestination, Object $destination) {
 
 		if ($source == null || $destination == null)
 			return null;
@@ -462,8 +451,8 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 				clsDestination, 
 				clsDestination, 
 				getListEnumType($source.getClass()), 
-				(src, dst) -> localActionOptions.emit(EMappingActions.BEFORE_EACH_MAP, src, dst),
-				(src, dst) -> localActionOptions.emit(EMappingActions.AFTER_EACH_MAP, src, dst)
+				(src, dst) -> localActionOptions.emit(MappingActionsEnum.BEFORE_EACH_MAP, src, dst),
+				(src, dst) -> localActionOptions.emit(MappingActionsEnum.AFTER_EACH_MAP, src, dst)
 			);
 		}
 
@@ -474,7 +463,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			$destination
 		);
 	}
-	
+
 	/**
 	 * Maps the source object to the destination class provided
 	 * 
@@ -483,20 +472,17 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * @return the {@link D} instance mapped from the {@link Entry}
 	 *         instance
 	 */
-	public <D> Object toDestination(Class<?> clazz) {
-		if (this.entry == null)
-			return null;
-
+	public <D> Object mapToDestination(Class<?> clazz) {
 		try {
 			Object $destination = TypeFactory.create(clazz);
 
 			// Performs the BEFORE_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.BEFORE_MAP, entry, null);
+			localActionOptions.emit(MappingActionsEnum.BEFORE_MAP, entry, null);
 
-			$destination = this.mapper(this.entry, clazz, $destination);
+			$destination = this.map(this.entry, clazz, $destination);
 
 			// Performs the AFTER_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.AFTER_MAP, entry, $destination);
+			localActionOptions.emit(MappingActionsEnum.AFTER_MAP, entry, $destination);
 
 			return $destination;
 		} catch (Exception e) {
@@ -518,7 +504,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * @param $source the destination object from which values are mapped to the source
 	 * @return the source object with values mapped from the destination, or null if the source is null
 	 */
-	public <D> Object fromDestination(D $source) {
+	public <D> Object mapFromDestination(D $source) {
 		if (this.entry == null)
 			return null;
 
@@ -528,12 +514,12 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 
 		try {
 			// Performs the BEFORE_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.BEFORE_MAP, _source, null);
+			localActionOptions.emit(MappingActionsEnum.BEFORE_MAP, _source, null);
 
-			this.mapper(_source, _destination.getClass(), _destination);
+			this.map(_source, _destination.getClass(), _destination);
 
 			// Performs the AFTER_MAP action if the modifier is set
-			localActionOptions.emit(EMappingActions.AFTER_MAP, _source, _destination);
+			localActionOptions.emit(MappingActionsEnum.AFTER_MAP, _source, _destination);
 			return _destination;
 		} catch (Exception e) {
 			$$.err(
@@ -543,7 +529,7 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Creates a new instance of the source object, effectively acting like a 
 	 * copy operation but with a different memory address.
@@ -551,13 +537,12 @@ public class Mapper<Entry>  extends BaseCore<Entry> implements IMapper<Entry> {
 	 * @param <D> the type of the object extending the source type
 	 * @return a new instance of the source object, or null if the source is null
 	 */
-	@Override
-	public <D extends Entry> D to() {
+	public <D extends Entry> D mapToDestination() {
 		if (this.entry == null)
 			return null;
 
 		try {
-			return (D) this.toDestination(entry.getClass());
+			return (D) this.mapToDestination(entry.getClass());
 		} catch (Exception e) {
 			$$.err(
 				"Error whiling making a copy of '" + entry.getClass().getName(),

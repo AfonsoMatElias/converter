@@ -28,11 +28,11 @@ public class ConverterConfiguration extends Converter {
 		super(); this.init();
 
 		// Apply the configuration after the initialization
-		configOptions.call(this);
+		configOptions.apply(this);
 	}
 
 	@FunctionalInterface
-	public interface IOptions<Config> { void call(Config config);}
+	public interface IOptions<Config> { void apply(Config config); }
 
 	@SafeVarargs
 	public final void addProfile(Class<? extends Profile>... profiles) {

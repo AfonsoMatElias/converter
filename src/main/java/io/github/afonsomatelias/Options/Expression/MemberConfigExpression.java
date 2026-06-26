@@ -1,24 +1,23 @@
-package io.github.afonsomatelias;
+package io.github.afonsomatelias.Options.Expression;
 
 import java.util.List;
 
-import io.github.afonsomatelias.Configurations.ConverterShared;
+import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Core.ListMapper;
+import io.github.afonsomatelias.Core.Mapper;
 import io.github.afonsomatelias.Core.ObjectMapper;
 import io.github.afonsomatelias.Core.Interfaces.IListMapper;
 import io.github.afonsomatelias.Core.Interfaces.IObjectMapper;
 
 
-public abstract class Converter implements IConverter {
-	/**
-	 * Default Converter
-	 */
-	public Converter() {
-		this.shared = new ConverterShared();
-	}
+public class MemberConfigExpression extends Converter {
 
-	// All the public properties that will e shared between inner instances
-	protected final ConverterShared shared;
+	private Mapper<?> mapper;
+
+	public MemberConfigExpression(Mapper<?> mapper) {
+		super();
+		this.mapper = mapper;
+	}
 
 	/**
 	 * Creates Mapping Processor for the {@link Entry} Object
@@ -30,7 +29,13 @@ public abstract class Converter implements IConverter {
 	 */
 	@Override
 	public <Entry> IObjectMapper<Entry> map(Entry entry) {
-		return new ObjectMapper<>(this, shared, entry);
+		return new ObjectMapper<>(
+			this, 
+			shared, 
+			entry, 
+			mapper.getLocalActionOptions(), 
+			mapper.getMappedObject()
+		);
 	}
 
 	/**
@@ -43,6 +48,12 @@ public abstract class Converter implements IConverter {
 	 */
 	@Override
 	public <Entry> IListMapper<Entry> map(List<Entry> entry) {
-		return new ListMapper<>(this, shared, entry);
+		return new ListMapper<>(
+			this, 
+			shared,
+			entry,
+			mapper.getLocalActionOptions(), 
+			mapper.getMappedObject()
+		);
 	}
 }

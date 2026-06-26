@@ -1,13 +1,9 @@
 package io.github.afonsomatelias;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
-import io.github.afonsomatelias.Core.Mappers.Interfaces.IListMapper;
-import io.github.afonsomatelias.Core.Mappers.Interfaces.IObjectMapper;
-import io.github.afonsomatelias.Core.Projectors.Interfaces.IListProjector;
-import io.github.afonsomatelias.Core.Projectors.Interfaces.IObjectProjector;
+import io.github.afonsomatelias.Core.Interfaces.IListMapper;
+import io.github.afonsomatelias.Core.Interfaces.IObjectMapper;
 
 public interface IConverter {
 	/**
@@ -29,50 +25,4 @@ public interface IConverter {
 	 *         perform
 	 */
 	<Entry> IListMapper<Entry> map(List<Entry> entry);
-
-	
-	/**
-	 * Creates Mapping Projector for the {@link MapObject} Object, where the source must be
-	 * a {@link Map}.
-	 * 
-	 * @param <MapObject>    	the {@link MapObject} Type which must be a {@link Map}
-	 * @param entry 			the {@link MapObject} Object to be mapped
-	 * @return the Projector the where having all the all the different methods to
-	 *         perform
-	 */
-	<MapObject extends Map<String, ? extends Object>> IObjectProjector<MapObject> project(MapObject entry);
-
-	/**
-	 * Creates Mapping Projector for the {@link MapObject} Object, where the source must be
-	 * a {@link List} of {@link Map}.
-	 * 
-	 * @param <MapObject>    	the {@link MapObject} Type which must be a {@link List} of {@link Map}
-	 * @param entry 			the {@link MapObject} Object to be mapped
-	 * @return the Projector the where having all the all the different methods to
-	 *         perform
-	 */
-	<MapObject extends Map<String, ? extends Object>> IListProjector<MapObject> project(List<MapObject> entry);
-
-
-	/**
-	 * Creates Mapping Projector for the {@link Interface} Object, where the source must be
-	 * a {@link InterfaceProjectionObject}
-	 * 
-	 * @param <Interface>    	the {@link Interface} Type which must be a {@link Map}
-	 * @param entry 			the {@link Interface} Object to be mapped
-	 * @return the Projector the where having all the all the different methods to
-	 *         perform
-	 */
-	<Interface> IObjectProjector<Interface> project(Interface entry);
-
-	/**
-	 * Creates Mapping Projector for the {@link Interface} Object, where the source must be
-	 * a {@link List} of {@link InterfaceProjectionObject}.
-	 * 
-	 * @param <Interface>    	the {@link Interface} Type which must be a {@link List} of {@link Map}
-	 * @param entry 			the {@link Interface} Object to be mapped
-	 * @return the Projector the where having all the all the different methods to
-	 *         perform
-	 */
-	<Interface> IListProjector<Interface> project(Collection<Interface> entry);
 }

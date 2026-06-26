@@ -1,6 +1,7 @@
 package io.github.afonsomatelias.Core.Base;
 
 import static io.github.afonsomatelias.Helpers.FieldHelper.toFields;
+import static io.github.afonsomatelias.Helpers.Global.PRIMITIVE_MAPPER;
 import static io.github.afonsomatelias.Helpers.Global.getAndResolveMethodName;
 
 import java.lang.reflect.Field;
@@ -12,29 +13,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.IFn;
 import io.github.afonsomatelias.Configurations.ConverterShared;
+import io.github.afonsomatelias.Core.Mapper;
 import io.github.afonsomatelias.Helpers.$$;
+import io.github.afonsomatelias.Options.MappingActions;
+import io.github.afonsomatelias.Options.Expression.MemberConfigExpression;
+import io.github.afonsomatelias.Options.MemberMapping.MethodMemberMapping;
 
-public class ProxyInterface <Entry> extends BaseCore<Entry> {
+public class ProxyInterface <Entry> extends Mapper<Entry> {
 	
-	public ProxyInterface(ConverterShared shared, Entry entry, Class<?> clazz) {
-		super(shared, entry);
-
+	public ProxyInterface(
+		Converter converter, 
+		ConverterShared shared, 
+		Entry entry, 
+		Class<?> clazz
+	) {
+		super(
+			converter, 
+			shared, 
+			(Entry) entry, 
+			new MappingActions(),
+			new HashMap<String, Object>()
+		);
+		
 		try {
+			_this = this;
 			this.init(clazz, entry);
 		} catch (Exception e) {
 			$$.err("Failed the initialize the Proxy Interface. Exception Message: " + e.getMessage());
 		}
 	}
 
+	private Entry entry;
 	private Class<?> clazz;
 	private InvocationHandler handler;
 	private Map<String, IFn<Object>> dataSource = new HashMap<>();
-
+	private ProxyInterface<Entry> _this;
+	
+	public String getMappingName() {
+		return entry.getClass().getName() + ":" + clazz.getName();
+	}
 
 	private void init(Class<?> clazz, Entry entry) {
 		this.clazz = clazz;
+		this.entry = entry;
 
 		List<Field> sourceFields = Arrays.asList(toFields(entry.getClass()));
 		List<Method> sourceMethods = Arrays.asList(entry.getClass().getDeclaredMethods());
@@ -87,9 +111,15 @@ public class ProxyInterface <Entry> extends BaseCore<Entry> {
 
 				// If the return type is an interface, cr
 				if (methodReturnType.isInterface()) {
-					return new ProxyInterface<>(shared, fieldOrMethodValue, methodReturnType)
+					return new ProxyInterface<>(converter, shared, fieldOrMethodValue, methodReturnType)
 						.build(); 
 				}
+
+				if (
+					PRIMITIVE_MAPPER.containsKey(fieldOrMethodValue.getClass()) &&
+					!method.getReturnType().equals(fieldOrMethodValue.getClass())
+				) 
+					return null;
 
 				return fieldOrMethodValue;
 			});
@@ -103,17 +133,30 @@ public class ProxyInterface <Entry> extends BaseCore<Entry> {
 				// Resolving the name
 				final String equivalentPropOrMethodName = getAndResolveMethodName(method);
 
-				// Extacting the value
-				Object value = getValue(equivalentPropOrMethodName);
+				Map<Method, MethodMemberMapping> forMemberMapping = shared.forMemberMethodMapping
+					.getOrDefault(getMappingName(), null);
+				
+				MethodMemberMapping getterMemberMapping = null;
 
-                return value;
+				// If there is not any mapping interception
+				if (
+					forMemberMapping == null || 
+					(getterMemberMapping = forMemberMapping.getOrDefault(method, null)) == null
+				) return getValue(equivalentPropOrMethodName);
+
+				// Otherwise, return the intercepted value
+                return getterMemberMapping.call(entry, proxy, new MemberConfigExpression(_this));
             }
         };
 	} 
 
 	private Object getValue(String equivalentName) {
-		IFn<Object> fnDataSource = this.dataSource.get(equivalentName);
-		return fnDataSource == null ? null : fnDataSource.call();
+		try {
+			IFn<Object> fnDataSource = this.dataSource.get(equivalentName);
+			return fnDataSource == null ? null : fnDataSource.call();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	@SuppressWarnings("unchecked")

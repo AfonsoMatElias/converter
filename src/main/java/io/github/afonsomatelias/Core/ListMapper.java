@@ -1,11 +1,15 @@
-package io.github.afonsomatelias.Core.Mappers;
+package io.github.afonsomatelias.Core;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
-import io.github.afonsomatelias.Core.Mappers.Interfaces.IListMapper;
+import io.github.afonsomatelias.Core.Interfaces.IListMapper;
 import io.github.afonsomatelias.Helpers.Printer;
+import io.github.afonsomatelias.Options.MappingActions;
 import io.github.afonsomatelias.Options.MappingListActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
@@ -17,8 +21,40 @@ public class ListMapper<Entry> extends Mapper<Entry> implements IListMapper<Entr
 	 * @param shared the {@link ConverterShared} instance
 	 * @param entry the {@link Entry} object
 	 */
-	public ListMapper(ConverterShared shared, Object entry) {
-		super(shared, (Entry) entry);
+	public ListMapper(
+		Converter converter, 
+		ConverterShared shared, 
+		Object entry
+	) {
+		super(
+			converter, 
+			shared, 
+			(Entry) entry, 
+			new MappingActions(),
+			new HashMap<String, Object>()
+		);
+	}
+
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param entry the {@link Entry} object
+	 */
+	public ListMapper(
+		Converter converter, 
+		ConverterShared shared, 
+		Object entry,
+		MappingActions mappingActions,
+		Map<String, Object> mappedObject
+	) {
+		super(
+			converter, 
+			shared, 
+			(Entry) entry, 
+			mappingActions,
+			mappedObject
+		);
 	}
 
 	/**
@@ -32,7 +68,7 @@ public class ListMapper<Entry> extends Mapper<Entry> implements IListMapper<Entr
 	@Override
 	public <D> List<D> to(Class<D> clazz) {
 		try {
-			return (List<D>) this.toDestination(clazz);
+			return (List<D>) super.toDestination(clazz);
 		} catch (Exception e) {
 			return null;
 		}
@@ -55,7 +91,7 @@ public class ListMapper<Entry> extends Mapper<Entry> implements IListMapper<Entr
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 
-			return (List<D>) this.toDestination(clazz);
+			return (List<D>) super.toDestination(clazz);
 		} catch (Exception e) {
 			Printer.err(e);
 			return null;
@@ -78,7 +114,7 @@ public class ListMapper<Entry> extends Mapper<Entry> implements IListMapper<Entr
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 
-			return (Entry) this.toDestination(entry.getClass());
+			return (Entry) super.toDestination(entry.getClass());
 		} catch (Exception e) {
 			return null;
 		}

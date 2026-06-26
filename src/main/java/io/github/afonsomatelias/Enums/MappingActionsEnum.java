@@ -1,6 +1,6 @@
 package io.github.afonsomatelias.Enums;
 
-public enum EMappingActions {
+public enum MappingActionsEnum {
     BEFORE_MAP,
     BEFORE_EACH_MAP, 
     AFTER_MAP, 
