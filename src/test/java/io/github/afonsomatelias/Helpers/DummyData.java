@@ -2,6 +2,7 @@ package io.github.afonsomatelias.Helpers;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import io.github.afonsomatelias.Models.ProductProjection;
 
@@ -22,55 +23,60 @@ public class DummyData {
 	}
 
 	public static LinkedHashMap<String, Object> generateUserLinkedHashMap() {
-		return new LinkedHashMap<String, Object>() {{
-            put("name", "John Doe");
-            put("username", "johndoe");
-            put("password", "123.AbC");
-            put("bithdate", "2025-03-25T22:44:17.605Z");
-            put("roles", new String[]{ "ADMIN" });
-        }};
+
+        LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+
+        data.put("name", "John Doe");
+        data.put("username", "johndoe");
+        data.put("password", "123.AbC");
+        data.put("bithdate", "2025-03-25T22:44:17.605Z");
+        data.put("roles", new String[]{ "ADMIN" });
+
+		return data;
 	}
 
 	public static LinkedHashMap<String, Object> generateProductWithParentLinkedHashMap() {
-		return new LinkedHashMap<String, Object>() {{
-            put("name", "Sprite");
-            put("price", 1f);
-            put("quantity", 15);
+        LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
 
-            put("parent", new LinkedHashMap<String, Object>() {{
-                put("name", "Water");
-                put("price", 0.5f);
-                put("quantity", 35);
-            }});
+        LinkedHashMap<String, Object> parent = new LinkedHashMap<String, Object>();
+        parent.put("name", "Water");
+        parent.put("price", 0.5f);
+        parent.put("quantity", 35);
+        
+        LinkedHashMap<String, Object> prod1 = new LinkedHashMap<String, Object>();
+        prod1.put("name", "Cola-Cola");
+        prod1.put("price", 1f);
+        prod1.put("quantity", 40);
+        LinkedHashMap<String, Object> prod2 = new LinkedHashMap<String, Object>();
+        prod2.put("name", "Beer");
+        prod2.put("price", 2f);
+        prod2.put("quantity", 12);
+        List<LinkedHashMap<String, Object>> products = Arrays.asList(prod1, prod2);
+        
+        
+        data.put("name", "Sprite");
+        data.put("price", 1f);
+        data.put("quantity", 15);
+        
+        data.put("parent", parent);
+        data.put("products", products);
 
-            put("products", Arrays.asList(
-                new LinkedHashMap<String, Object>() {{
-                    put("name", "Cola-Cola");
-                    put("price", 1f);
-                    put("quantity", 40);
-                }},
-                new LinkedHashMap<String, Object>() {{
-                    put("name", "Beer");
-                    put("price", 2f);
-                    put("quantity", 12);
-                }}
-            ));
-        }};
+		return data;
 	}
 
 	public static LinkedHashMap<String, Object> generateProductLinkedHashMap() {
-		return new LinkedHashMap<String, Object>() {{
-            put("name", "Sprite");
-            put("price", 1f);
-            put("quantity", 15);
-        }};
+		LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+        data.put("price", 1f);
+        data.put("name", "Sprite");
+        data.put("quantity", 15);
+        return data;
 	}
 
     public static LinkedHashMap<String, Object> generateProductLinkedHashMapWithStringValue() {
-		return new LinkedHashMap<String, Object>() {{
-            put("name", "Sprite");
-            put("price", "1");
-            put("quantity", "15");
-        }};
+		LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+        data.put("name", "Sprite");
+        data.put("price", "1");
+        data.put("quantity", "15");
+        return data;
 	}
 }

@@ -222,7 +222,7 @@ public class HashMapToModelMapper<Entry> extends Mapper<Entry> {
 						.append(fieldName)
 						.toString();
 
-					$$.err(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e);	
+					$$.out(msg, "Try to use a CustomTypeResolver, or config.use(Type.class, (value) -> { ... }) to add a custom resolver.", e.getMessage());	
 					return;
 				}
 			}

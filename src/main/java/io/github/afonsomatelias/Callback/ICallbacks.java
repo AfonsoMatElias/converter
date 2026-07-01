@@ -38,7 +38,12 @@ public interface ICallbacks {
 	// Specific
 	@FunctionalInterface
 	public interface ITypeResolver {
-		Object resolve(Object value);		
+		Object resolve(Object value);
+	}
+
+	@FunctionalInterface
+	public interface IMapResolver {
+		Object resolve(Object sourceObject, Class<?> destinationClass);
 	}
 	
 	@FunctionalInterface

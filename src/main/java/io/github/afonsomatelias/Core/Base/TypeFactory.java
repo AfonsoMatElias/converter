@@ -40,7 +40,7 @@ public abstract class TypeFactory {
 				path = String.format("\n| class %s { \n| 👉 %s %s;\n| }", describe(fieldParentType), describe(clazz), fieldName);
 			}
 
-			$$.err("Error creating the destination path '"+ ( fieldName == null ? "unknown" : fieldName ) +"':" 
+			$$.out("Error creating the destination path '"+ ( fieldName == null ? "unknown" : fieldName ) +"':" 
 				+ path + "\nYou can try to intercept it or .skip(...) "+
 				"in mapping options to ignore the field mapping. "+
 				"\nException Message: " + e.getMessage() + "\n");

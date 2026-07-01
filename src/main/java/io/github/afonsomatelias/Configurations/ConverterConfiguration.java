@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.github.afonsomatelias.Converter;
-import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Options.MappingObjectActions;
