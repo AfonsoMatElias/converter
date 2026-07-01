@@ -1,6 +1,7 @@
 package io.github.afonsomatelias.Helpers;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -13,8 +14,9 @@ import java.util.Map;
 import java.util.Set;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.IFn;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
-import io.github.afonsomatelias.Enums.ECollectionType;
+import io.github.afonsomatelias.Enums.CollectionTypeEnum;
 
 public class Global {
 
@@ -130,7 +132,49 @@ public class Global {
 		return type;
 	}
 
-	public static ECollectionType getListEnumType(Class<?> cls) {
-		return cls.getClass().getComponentType() == null ? ECollectionType.COLLECTION : ECollectionType.ARRAY;
+	public static CollectionTypeEnum getListEnumType(Class<?> cls) {
+		return cls.getClass().getComponentType() == null ? CollectionTypeEnum.COLLECTION : CollectionTypeEnum.ARRAY;
+	}
+
+	public static String getAndResolveMethodName(Method method) {
+		String methodName = method.getName();
+
+		// If it begins with 'get'
+		if (methodName.startsWith("get"))
+			return methodName.substring(3).toLowerCase();
+
+		// Otherwise, check it begins with 'is' and the return type is Boolean
+		if (methodName.startsWith("is") && Boolean.class.equals(method.getReturnType()))
+			return methodName.substring(2).toLowerCase();
+
+		// Return the full name
+		return methodName.toLowerCase();
+	}
+
+	public static String toUpper1Char(String text) {
+		return (text.charAt(0) + "").toUpperCase() + text.substring(1);
+	}
+
+	public static String toLower1Char(String text) {
+		return (text.charAt(0) + "").toUpperCase() + text.substring(1);
+	}
+
+	public static boolean isAnInterface(Class<?> clazz) {
+		IFn<Boolean> hasOnlyGetter = () -> {
+			// All methods inside must look like traditional read-only getters
+			for (Method method : clazz.getDeclaredMethods()) {
+				boolean hasParameters = method.getParameterCount() > 0;
+				boolean returnsVoid = method.getReturnType() == void.class || 
+					method.getReturnType() == Void.class;
+				
+				if (hasParameters || returnsVoid) {
+					return false; // Projections shouldn't have setters or complex actions
+				}
+			}
+
+			return true;
+		};
+
+		return clazz.isInterface() || hasOnlyGetter.call();
 	}
 }

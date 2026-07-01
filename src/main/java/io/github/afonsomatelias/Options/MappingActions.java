@@ -10,12 +10,12 @@ import java.util.Map;
 import java.util.Set;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
-import io.github.afonsomatelias.Enums.EMappingActions;
+import io.github.afonsomatelias.Enums.MappingActionsEnum;
 import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
 
 public class MappingActions implements IMappingActions {
 	// Stores all the actions according to the type
-	protected Map<EMappingActions, List<I2Action<Object, Object>>> actions = new HashMap<>();
+	protected Map<MappingActionsEnum, List<I2Action<Object, Object>>> actions = new HashMap<>();
 
 	// Stores all the actions according to the type
 	protected Map<String, Field> inlineSkippingMembers = new HashMap<>();
@@ -25,13 +25,13 @@ public class MappingActions implements IMappingActions {
 
 	
 	/**
-	 * Subscribes {@link EMappingActions} actions
+	 * Subscribes {@link MappingActionsEnum} actions
 	 * 
 	 * @param targetAction the target action to be called
 	 * @param action       the action that need to be performed when the target
 	 *                     matches
 	 */
-	public void on(EMappingActions targetAction, I2Action<Object, Object> action) {
+	public void on(MappingActionsEnum targetAction, I2Action<Object, Object> action) {
 		// Defining the default List of Actions
 		List<I2Action<Object, Object>> mActions = new ArrayList<>();
 
@@ -52,7 +52,7 @@ public class MappingActions implements IMappingActions {
 	 * @param src          the source object
 	 * @param dst          the destination object
 	 */
-	public void emit(EMappingActions targetAction, Object src, Object dst) {
+	public void emit(MappingActionsEnum targetAction, Object src, Object dst) {
 		// Defining the default List of Actions
 		List<I2Action<Object, Object>> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
 

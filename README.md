@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.5.2
+# Converter v1.6.0
 
 ## What is Converter?
 
@@ -382,11 +382,10 @@ Converter can also project a ``HashMap`` types to a ``Model``, as long as the ob
     put("roles", new String[]{ "ADMIN" });
   }};
 
-  UserDto dto = converter.project(user).to(UserDto.class);
+  UserDto dto = converter.map(user).to(UserDto.class);
 ```
 
-Like ``converter.map(...)`.to(...)``, using project you can also provides the same options on projecting, 
-``beforeMap``, ``afterMap``, etc.
+While projecting you can also access all the options like ``beforeMap``, ``afterMap``, etc.
 
 ### Projecting with Options
 ```java
@@ -398,13 +397,13 @@ Like ``converter.map(...)`.to(...)``, using project you can also provides the sa
     /* ... */
   }};
 
-  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+  UserDto dto = converter.map(user).to(UserDto.class, (options) -> {
     options.beforeMap((src, dst) -> { /* ... */ })
     options.afterMap((src, dst) -> { /* ... */ })
   });
 ```
 
-Members and Types can also be skipped while projecting the values, just like using the ``converter.map(...)``.
+Members and Types can also be skipped while projecting the values, just like normal mapping.
 
 ### Skipping Members and Types while Projecting
 ```java
@@ -417,16 +416,42 @@ Members and Types can also be skipped while projecting the values, just like usi
     put("password", "123.AbC");
   }};
 
-  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+  UserDto dto = converter.map(user).to(UserDto.class, (options) -> {
     options.skipTypes(LocalDate.class);
     options.skipMembers("password");
   });
 ```
 
-In cases of types that could not be projected, you can provide a custom type resolver using the method ``use(...)`` in 
-the ``ConverterConfiguration``.
+In cases of types that could not be projected, you can use the method ``forMember(...)`` to intercep the 
+member projection or provide a custom type resolver using the method ``use(...)`` in the ``ConverterConfiguration`` 
+for global interception.
 
-### Using Type Resolvers
+### Using forMember
+```java
+  ConverterConfiguration config = new ConverterConfiguration((config) -> {
+
+    config.createMap(LinkedHashMap.class, UserDto.class)
+      .forMember((src, dst) -> {
+        Object value = src.getOrDefault("bithdate", null);
+
+        if (!(value instanceof String)) return null;
+        
+        String str = value.toString();
+        return LocalDate.parse(str.split("T")[0]);
+      });
+  });
+  IConverter converter = config.createConverter();
+
+  // Entities
+  LinkedHashMap<String, Object> user = new LinkedHashMap<String, Object>() {{
+    /* ... Properties ... */
+    put("bithdate", "2025-03-25T22:44:17.605Z");
+  }};
+
+  UserDto dto = converter.map(user).to(UserDto.class);
+```
+
+### Using Type Resolvers for global interception
 ```java
   ConverterConfiguration config = new ConverterConfiguration((options) -> {
 
@@ -445,13 +470,13 @@ the ``ConverterConfiguration``.
     put("bithdate", "2025-03-25T22:44:17.605Z");
   }};
 
-  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+  UserDto dto = converter.map(user).to(UserDto.class, (options) -> {
     options.skipTypes(LocalDate.class);
     options.skipMembers("password");
   });
 ```
 
-Or, you can use a *CustomTypeResolver* class to maintain you ConverterConfiguration nice and clean.
+Or, you can create a *CustomTypeResolver* class to maintain you ConverterConfiguration nice and clean.
 
 To achieve that, you just need to create a Class that extends ``TypeResolver``, providing the type you want to resolve 
 in the *constructor* ``super(Type.class)``, implement the ``@Override resolve(...)`` method, and add it to the ConverterConfiguration.
@@ -489,13 +514,13 @@ in the *constructor* ``super(Type.class)``, implement the ``@Override resolve(..
     put("bithdate", "2025-03-25T22:44:17.605Z");
   }};
 
-  UserDto dto = converter.project(user).to(UserDto.class, (options) -> {
+  UserDto dto = converter.map(user).to(UserDto.class, (options) -> {
     options.skipTypes(LocalDate.class);
     options.skipMembers("password");
   });
 ```
 
-Beside that, it can also project an ``Interface`` types to a ``Model``, as long as the object has the same structure.
+Beside that, it can also project an ``Interface`` types to a ``Model`` or ``Model`` to an ``Interface`` as long as the object has the same structure.
 
 ### Projecting Interface (Projection)
 ```java
@@ -516,7 +541,16 @@ Beside that, it can also project an ``Interface`` types to a ``Model``, as long 
     public Integer getQuantity() { return 15; }
   };
 
-  ProductDto dto = converter.project(projection).to(ProductDto.class);
+  ProductDto dto = converter.map(projection).to(ProductDto.class);
+```
+
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  Product product = new Product();
+
+  ProductProjection dto = converter.map(projection).to(ProductProjection.class);
 ```
 
 Projecting a List follows the same logic...
@@ -532,7 +566,19 @@ Projecting a List follows the same logic...
 
   List<ProductProjection> projections = Arrays.asList(projection1, projection2);
 
-  List<ProductDto> dtos = converter.project(projections).to(ProductDto.class);
+  List<ProductDto> dtos = converter.map(projections).to(ProductDto.class);
+```
+
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  Product product1 = new Product();
+  Product product2 = new Product();
+
+  List<Product> products = Arrays.asList(projection1, projection2);
+
+  List<ProductProjection> dtos = converter.map(products).to(ProductDto.class);
 ```
 
   **Note**: Interface projections follows exactly the same logic as the ``HashMap`` projections, you can add options while mapping, 

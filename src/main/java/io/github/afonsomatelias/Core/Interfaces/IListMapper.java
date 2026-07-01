@@ -1,11 +1,11 @@
-package io.github.afonsomatelias.Core.Mappers.Interfaces;
+package io.github.afonsomatelias.Core.Interfaces;
 
 import java.util.List;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Options.Interfaces.IMappingListActions;
 
-public interface IListMapper<S> extends IMapper<S> {
+public interface IListMapper<S> {
 	/**
 	 * Maps the list of {@link S} objects to the list of destination class
 	 * provided

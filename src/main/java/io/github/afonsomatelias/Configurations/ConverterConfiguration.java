@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.github.afonsomatelias.Converter;
-import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
+import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
 import io.github.afonsomatelias.Callback.ICallbacks.ITypeResolver;
 import io.github.afonsomatelias.Helpers.$$;
 import io.github.afonsomatelias.Options.MappingObjectActions;
@@ -28,11 +28,11 @@ public class ConverterConfiguration extends Converter {
 		super(); this.init();
 
 		// Apply the configuration after the initialization
-		configOptions.call(this);
+		configOptions.apply(this);
 	}
 
 	@FunctionalInterface
-	public interface IOptions<Config> { void call(Config config);}
+	public interface IOptions<Config> { void apply(Config config); }
 
 	@SafeVarargs
 	public final void addProfile(Class<? extends Profile>... profiles) {

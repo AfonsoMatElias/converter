@@ -1,9 +1,9 @@
-package io.github.afonsomatelias.Core.Mappers.Interfaces;
+package io.github.afonsomatelias.Core.Interfaces;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
-public interface IObjectMapper<S> extends IMapper<S> {
+public interface IObjectMapper<S> {
 	/**
 	 * Maps the source object to the destination class provided
 	 * 
@@ -32,6 +32,15 @@ public interface IObjectMapper<S> extends IMapper<S> {
      * @return 			new object instance or null in case of an exception
      */
 	public <D extends S> S to(I1Action<IMappingObjectActions<S, D>> modifier);
+
+	/**
+	 * Creates a new instance of the source object, effectively acting like a 
+	 * copy operation but with a different memory address.
+	 * 
+	 * @param <D> the type of the object extending the source type
+	 * @return a new instance of the source object, or null if the source is null
+	 */
+	<D extends S> D to();
 
 	/**
 	 * Maps or extracts values from the provided destination object back to the source object.

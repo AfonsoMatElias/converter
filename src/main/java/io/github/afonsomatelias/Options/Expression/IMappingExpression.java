@@ -1,35 +1,66 @@
 package io.github.afonsomatelias.Options.Expression;
 
 import io.github.afonsomatelias.Callback.ICallbacks.I1Fn;
-import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
-import io.github.afonsomatelias.Callback.ICallbacks.ISetterFunction;
 import io.github.afonsomatelias.Callback.ICallbacks.I2Action;
-import io.github.afonsomatelias.Options.MemberMapping.MemberMapping;
+import io.github.afonsomatelias.Callback.ICallbacks.I2Fn;
+import io.github.afonsomatelias.Callback.ICallbacks.IGetterMethod;
+import io.github.afonsomatelias.Callback.ICallbacks.ISetterMethod;
 
 public interface IMappingExpression<S, D> {
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param transform         the interception bahavior
+	 * @param callback          the interception bahavior
 	 */
-	IMappingExpression<S, D> forMember(String destinationMember, I1Fn<S, Object> transform);
+	IMappingExpression<S, D> forMember(
+		String destinationMember, 
+		I1Fn<S, Object> callback
+	);
 
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param transform         the interception bahavior
+	 * @param callback          the interception bahavior
 	 */
-	IMappingExpression<S, D> forMember(String destinationMember, I2Fn<S, MemberMapping, Object> transform);
+	IMappingExpression<S, D> forMember(
+		String destinationMember, 
+		I2Fn<S, MemberConfigExpression, Object> callback
+	);
 
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
 	 * 
 	 * @param destinationMember the member that will be transformed
-	 * @param transform         the interception bahavior
+	 * @param callback          the interception bahavior
 	 */
-	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, I2Fn<S, MemberMapping, Object> transform);
+	<R> IMappingExpression<S, D> forMember(
+		IGetterMethod<D, R> getter, 
+		I1Fn<S, Object> callback
+	);
+
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 * @param callback          the interception bahavior
+	 */
+	<R> IMappingExpression<S, D> forMember(
+		IGetterMethod<D, R> getter, 
+		I2Fn<S, MemberConfigExpression, Object> callback
+	);
+
+	/**
+	 * Changes or Mutates the value that needs to be placed into a field
+	 * 
+	 * @param destinationMember the member that will be transformed
+	 * @param callback         the interception bahavior
+	 */
+	<P> IMappingExpression<S, D> forMember(
+		ISetterMethod<D, P> setter, 
+		I2Fn<S, MemberConfigExpression, Object> callback
+	);
 	
 	/**
 	 * Changes or Mutates the value that needs to be placed into a field
@@ -37,9 +68,11 @@ public interface IMappingExpression<S, D> {
 	 * @param destinationMember the member that will be transformed
 	 * @param transform         the interception bahavior
 	 */
-	<U> IMappingExpression<S, D> forMember(ISetterFunction<D, U> setterFunction, I1Fn<S, Object> transform);
+	<P> IMappingExpression<S, D> forMember(
+		ISetterMethod<D, P> setterFunction, 
+		I1Fn<S, Object> transform
+	);
 	
-
 	/**
 	 * skips or set null to the destination member provided
 	 * 

@@ -49,7 +49,6 @@ public abstract class TypeFactory {
 	}
 
 	private static Object handleClassCreation(Class<?> clazz) throws Exception {
-
 		// Check type before continue
 		if (PRIMITIVES.contains(clazz))
 			return null;

@@ -1,5 +1,5 @@
 package io.github.afonsomatelias.Enums;
 
-public enum ECollectionType {
+public enum CollectionTypeEnum {
 	ARRAY, COLLECTION
 }

@@ -1,9 +1,14 @@
-package io.github.afonsomatelias.Core.Mappers;
+package io.github.afonsomatelias.Core;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import io.github.afonsomatelias.Converter;
 import io.github.afonsomatelias.Callback.ICallbacks.I1Action;
 import io.github.afonsomatelias.Configurations.ConverterShared;
-import io.github.afonsomatelias.Core.Mappers.Interfaces.IObjectMapper;
+import io.github.afonsomatelias.Core.Interfaces.IObjectMapper;
 import io.github.afonsomatelias.Helpers.$$;
+import io.github.afonsomatelias.Options.MappingActions;
 import io.github.afonsomatelias.Options.MappingObjectActions;
 import io.github.afonsomatelias.Options.Interfaces.IMappingObjectActions;
 
@@ -15,8 +20,40 @@ public class ObjectMapper<Entry> extends Mapper<Entry> implements IObjectMapper<
 	 * @param shared the {@link ConverterShared} instance
 	 * @param entry the {@link Entry} object
 	 */
-	public ObjectMapper(ConverterShared shared, Object entry) {
-		super(shared, (Entry) entry);
+	public ObjectMapper(
+		Converter converter, 
+		ConverterShared shared, 
+		Object entry
+	) {
+		super(
+			converter, 
+			shared, 
+			(Entry) entry, 
+			new MappingActions(),
+			new HashMap<String, Object>()
+		);
+	}
+
+	/**
+	 * The Default Constructor
+	 * 
+	 * @param shared the {@link ConverterShared} instance
+	 * @param entry the {@link Entry} object
+	 */
+	public ObjectMapper(
+		Converter converter, 
+		ConverterShared shared, 
+		Object entry,
+		MappingActions mappingActions,
+		Map<String, Object> mappedObject
+	) {
+		super(
+			converter, 
+			shared, 
+			(Entry) entry, 
+			mappingActions,
+			mappedObject
+		);
 	}
 
 	/**
@@ -72,8 +109,31 @@ public class ObjectMapper<Entry> extends Mapper<Entry> implements IObjectMapper<
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
 
-			return (Entry) this.toDestination(entry.getClass());
+			return (Entry) super.toDestination(entry.getClass());
 		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Creates a new instance of the source object, effectively acting like a 
+	 * copy operation but with a different memory address.
+	 * 
+	 * @param <D> the type of the object extending the source type
+	 * @return a new instance of the source object, or null if the source is null
+	 */
+	@Override
+	public <D extends Entry> D to() {
+		if (this.entry == null)
+			return null;
+
+		try {
+			return (D) super.toDestination(entry.getClass());
+		} catch (Exception e) {
+			$$.err(
+				"Error whiling making a copy of '" + entry.getClass().getName(),
+				"Error details: " + e.getMessage(),	e
+			);
 			return null;
 		}
 	}
@@ -95,7 +155,7 @@ public class ObjectMapper<Entry> extends Mapper<Entry> implements IObjectMapper<
 		}
 
 		try {
-			return (Entry) super.fromDestination($source);
+			return (Entry) this.fromDestination($source);
 		} catch (Exception e) {
 			return null;
 		}
@@ -126,6 +186,7 @@ public class ObjectMapper<Entry> extends Mapper<Entry> implements IObjectMapper<
 				MappingObjectActions<D, Entry> actions = new MappingObjectActions<>();
 				modifier.call(actions); localActionOptions.merge(actions); actions = null;
 			}
+
 			return (Entry) super.fromDestination($source);
 		} catch (Exception e) {
 			return null;
