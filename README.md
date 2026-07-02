@@ -64,7 +64,9 @@ You can use the ``beforeMap`` and ``afterMap`` methods to modify the input and/o
   });
 ```
 
-In case of list objects you can use the ``beforeEachMap`` and ``afterEachMap`` methods to modify during the mapping process. **Note**: you may use the previous ``beforeMap`` and ``afterMap`` methods too, but the args will be the list of objects.
+In case of list objects you can use the ``beforeEachMap`` and ``afterEachMap`` methods to modify during 
+the mapping process. **Note**: you may use the previous ``beforeMap`` and ``afterMap`` methods too, 
+but the args will be the list of objects.
 
 ### Mapping and modifying a list
 ```java
@@ -142,7 +144,7 @@ You can also make a copy of an object. **Note**: the returned object should have
   Product copy = converter.map(model).to();
 
   // Has the different memory address
-  Boolean isEquals = dbModel == dbModelMapped;  
+  Boolean isNotEquals = model == copy;  
 ```
 Note: We can also apply modifiers, like: ``.to((options) -> { })``
 
@@ -166,7 +168,8 @@ Options can also be added on **Mapping Configuration**.
   });
 ```
 
-After the mapping configuration is created, we can also add fields modification using ``beforeMap`` and ``afterMap``. It can be chained.
+After the mapping configuration is created, we can also add fields modification using ``beforeMap`` 
+and ``afterMap``. It can be chained.
 
 ### Mapping Configuration Creation
 ```java
@@ -181,7 +184,8 @@ After the mapping configuration is created, we can also add fields modification 
   });
 ```
 
-In case of mapping both ways, we can use the ``reverseMap`` method to swap the types, instead of creating a new mapping. **Note**: but you need to also define it own configurations.
+In case of mapping both ways, we can use the ``reverseMap`` method to swap the types, instead of creating 
+a new mapping. **Note**: but you need to also define it own configurations.
 
 ### Reverse Mapping
 ```java
@@ -198,8 +202,8 @@ In case of mapping both ways, we can use the ``reverseMap`` method to swap the t
   });
 ```
 
-We can also mutate or transform a value type... Whenever the Converter finds the mapping of the source type to the destination type, 
-it will mutate the value according to the callback provided.
+We can also mutate or transform a value type... Whenever the Converter finds the mapping of the source 
+type to the destination type, it will mutate the value according to the callback provided.
 
 ### Transformations
 ```java
@@ -252,7 +256,8 @@ Using ``forMember`` method you can target a member and modify it value on mappin
   });
 ```
 
-You can also restrict the mapping by setting ``useMappingConfig`` to ``true``, this way only the mapping configuration will be used, otherwise it will fail on non existing configuration mapping.
+You can also restrict the mapping by setting ``useMappingConfig`` to ``true``, this way only the mapping 
+configuration will be used, otherwise it will fail on non existing configuration mapping.
 
 ### Restricting Mapping
 ```java
@@ -265,7 +270,9 @@ You can also restrict the mapping by setting ``useMappingConfig`` to ``true``, t
   });
 ```
 
-By default, the Converter logs all the warnings, like the *fields that could not be instantiated*, but if you want to suppress it, you can use the ``setSilentLogs`` method in the configuration. We **RECOMMEND** setting it to ``true`` in production.
+By default, the Converter logs all the warnings, like the *fields that could not be instantiated*, but if 
+you want to suppress it, you can use the ``setSilentLogs`` method in the configuration. We **RECOMMEND** 
+setting it to ``true`` in production.
 
 ### Silent Logs
 ```java
@@ -276,10 +283,11 @@ By default, the Converter logs all the warnings, like the *fields that could not
 
 ## Mapping Profiles
 
-You can separete the configuration of each class type, and add to the global configuration, to achieve this we can use the ``Profile`` class.
+You can separete the configuration of each class type, and add to the global configuration, to achieve this 
+we can use the ``Profile`` class.
 
-You just need to create a class that extends the ``Profile`` class, ``@Override init()``  method to create the configurations, 
-and add it to the ConverterConfiguration.
+You just need to create a class that extends the ``Profile`` class, ``@Override init()``  method to create 
+the configurations, and add it to the ConverterConfiguration.
 
 ### Profiles
 ```java
@@ -315,7 +323,8 @@ And then, add the profiles to the ConverterConfiguration
 ## Extracting Values From Another Object
 
 Converter can also extract values from another object, as long as the object has the same structure.
-**Note**: the returned object should have the same memory address and only the fields with non null values will be extracted.
+**Note**: the returned object should have the same memory address and only the fields with non null 
+values will be extracted.
 
 ### Mapping or Extracting values from another object
 ```java
