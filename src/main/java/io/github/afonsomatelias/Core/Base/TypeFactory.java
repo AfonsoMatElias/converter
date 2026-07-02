@@ -81,8 +81,10 @@ public abstract class TypeFactory {
 		// 2. Could not create a new instance with the constructor
 		if (newInstace == null) {
 			try {
+				Constructor<?> constructor = clazz.getDeclaredConstructor();
+
 				// Use traditional way
-				newInstace = clazz.newInstance();
+				newInstace = constructor.newInstance();
 			} catch (Exception e) {
 				exceptions.add(e.getMessage());
 			}

@@ -2,6 +2,7 @@ package io.github.afonsomatelias.Configurations;
 
 import static io.github.afonsomatelias.Helpers.Global.DEFAULT_TYPES_RESOLVER;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,8 +40,10 @@ public class ConverterConfiguration extends Converter {
 		// Initializing all the profiles
 		for (Class<? extends Profile> clsProfile : profiles) {
 			try {
+				Constructor<?> constructor = clsProfile.getDeclaredConstructor();
+
 				// Initializing the profile
-				Profile profile = clsProfile.newInstance();
+				Profile profile = (Profile) constructor.newInstance();
 
 				// adding the Converter instance
 				profile.$super = this;
@@ -73,8 +76,10 @@ public class ConverterConfiguration extends Converter {
 		// Initializing all the profiles
 		for (Class<? extends TypeResolver> clsResolver : types) {
 			try {
+				Constructor<?> constructor = clsResolver.getDeclaredConstructor();
+
 				// Initializing the profile
-				TypeResolver typeResolver = clsResolver.newInstance();
+				TypeResolver typeResolver = (TypeResolver) constructor.newInstance();
 
 				// Applying the type resolver
 				shared.typeResolvers.put(typeResolver.type, (value) -> typeResolver.resolve(value));
