@@ -261,7 +261,8 @@ public class ApiTest {
 
         config.createMap(Product.class, ProductDto.class)
                 .skipMember("name")
-                .skipMember("price");
+                .skipMember("price")
+                .skipMember("createdBy");
 
         IConverter converter = config.createConverter();
 
@@ -306,7 +307,6 @@ public class ApiTest {
 
         // Mapping
         ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
-
             options.afterMap((src, dst) -> {
                 assertNotNull(src);
                 assertNotNull(dst);
@@ -351,6 +351,112 @@ public class ApiTest {
         ProductDto dto = converter.map(model).to(ProductDto.class);
 
         assertNotNull(dto);
+        method.assertMethodCalled(2);
+    }
+
+    @Test
+    public void shouldCallOnMemberMapActionInTargetType() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+            options.onMemberMap(UserDto.class, (src, dst) -> {
+                assertNotNull(src);
+                assertNotNull(dst);
+
+                method.call();
+            });
+        });
+        
+        assertNotNull(dto);
+        method.assertMethodCalled(1);
+    }
+
+    @Test
+    public void shouldCallOnMemberMapActionInTargetListType() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        IConverter converter = config.createConverter();
+
+        // Entities
+        List<Product> models = Arrays.asList(
+            new Product(),
+            new Product()
+        );
+
+        // Mapping
+        List<ProductDto> dtos = converter.map(models).to(ProductDto.class, (options) -> {
+            options.onMemberMap(UserDto.class, (src, dst) -> {
+                assertNotNull(src);
+                assertNotNull(dst);
+
+                method.call();
+            });
+        });
+        
+        assertNotNull(dtos);
+        assertEquals(dtos.size(), 2);
+        method.assertMethodCalled(2);
+    }
+
+    @Test
+    public void shouldCallGlobalMemberMapAndAfterMapActionsInTarget() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        
+        config.createMap(Product.class, ProductDto.class, (options) -> {
+
+            options.onMemberMap(UserDto.class, (src, dst) -> {
+                assertNotNull(src);
+                assertNotNull(dst);
+
+                method.call();
+            });
+
+        });
+
+        IConverter converter = config.createConverter();
+
+        // Entities
+        Product model = new Product();
+
+        // Mapping
+        ProductDto dto = converter.map(model).to(ProductDto.class);
+
+        assertNotNull(dto);
+        method.assertMethodCalled(1);
+    }
+    
+    @Test
+    public void shouldCallGlobalMemberMapAndAfterMapActionsInTargetListType() {
+        ConverterConfiguration config = new ConverterConfiguration();
+        
+        config.createMap(Product.class, ProductDto.class, (options) -> {
+
+            options.onMemberMap(UserDto.class, (src, dst) -> {
+                assertNotNull(src);
+                assertNotNull(dst);
+
+                method.call();
+            });
+
+        });
+
+        IConverter converter = config.createConverter();
+
+        // Entities
+        List<Product> models = Arrays.asList(
+            new Product(),
+            new Product()
+        );
+
+        // Mapping
+        List<ProductDto> dtos = converter.map(models).to(ProductDto.class);
+
+        assertNotNull(dtos);
+        assertEquals(dtos.size(), 2);
         method.assertMethodCalled(2);
     }
 

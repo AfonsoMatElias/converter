@@ -56,6 +56,9 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 		"PersistentBag"
 	));
 
+	// Empty Objects
+	private MappingObjectActions<Object, Object> emptyAction = new MappingObjectActions<>();
+
 	/**
 	 * Maps properties from the source object to the destination object.
 	 * 
@@ -200,10 +203,9 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 
 		// Retrieving the action for this field
 		MappingObjectActions<Object, Object> createdMapActionOption = shared.globalActionOptions
-				.getOrDefault(mapActionUniqueName, null);
+				.getOrDefault(mapActionUniqueName, emptyAction);
 
-		if (createdMapActionOption != null) // Performing BEFORE_MAP action
-			createdMapActionOption.emit(MappingActionsEnum.BEFORE_MAP, $source, null);
+		createdMapActionOption.emit(MappingActionsEnum.BEFORE_MAP, $source, null);
 
 		Object mappedObject = fnRegisterMappedObj.call($source);
 		if (mappedObject != null)
@@ -226,7 +228,6 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 
 			if (isSkipTypeGlobal || isSkipTypeInline)
 				return;
-
 
 			// Try to get for member mapping for this field
 			FieldMemberMapping forMemberMapping = fieldsMemberMapping.getOrDefault(fieldDestination, null);
@@ -276,7 +277,6 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 
 			Object valueToSet = fieldSourceValue;
 
-
 			// # Applying field transformation
 			Object $mutatedObject = fnMapTransform.call(valueToSet, fieldTypeSource, fieldTypeDestination);
 
@@ -291,6 +291,7 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 				return;
 			}
 
+			boolean isValueAnArray = false;
 
 			// Checking if there is a transformation for these two properties and assign it
 			// to the Value To Set
@@ -300,7 +301,7 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 			} else
 			
 			// Checking if the value is an array
-			if (isArray(valueToSet)) {
+			if (isValueAnArray =  isArray(valueToSet)) {
 				valueToSet = this.mapList(
 					fieldSourceName, 
 					fieldSourceValue, 
@@ -327,11 +328,15 @@ public class ComunMapper<Entry> extends Mapper<Entry> {
 			
 			// Setting the value
 			fnSetFieldValue.call(fieldDestination, valueToSet);
+
+			Class<?> targetClass = isValueAnArray ? getListType(fieldDestination) : fieldTypeDestination;
+
+			// Target Action
+			createdMapActionOption.emit(targetClass, MappingActionsEnum.MEMBER_MAP, fieldSourceValue, valueToSet);
+			localActionOptions.emit(targetClass, MappingActionsEnum.MEMBER_MAP, fieldSourceValue, valueToSet);
 		});
 
-		if (createdMapActionOption != null) // Performing AFTER_MAP action
-			createdMapActionOption.emit(MappingActionsEnum.AFTER_MAP, $source, $destination);
-
+		createdMapActionOption.emit(MappingActionsEnum.AFTER_MAP, $source, $destination);
 
 		// If all the fields are null, nullify the destination object
 		if (allMatch(fieldsDestination.values().stream().collect(Collectors.toList()), (x) -> {

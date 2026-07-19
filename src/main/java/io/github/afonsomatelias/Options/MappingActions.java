@@ -14,8 +14,18 @@ import io.github.afonsomatelias.Enums.MappingActionsEnum;
 import io.github.afonsomatelias.Options.Interfaces.IMappingActions;
 
 public class MappingActions implements IMappingActions {
+	public static class MappingEvent {
+		public Class<?> targetType;
+		public I2Action<Object, Object> event;
+
+		public MappingEvent(Class<?> targetType, I2Action<Object, Object> event) {
+			this.targetType = targetType;
+			this.event = event;
+		}
+	}
+	
 	// Stores all the actions according to the type
-	protected Map<MappingActionsEnum, List<I2Action<Object, Object>>> actions = new HashMap<>();
+	protected Map<MappingActionsEnum, List<MappingEvent>> actions = new HashMap<>();
 
 	// Stores all the actions according to the type
 	protected Map<String, Field> inlineSkippingMembers = new HashMap<>();
@@ -28,12 +38,12 @@ public class MappingActions implements IMappingActions {
 	 * Subscribes {@link MappingActionsEnum} actions
 	 * 
 	 * @param targetAction the target action to be called
-	 * @param action       the action that need to be performed when the target
+	 * @param event       the action that need to be performed when the target
 	 *                     matches
 	 */
-	public void on(MappingActionsEnum targetAction, I2Action<Object, Object> action) {
+	public void on(MappingActionsEnum targetAction, I2Action<Object, Object> event) {
 		// Defining the default List of Actions
-		List<I2Action<Object, Object>> mActions = new ArrayList<>();
+		List<MappingEvent> mActions = new ArrayList<>();
 
 		if (!actions.containsKey(targetAction))
 			actions.put(targetAction, mActions);
@@ -42,7 +52,39 @@ public class MappingActions implements IMappingActions {
 		mActions = actions.get(targetAction);
 
 		// Adding the new action
-		mActions.add(action);
+		mActions.add(new MappingEvent(null, event));
+	}
+	
+	/**
+	 * Subscribes {@link MappingActionsEnum} actions
+	 * 
+	 * @param targetAction the target action to be called
+	 * @param event       the action that need to be performed when the target
+	 *                     matches
+	 */
+	public void on(Class<?> target, MappingActionsEnum targetAction, I2Action<Object, Object> event) {
+		// Defining the default List of Actions
+		List<MappingEvent> mActions = new ArrayList<>();
+
+		if (!actions.containsKey(targetAction))
+			actions.put(targetAction, mActions);
+
+		// Setting the actual list of action
+		mActions = actions.get(targetAction);
+
+		// Adding the new action
+		mActions.add(new MappingEvent(null, event));
+	}
+
+	/**
+	 * Subscribes {@link MappingActionsEnum.BEFORE_MAP} action
+	 * 
+	 * @implNote The destination argument will be null
+	 * @param modifier the delegate having the modification
+	 */
+	@SuppressWarnings("unchecked")
+	public <O, T> void onMemberMap(Class<T> target, I2Action<O, T> modifier) {
+		this.on(target, MappingActionsEnum.MEMBER_MAP, (I2Action<Object, Object>) modifier);
 	}
 
 	/**
@@ -53,12 +95,26 @@ public class MappingActions implements IMappingActions {
 	 * @param dst          the destination object
 	 */
 	public void emit(MappingActionsEnum targetAction, Object src, Object dst) {
+		this.emit(null, targetAction, src, dst);
+	}
+
+	/**
+	 * Action caller
+	 * 
+	 * @param targetAction the target action to be called
+	 * @param src          the source object
+	 * @param dst          the destination object
+	 */
+	public void emit(Class<?> target, MappingActionsEnum targetAction, Object src, Object dst) {
+		if (actions.size() == 0) return;
+
 		// Defining the default List of Actions
-		List<I2Action<Object, Object>> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
+		List<MappingEvent> targetActions = actions.getOrDefault(targetAction, Arrays.asList());
 
 		// Setting the actual list of action
 		for (int i = 0; i < targetActions.size(); i++) {
-			targetActions.get(i).call(src, dst);
+			MappingEvent action = targetActions.get(i);
+			action.event.call(src, dst);
 		}
 	}
 
@@ -146,7 +202,7 @@ public class MappingActions implements IMappingActions {
 	public void merge(MappingActions mappingActions) {
 		mappingActions.actions.forEach((key, value) -> {
 			if (!this.actions.containsKey(key))
-				this.actions.put(key, new ArrayList<I2Action<Object, Object>>());
+				this.actions.put(key, new ArrayList<MappingEvent>());
 
 			this.actions.get(key).addAll(value);
 		});
