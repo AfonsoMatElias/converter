@@ -1,5 +1,6 @@
 
-<p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
+<p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" 
+  src="https://afonsomatelias.github.io/assets/converter/img/Converter-272.png" /></a></p>
 
 # Converter v1.6.2
 
