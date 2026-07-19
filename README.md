@@ -64,7 +64,7 @@ You can use the ``beforeMap`` and ``afterMap`` methods to modify the input and/o
   });
 ```
 
-You can also target a specific type and modify it value on mapping process, to achieve that 
+You can also target a specific type object and modify it value on mapping process, to achieve that 
 you can use the ``onMemberMap`` method.
 ```java
   ConverterConfiguration config = new ConverterConfiguration();
