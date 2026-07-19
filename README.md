@@ -83,7 +83,7 @@ you can use the ``onMemberMap`` method.
   });
 ```
 
-It can be used also in global configuration, it shall have the same effect.
+It can be used also in global configuration, it should have the same effect.
 ```java
   ConverterConfiguration config = new ConverterConfiguration(() -> {
     config.onMemberMap(UserDto.class, (src, dst) -> {
