@@ -13,6 +13,8 @@ public class ProductDto {
     private List<ProductDto> products;
     
     private ProductDto forMemberMapTestChild;
+
+    private UserDto createdBy;
     
     public String getName() {
         return name;
@@ -76,5 +78,13 @@ public class ProductDto {
 
     public void setVAT(Float VAT) {
         this.VAT = VAT;
+    }
+
+    public UserDto getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserDto createdBy) {
+        this.createdBy = createdBy;
     }
 }

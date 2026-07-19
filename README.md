@@ -1,7 +1,7 @@
 
 <p align="center"><a href="#" target="_blank" rel="noopener noreferrer"><img height="120px" src="assets/images/Converter-272.png" /></a></p>
 
-# Converter v1.6.0
+# Converter v1.6.2
 
 ## What is Converter?
 
@@ -63,6 +63,44 @@ You can use the ``beforeMap`` and ``afterMap`` methods to modify the input and/o
     });
   });
 ```
+
+You can also target a specific type object and modify it value on mapping process, to achieve that 
+you can use the ``onMemberMap`` method.
+```java
+  ConverterConfiguration config = new ConverterConfiguration();
+  IConverter converter = config.createConverter();
+
+  // Entities
+  Product model = new Product();
+
+  // Mapping
+  ProductDto dto = converter.map(model).to(ProductDto.class, (options) -> {
+    options.onMemberMap(UserDto.class, (src, dst) -> {
+      // TODO: something nice 🤩 with the object mapped
+      // src -> item: Object <User>
+      // dst -> item: UserDto 
+    });
+  });
+```
+
+It can be used also in global configuration, it should have the same effect.
+```java
+  ConverterConfiguration config = new ConverterConfiguration(() -> {
+    config.onMemberMap(UserDto.class, (src, dst) -> {
+      // TODO: something nice 🤩 with the object mapped
+      // src -> item: Object <User>
+      // dst -> item: UserDto
+    })
+  });
+  IConverter converter = config.createConverter();
+
+  // Entities
+  Product model = new Product();
+
+  // Mapping
+  ProductDto dto = converter.map(model).to(ProductDto.class);
+```
+
 
 In case of list objects you can use the ``beforeEachMap`` and ``afterEachMap`` methods to modify during 
 the mapping process. **Note**: you may use the previous ``beforeMap`` and ``afterMap`` methods too, 

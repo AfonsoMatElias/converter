@@ -12,6 +12,8 @@ public class Product {
     private Product parent;
     private List<Product> products;
 
+    private User createdBy = new User();
+
 
     public Product() {
         name = "Coca Cola";
@@ -64,5 +66,13 @@ public class Product {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 }
